@@ -135,6 +135,17 @@ export interface GroundControlPoint {
   targetLng: number;
   residualMeters?: number;
 }
+
+export interface GovLayoutRecord {
+  id: string;
+  tier: "FMB_TSLR" | "CMDA_LAYOUT" | "DTCP_LAYOUT";
+  title: string;
+  approvalNo: string;
+  year: number;
+  district: string;
+  taluk: string;
+  village: string;
+  centerCoordinates?: { lat: number; lng: number };
   surveyNumber: string;
   subDivision?: string;
   portalSource: "eservices.tn.gov.in" | "cmdachennai.gov.in" | "tcp.tn.gov.in";
