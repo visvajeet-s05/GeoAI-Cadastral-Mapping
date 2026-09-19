@@ -1,0 +1,66 @@
+{
+  "type": "FeatureCollection",
+  "name": "GeoTrace_Cadastral_Survey_Parcels",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "test1",
+      "properties": {
+        "uprn": "TEST-UPRN-001",
+        "geo_trace_card_number": "",
+        "svamitva_card_number": "",
+        "owner_name": "",
+        "land_type": "RESIDENTIAL",
+        "status": "VERIFIED",
+        "calculated_area_sq_meters": 100,
+        "perimeter_meters": 0,
+        "centroid": {},
+        "epistemic_uncertainty": 0,
+        "aleatoric_uncertainty": 0,
+        "overall_uncertainty": 0,
+        "structure_count": 0,
+        "compliance_score": 0,
+        "encroachment_detected": false,
+        "current_hash": "",
+        "spatial_uuid": "",
+        "disclaimer": ""
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "export_timestamp": "2026-09-19T15:46:44.718790",
+  "export_format": "GeoJSON",
+  "coordinate_reference_system": "EPSG:4326"
+}

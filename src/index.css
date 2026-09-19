@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/* Leaflet Custom Cadastral Styling */
+.leaflet-container {
+  font-family: inherit;
+  background-color: #020617 !important;
+}
+
+.cadastral-tooltip {
+  background: rgba(15, 23, 42, 0.92) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(51, 65, 85, 0.8) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(8px);
+}
+
+.cadastral-tooltip::before {
+  border-top-color: rgba(15, 23, 42, 0.92) !important;
+}
+
+.custom-parcel-label {
+  background: transparent !important;
+  border: none !important;
+}
+
+.surveyor-vertex-handle {
+  transition: transform 0.15s ease-out;
+}
+
+.surveyor-vertex-handle:hover {
+  transform: scale(1.25);
+}
+
+/* Print Optimization for Land Title Certificates */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
