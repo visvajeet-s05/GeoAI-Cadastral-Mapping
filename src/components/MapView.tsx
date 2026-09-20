@@ -119,15 +119,16 @@ export const MapView: React.FC<MapViewProps> = ({
   const [editableCoords, setEditableCoords] = useState<[number, number][]>([]);
   const [measuringMode, setMeasuringMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState<[number, number][]>([]);
+  const [zoomLevel, setZoomLevel] = useState<number>(18);
 
   // Initialize Map once
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-    // Default center around New Delhi cadastral cluster
+    // Default center around Tamil Nadu / Velachery cluster
     const map = L.map(mapContainerRef.current, {
-      center: [28.6143, 77.2095],
-      zoom: 17,
+      center: [12.9839, 80.2090],
+      zoom: 18,
       zoomControl: false,
       attributionControl: false,
     });
@@ -156,10 +157,14 @@ export const MapView: React.FC<MapViewProps> = ({
     measureLayerGroupRef.current = measureGroup;
     uavLayerGroupRef.current = uavGroup;
 
-    // Listen to map viewport changes for satellite bbox sync
+    // Listen to map viewport changes for satellite bbox sync & LOD zoom
     map.on("moveend", () => {
       const b = map.getBounds();
       onMapBoundsChange?.([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
+    });
+
+    map.on("zoomend", () => {
+      setZoomLevel(map.getZoom());
     });
 
     // Initial bounds
@@ -374,23 +379,33 @@ export const MapView: React.FC<MapViewProps> = ({
 
       polyGroup.addLayer(polygon);
 
-      // Centroid label badge (GeoTrace-AI parcel identifier)
+      // Centroid label badge (GeoTrace-AI parcel identifier with LOD decluttering)
       if (activeLayers.vectorBoundaries) {
+        const isMicroLOD = zoomLevel < 18.0;
+        const parcelShortTag = parcel.surveyNumber || parcel.uprn.split("-").pop() || parcel.uprn;
+
+        const labelHtml = isMicroLOD
+          ? `<div class="px-1 py-0.2 rounded-full text-[9px] font-mono font-bold whitespace-nowrap shadow-sm border ${
+              isSelected
+                ? "bg-cyan-500 text-slate-950 border-cyan-200 ring-2 ring-cyan-400/60 scale-110"
+                : "bg-slate-950/85 text-cyan-300/90 border-cyan-500/40"
+            }">${parcelShortTag}</div>`
+          : `<div class="px-1.5 py-0.5 rounded-lg text-[10px] font-mono font-bold whitespace-nowrap shadow-md border ${
+              isSelected
+                ? "bg-cyan-500 text-slate-950 border-cyan-200 ring-2 ring-cyan-400/60 scale-105"
+                : parcel.encroachmentDetected
+                ? "bg-slate-950/90 text-rose-300 border-rose-500/50"
+                : "bg-slate-950/90 text-slate-200 border-slate-700/60"
+            }">
+              <span class="text-cyan-400">${parcelShortTag}</span>
+              <span class="text-slate-400 ml-1 font-normal">${Math.round(parcel.calculatedAreaSqMeters)}m²</span>
+            </div>`;
+
         const labelIcon = L.divIcon({
           className: "custom-parcel-label",
-          html: `
-            <div class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold whitespace-nowrap shadow-sm border border-slate-700/60 ${
-              isSelected
-                ? "bg-sky-500 text-white border-sky-300 ring-2 ring-sky-300/50"
-                : "bg-slate-900/80 text-slate-200"
-            }">
-              ${parcel.uprn.split("-").pop() || parcel.uprn} • ${Math.round(
-            parcel.calculatedAreaSqMeters
-          )}m²
-            </div>
-          `,
-          iconSize: [80, 20],
-          iconAnchor: [40, 10],
+          html: labelHtml,
+          iconSize: isMicroLOD ? [40, 16] : [70, 20],
+          iconAnchor: isMicroLOD ? [20, 8] : [35, 10],
         });
 
         const marker = L.marker(

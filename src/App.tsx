@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Parcel,
   AuditBlock,
@@ -13,33 +13,34 @@ import {
   PlotCongruenceRecord,
   DriftHotspot,
 } from "./types";
-import { Header } from "./components/Header";
-import { TopMetricsBar } from "./components/TopMetricsBar";
-import { DroneHUD } from "./components/DroneHUD";
 import { MapView } from "./components/MapView";
-import { ParcelSidebar } from "./components/ParcelSidebar";
+import { FloatingGlassTopBar } from "./components/FloatingGlassTopBar";
+import { FloatingLeftToolbox } from "./components/FloatingLeftToolbox";
+import { FloatingFlightController } from "./components/FloatingFlightController";
+import { FloatingParcelInspector } from "./components/FloatingParcelInspector";
+import { UAVHudReticleOverlay } from "./components/UAVHudReticleOverlay";
 import { TitleCertificateModal } from "./components/TitleCertificateModal";
 import { DroneIngestionModal } from "./components/DroneIngestionModal";
 import { SurveyFlightStreamModal } from "./components/SurveyFlightStreamModal";
-import { CadastralSearchBar } from "./components/CadastralSearchBar";
 import { HistoricalBlueprintModal } from "./components/HistoricalBlueprintModal";
 import { ParcelAnalysisReportModal } from "./components/ParcelAnalysisReportModal";
 import { VisualComparisonSlider } from "./components/VisualComparisonSlider";
-import { LiveDroneSplitView, AIDetectionItem } from "./components/LiveDroneSplitView";
+import { DualStreamCadastralCockpit } from "./components/DualStreamCadastralCockpit";
+import { AIDetectionItem } from "./components/LiveDroneSplitView";
 import { Sparkles, X, FileText, CheckCircle2 } from "lucide-react";
 
 export default function App() {
+  // Parcels & Selected State
   const [parcels, setParcels] = useState<Parcel[]>([]);
   const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
   const [auditChain, setAuditChain] = useState<AuditBlock[]>([]);
   const [topologyReport, setTopologyReport] = useState<TopologyReport | null>(null);
   const [isCheckingTopology, setIsCheckingTopology] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Ingestion Mode & Virtual UAV Telemetry State
-  const [ingestionMode, setIngestionMode] = useState<IngestionMode>("VIRTUAL_UAV");
-  const [telemetry, setTelemetry] = useState<UAVTelemetry | null>(null);
-  const [currentMapBounds, setCurrentMapBounds] = useState<[number, number, number, number] | null>(null);
+  // Map Active Tool ("INSPECT" | "MEASURE" | "EDIT_VERTEX")
+  const [activeTool, setActiveTool] = useState<"INSPECT" | "MEASURE" | "EDIT_VERTEX">("INSPECT");
+  const [isSurveyorEditing, setIsSurveyorEditing] = useState<boolean>(false);
 
   // Active Map Layer Toggles
   const [activeLayers, setActiveLayers] = useState<ActiveLayers>({
@@ -54,20 +55,31 @@ export default function App() {
     gcpControlPoints: true,
   });
 
+  // Simulated UAV Drone Flight Telemetry State
+  const [isSimulatingFlight, setIsSimulatingFlight] = useState<boolean>(true);
+  const [isFollowDrone, setIsFollowDrone] = useState<boolean>(false);
+  const [isReticleVisible, setIsReticleVisible] = useState<boolean>(true);
+  const [flightAltitude, setFlightAltitude] = useState<number>(50.0);
+  const [flightSpeed, setFlightSpeed] = useState<number>(8.5);
+  const [flightZone, setFlightZone] = useState<"URBAN" | "RURAL" | "COMMERCIAL">("URBAN");
+  const [telemetry, setTelemetry] = useState<UAVTelemetry | null>({
+    latitude: 12.9839,
+    longitude: 80.2090,
+    altitude_agl: 50.0,
+    gsd_cm_px: 1.8,
+    rtk_status: "FIXED",
+    satellites_tracked: 22,
+    heading_deg: 45.0,
+    speed_mps: 8.5,
+    battery_percent: 98.4,
+    zone: "URBAN",
+    frame_index: 120,
+    timestamp: Date.now(),
+  });
+
   // Historical FMB / FMDP Sketch Verification State
   const [historicalFmbDataset, setHistoricalFmbDataset] = useState<FmbPlanHistoricalDataset | null>(null);
   const [statutoryNoticeModal, setStatutoryNoticeModal] = useState<string | null>(null);
-
-  // Surveyor Drag Editing Mode
-  const [isSurveyorEditing, setIsSurveyorEditing] = useState<boolean>(false);
-
-  // Layout View Visibility Toggles
-  const [showMetricsBar, setShowMetricsBar] = useState<boolean>(true);
-  const [showDroneHUD, setShowDroneHUD] = useState<boolean>(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
-
-  // Live Drone Split View & AI Perception Detection State
-  const [isDroneSplitOpen, setIsDroneSplitOpen] = useState<boolean>(true);
   const [selectedDetection, setSelectedDetection] = useState<AIDetectionItem | null>(null);
 
   // VLM Audit State
@@ -81,13 +93,38 @@ export default function App() {
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [showBlueprintModal, setShowBlueprintModal] = useState<boolean>(false);
   const [showComparisonModal, setShowComparisonModal] = useState<boolean>(false);
+  const [showDualStreamCockpit, setShowDualStreamCockpit] = useState<boolean>(false);
   const [comparisonParcel, setComparisonParcel] = useState<Parcel | null>(null);
-  const [streamConnected, setStreamConnected] = useState<boolean>(true);
 
-  // Fetch Parcels on Mount
+  // WebSocket Live Telemetry Connection
   useEffect(() => {
     fetchParcels();
     fetchTopologyReport();
+
+    // Connect WebSocket for real-time UAV flight telemetry
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws/cadastral-stream`;
+    let ws: WebSocket | null = null;
+
+    try {
+      ws = new WebSocket(wsUrl);
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.telemetry) {
+            setTelemetry(data.telemetry);
+          }
+        } catch {
+          // ignore parsing
+        }
+      };
+    } catch (err) {
+      console.warn("WebSocket stream fallback to polling:", err);
+    }
+
+    return () => {
+      if (ws) ws.close();
+    };
   }, []);
 
   const fetchParcels = async () => {
@@ -120,7 +157,6 @@ export default function App() {
 
   const selectParcel = async (parcel: Parcel) => {
     setSelectedParcel(parcel);
-    setIsSidebarOpen(true);
     setIsSurveyorEditing(false);
     setVlmAuditResult(null);
 
@@ -140,6 +176,15 @@ export default function App() {
     setActiveLayers((prev) => ({ ...prev, [layer]: !prev[layer] }));
   };
 
+  const handleSelectTool = (tool: "INSPECT" | "MEASURE" | "EDIT_VERTEX") => {
+    setActiveTool(tool);
+    if (tool === "EDIT_VERTEX") {
+      setIsSurveyorEditing(true);
+    } else {
+      setIsSurveyorEditing(false);
+    }
+  };
+
   // Save surveyor adjusted boundary coordinates
   const handleSaveSurveyorAdjustment = async (updatedCoordinates: [number, number][]) => {
     if (!selectedParcel) return;
@@ -156,7 +201,6 @@ export default function App() {
       });
       const data = await res.json();
       if (data.parcel) {
-        // Update parcel list
         setParcels((prev) =>
           prev.map((p) => (p.id === data.parcel.id ? data.parcel : p))
         );
@@ -165,6 +209,7 @@ export default function App() {
           setAuditChain((prev) => [...prev, data.newAuditBlock]);
         }
         setIsSurveyorEditing(false);
+        setActiveTool("INSPECT");
       }
     } catch (e) {
       console.error("Failed to save surveyor adjustment:", e);
@@ -186,11 +231,101 @@ export default function App() {
         if (data.repairBlock) {
           setAuditChain((prev) => [...prev, data.repairBlock]);
         }
-        // Refresh topology report
         fetchTopologyReport();
       }
     } catch (e) {
       console.error("Failed to auto-repair topology:", e);
+    }
+  };
+
+  // Split parcel to resolve under-segmentation (One House -> One Boundary)
+  const handleSplitParcel = async (parcelId: string) => {
+    try {
+      const res = await fetch("/api/parcels/split", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parcelId,
+          splitOrientation: "VERTICAL",
+          surveyorId: "SURV-FIELD-01",
+          surveyorName: "Surveyor Field Rover",
+        }),
+      });
+      const data = await res.json();
+      if (data.childParcels && data.childParcels.length > 0) {
+        setParcels((prev) => [
+          ...prev.filter((p) => p.id !== data.removedParcelId),
+          ...data.childParcels,
+        ]);
+        setSelectedParcel(data.childParcels[0]);
+        fetchTopologyReport();
+      }
+    } catch (e) {
+      console.error("Failed to split parcel:", e);
+    }
+  };
+
+  // Human Review Decision & Verification Status Update
+  const handleUpdateParcelStatus = async (parcelId: string, status: string) => {
+    try {
+      const res = await fetch(`/api/parcels/${parcelId}/review`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status,
+          surveyorNotes: `Surveyor human review decision: ${status}`,
+        }),
+      });
+      const data = await res.json();
+      if (data.parcel) {
+        setParcels((prev) =>
+          prev.map((p) => (p.id === data.parcel.id ? data.parcel : p))
+        );
+        setSelectedParcel(data.parcel);
+        if (data.newAuditBlock) {
+          setAuditChain((prev) => [...prev, data.newAuditBlock]);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to update parcel status:", e);
+    }
+  };
+
+  // Reset to the high-density granular 35+ parcel demo
+  const handleResetGranularDemo = async () => {
+    try {
+      const res = await fetch("/api/parcels/reset-granular-demo", { method: "POST" });
+      const data = await res.json();
+      if (data.parcels) {
+        setParcels(data.parcels);
+        setSelectedParcel(data.parcels[0]);
+        fetchTopologyReport();
+      }
+    } catch (e) {
+      console.error("Failed to reset granular demo:", e);
+    }
+  };
+
+  // Scan entire network for Under-Segmentation (e.g., multiple houses inside one parcel)
+  const handleScanUnderSegmentation = async () => {
+    try {
+      const res = await fetch("/api/parcels/under-segmentation-audit", { method: "POST" });
+      const data = await res.json();
+      if (data.issues && data.issues.length > 0) {
+        setStatutoryNoticeModal(
+          `UNDER-SEGMENTATION RECONSTRUCTION AUDIT:\n\n` +
+          `• Total Parcels Scanned: ${data.totalParcelsScanned}\n` +
+          `• Flagged Under-Segmented Parcels: ${data.underSegmentedCount}\n\n` +
+          data.issues.map((iss: any) => `⚠️ ${iss.reason}`).join("\n\n") +
+          `\n\nRecommendation: Open each flagged parcel in the right inspector drawer and click [Split Parcel Candidate] to divide into individual property boundaries.`
+        );
+      } else {
+        setStatutoryNoticeModal(
+          `CADASTRAL RECONSTRUCTION AUDIT: 100% CLEAN\n\nAll ${data.totalParcelsScanned} parcel candidates represent individual single-property boundaries. Zero under-segmented multi-house polygons detected.`
+        );
+      }
+    } catch (e) {
+      console.error("Failed to run under-segmentation audit:", e);
     }
   };
 
@@ -262,174 +397,217 @@ export default function App() {
     }
   };
 
-  const displayedParcels = selectedFilter
-    ? parcels.filter((p) => p.status === selectedFilter)
-    : parcels;
+  // Flight Control Handlers
+  const handleToggleFlightPlay = async () => {
+    const nextPlay = !isSimulatingFlight;
+    setIsSimulatingFlight(nextPlay);
+    try {
+      await fetch("/api/uav/control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: nextPlay ? "RESUME" : "PAUSE" }),
+      });
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleResetFlight = async () => {
+    try {
+      await fetch("/api/uav/control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "RESET", zone: flightZone }),
+      });
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleAltitudeChange = async (alt: number) => {
+    setFlightAltitude(alt);
+    try {
+      await fetch("/api/uav/control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ altitude_m: alt }),
+      });
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleSpeedChange = async (spd: number) => {
+    setFlightSpeed(spd);
+    try {
+      await fetch("/api/uav/control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ speed_mps: spd }),
+      });
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleZoneChange = async (z: "URBAN" | "RURAL" | "COMMERCIAL") => {
+    setFlightZone(z);
+    try {
+      await fetch("/api/uav/control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ zone: z }),
+      });
+    } catch {
+      // ignore
+    }
+  };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
-      {/* 1. Header Toolbar & Layer Controls */}
-      <Header
+    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans select-none">
+      {/* ========================================================================= */}
+      {/* 1. BASE LAYER: 100% Full-Bleed Spatial GIS Canvas (100vw x 100vh)       */}
+      {/* ========================================================================= */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <MapView
+          parcels={parcels}
+          selectedParcel={selectedParcel}
+          onSelectParcel={selectParcel}
+          activeLayers={activeLayers}
+          topologyReport={topologyReport}
+          isSurveyorEditing={isSurveyorEditing}
+          onSaveSurveyorAdjustment={handleSaveSurveyorAdjustment}
+          onCancelSurveyorAdjustment={() => {
+            setIsSurveyorEditing(false);
+            setActiveTool("INSPECT");
+          }}
+          telemetry={telemetry}
+          ingestionMode="VIRTUAL_UAV"
+          selectedDetection={selectedDetection}
+          onSelectDetection={setSelectedDetection}
+        />
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. OPTICAL HUD RETICLE OVERLAY (Simulated Drone Sensor Target Tracking)  */}
+      {/* ========================================================================= */}
+      <UAVHudReticleOverlay
+        telemetry={telemetry}
+        selectedParcel={selectedParcel}
+        isVisible={isSimulatingFlight && isReticleVisible}
+      />
+
+      {/* ========================================================================= */}
+      {/* 3. FLOATING GLASS TOP NAVIGATION BAR                                      */}
+      {/* ========================================================================= */}
+      <FloatingGlassTopBar
         activeLayers={activeLayers}
         onToggleLayer={handleToggleLayer}
+        parcelsCount={parcels.length}
+        telemetry={telemetry}
+        isSimulatingFlight={isSimulatingFlight}
+        onToggleFlightSimulation={handleToggleFlightPlay}
+        onOpenDualStreamCockpit={() => setShowDualStreamCockpit(true)}
+        onOpenBlueprintModal={() => setShowBlueprintModal(true)}
         onOpenIngestModal={() => setShowIngestionModal(true)}
-        onOpenStreamModal={() => setShowStreamModal(true)}
         onExportGeoJSON={handleExportGeoJSON}
-        streamConnected={streamConnected}
-        onRunNetworkTopologyCheck={fetchTopologyReport}
-        isCheckingTopology={isCheckingTopology}
-        showMetricsBar={showMetricsBar}
-        onToggleMetricsBar={() => setShowMetricsBar((prev) => !prev)}
-        showDroneHUD={showDroneHUD}
-        onToggleDroneHUD={() => setShowDroneHUD((prev) => !prev)}
+        onTriggerTestMode={handleTriggerTestMode}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        parcels={parcels}
+        onSelectParcel={selectParcel}
+        onResetGranularDemo={handleResetGranularDemo}
+        onScanUnderSegmentation={handleScanUnderSegmentation}
+      />
+
+      {/* ========================================================================= */}
+      {/* 4. FLOATING LEFT TOOLBOX DRAWER                                           */}
+      {/* ========================================================================= */}
+      <FloatingLeftToolbox
+        activeTool={activeTool}
+        onSelectTool={handleSelectTool}
         onOpenBlueprintModal={() => setShowBlueprintModal(true)}
         onOpenVisualComparison={() => {
           setComparisonParcel(selectedParcel || parcels[0] || null);
           setShowComparisonModal(true);
         }}
+        onOpenDualStreamCockpit={() => setShowDualStreamCockpit(true)}
         onTriggerTestMode={handleTriggerTestMode}
-        isDroneSplitOpen={isDroneSplitOpen}
-        onToggleDroneSplit={() => setIsDroneSplitOpen((prev) => !prev)}
+        onOpenIngestModal={() => setShowIngestionModal(true)}
+        onExportGeoJSON={handleExportGeoJSON}
+        isSimulatingFlight={isSimulatingFlight}
+        onToggleFlightSimulation={handleToggleFlightPlay}
       />
 
-      {/* 2. Cadastral Spatial Key Metrics Bar */}
-      {showMetricsBar && (
-        <TopMetricsBar
-          parcels={parcels}
-          topologyReport={topologyReport}
-          onFilterByStatus={(status) => setSelectedFilter(status)}
-          selectedFilter={selectedFilter}
-        />
-      )}
-
-      {/* 2.5. Live UAV Telemetry HUD & Ingestion Mode Switcher */}
-      {showDroneHUD && (
-        <DroneHUD
+      {/* ========================================================================= */}
+      {/* 5. FLOATING BOTTOM FLIGHT CONTROLLER BAR                                  */}
+      {/* ========================================================================= */}
+      {isSimulatingFlight && (
+        <FloatingFlightController
           telemetry={telemetry}
-          onTelemetryUpdate={setTelemetry}
-          ingestionMode={ingestionMode}
-          onSelectIngestionMode={setIngestionMode}
-          onOpenUploadModal={() => setShowIngestionModal(true)}
-          onParcelsIngested={handleIngestCompleted}
-          currentMapBounds={currentMapBounds}
+          isPlaying={isSimulatingFlight}
+          onTogglePlay={handleToggleFlightPlay}
+          onResetFlight={handleResetFlight}
+          altitude={flightAltitude}
+          onAltitudeChange={handleAltitudeChange}
+          speed={flightSpeed}
+          onSpeedChange={handleSpeedChange}
+          zone={flightZone}
+          onZoneChange={handleZoneChange}
+          isFollowDrone={isFollowDrone}
+          onToggleFollowDrone={() => setIsFollowDrone((prev) => !prev)}
+          isReticleVisible={isReticleVisible}
+          onToggleReticle={() => setIsReticleVisible((prev) => !prev)}
         />
       )}
 
-      {/* 3. Main Workspace: Map Canvas + Live Drone Split View + Cadastral Sidebar */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-        {/* World A: Live Drone Perception & Sensor Video Stream (Left Viewport) */}
-        {isDroneSplitOpen && (
-          <div className="w-full md:w-1/2 lg:w-[48%] h-64 md:h-full shrink-0 border-b md:border-b-0 md:border-r border-slate-800 z-10">
-            <LiveDroneSplitView
-              telemetry={telemetry}
-              selectedParcel={selectedParcel}
-              onSelectParcel={(p) => {
-                selectParcel(p);
-                setIsSidebarOpen(true);
-              }}
-              parcels={parcels}
-              selectedDetection={selectedDetection}
-              onSelectDetection={(det) => {
-                setSelectedDetection(det);
-                if (det?.linkedParcelId) {
-                  const linked = parcels.find((p) => p.id === det.linkedParcelId);
-                  if (linked) {
-                    selectParcel(linked);
-                    setIsSidebarOpen(true);
-                  }
-                }
-              }}
-              isSplitScreen={isDroneSplitOpen}
-              onToggleSplitScreen={() => setIsDroneSplitOpen(false)}
-              onClose={() => setIsDroneSplitOpen(false)}
-            />
-          </div>
-        )}
+      {/* ========================================================================= */}
+      {/* 6. FLOATING RIGHT PARCEL INSPECTION DRAWER                                */}
+      {/* ========================================================================= */}
+      {selectedParcel && (
+        <FloatingParcelInspector
+          parcel={selectedParcel}
+          onClose={() => setSelectedParcel(null)}
+          onOpenCertificateModal={() => setShowCertificateModal(true)}
+          onOpenReportModal={(p) => {
+            setSelectedParcel(p);
+            setShowReportModal(true);
+          }}
+          onOpenVisualComparison={(p) => {
+            setComparisonParcel(p);
+            setShowComparisonModal(true);
+          }}
+          onRunVlmAudit={handleRunVlmAudit}
+          isAuditingVlm={isAuditingVlm}
+          vlmAuditResult={vlmAuditResult}
+          onAutoRepairTopology={handleAutoRepairTopology}
+          isSurveyorEditing={isSurveyorEditing}
+          onToggleSurveyorEditing={() => {
+            const next = !isSurveyorEditing;
+            setIsSurveyorEditing(next);
+            setActiveTool(next ? "EDIT_VERTEX" : "INSPECT");
+          }}
+          onSplitParcel={handleSplitParcel}
+          onUpdateParcelStatus={handleUpdateParcelStatus}
+        />
+      )}
 
-        {/* World B: Survey GIS Interactive Cadastral Map (Right Viewport) */}
-        <div className="flex-1 relative h-full min-w-0">
-          {/* Top Floating Search Bar */}
-          <div className="absolute top-3 left-3 z-[400] max-w-sm sm:max-w-md w-full">
-            <CadastralSearchBar
-              parcels={parcels}
-              onSelectParcel={selectParcel}
-              selectedParcelId={selectedParcel?.id}
-            />
-          </div>
+      {/* ========================================================================= */}
+      {/* 7. MODALS & SUB-WORKBENCHES                                               */}
+      {/* ========================================================================= */}
 
-          <MapView
-            parcels={displayedParcels}
-            selectedParcel={selectedParcel}
-            onSelectParcel={selectParcel}
-            activeLayers={activeLayers}
-            topologyReport={topologyReport}
-            isSurveyorEditing={isSurveyorEditing}
-            onSaveSurveyorAdjustment={handleSaveSurveyorAdjustment}
-            onCancelSurveyorAdjustment={() => setIsSurveyorEditing(false)}
-            telemetry={telemetry}
-            ingestionMode={ingestionMode}
-            onMapBoundsChange={setCurrentMapBounds}
-            selectedDetection={selectedDetection}
-            onSelectDetection={setSelectedDetection}
-          />
+      {/* Dual-Stream Cadastral AI Architecture Cockpit Modal */}
+      {showDualStreamCockpit && (
+        <DualStreamCadastralCockpit
+          onClose={() => setShowDualStreamCockpit(false)}
+          parcels={parcels}
+          telemetry={telemetry}
+          selectedParcel={selectedParcel}
+          onSelectParcel={selectParcel}
+        />
+      )}
 
-          {/* Floating button to reopen sidebar if parcel selected but sidebar closed */}
-          {!isSidebarOpen && selectedParcel && (
-            <div className="absolute top-16 left-3 z-[450] flex items-center gap-2 bg-slate-900/95 border border-sky-500/60 text-white px-3 py-1.5 rounded-xl shadow-2xl backdrop-blur-md pointer-events-auto">
-              <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
-              <div className="flex items-center gap-1.5 text-xs font-mono">
-                <span className="font-bold text-sky-300">{selectedParcel.uprn}</span>
-                <span className="text-[10px] text-slate-400 font-mono">
-                  ({Math.round(selectedParcel.calculatedAreaSqMeters)}m²)
-                </span>
-              </div>
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="ml-1 px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-sm transition"
-                title="Open Parcel Cadastral Record"
-              >
-                Inspect
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Cadastral Detail Sidebar */}
-        {isSidebarOpen && (
-          <ParcelSidebar
-            parcel={selectedParcel}
-            auditChain={auditChain}
-            onClose={() => setIsSidebarOpen(false)}
-            isSurveyorEditing={isSurveyorEditing}
-            onToggleSurveyorEditing={() => setIsSurveyorEditing((prev) => !prev)}
-            onAutoRepairTopology={handleAutoRepairTopology}
-            onRunVlmAudit={handleRunVlmAudit}
-            isAuditingVlm={isAuditingVlm}
-            vlmAuditResult={vlmAuditResult}
-            onOpenCertificateModal={() => setShowCertificateModal(true)}
-            onOpenReportModal={(p) => {
-              setSelectedParcel(p);
-              setShowReportModal(true);
-            }}
-            onOpenVisualComparison={(p) => {
-              setComparisonParcel(p);
-              setShowComparisonModal(true);
-            }}
-            onOpenBlueprintModal={() => setShowBlueprintModal(true)}
-            onParcelUpdated={(updatedParcel, auditBlock) => {
-              setParcels((prev) =>
-                prev.map((p) => (p.id === updatedParcel.id ? updatedParcel : p))
-              );
-              setSelectedParcel(updatedParcel);
-              if (auditBlock) {
-                setAuditChain((prev) => [...prev, auditBlock]);
-              }
-            }}
-          />
-        )}
-      </div>
-
-      {/* Modals */}
+      {/* Title Certificate Modal */}
       {showCertificateModal && (
         <TitleCertificateModal
           parcel={selectedParcel}
@@ -437,6 +615,7 @@ export default function App() {
         />
       )}
 
+      {/* Ingest Drone Orthomosaic Modal */}
       {showIngestionModal && (
         <DroneIngestionModal
           onClose={() => setShowIngestionModal(false)}
@@ -444,11 +623,12 @@ export default function App() {
         />
       )}
 
+      {/* Stream Flight Modal */}
       {showStreamModal && (
         <SurveyFlightStreamModal onClose={() => setShowStreamModal(false)} />
       )}
 
-      {/* Historical Blueprint & Ingestion Modal */}
+      {/* Historical Blueprint Modal */}
       {showBlueprintModal && (
         <HistoricalBlueprintModal
           onClose={() => setShowBlueprintModal(false)}
@@ -495,7 +675,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Statutory Audit Summary Notice Modal (Generated via Gemini VLM) */}
+      {/* Statutory Audit Summary Notice Modal */}
       {statutoryNoticeModal && (
         <div className="fixed inset-0 z-[650] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border-2 border-amber-500 rounded-2xl shadow-2xl max-w-2xl w-full p-6 text-slate-100 max-h-[85vh] overflow-y-auto animate-in fade-in zoom-in-95">
@@ -528,13 +708,13 @@ export default function App() {
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-slate-400 flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>All 8 plots verified against 1967 FMB, 1985 Layout, 2005 TSLR & 2026 Satellite.</span>
+                <span>All plots verified against 1967 FMB, 1985 Layout, 2005 TSLR & 2026 Satellite.</span>
               </span>
               <button
                 onClick={() => setStatutoryNoticeModal(null)}
                 className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition"
               >
-                Acknowledge & View on Map
+                Acknowledge &amp; View on Map
               </button>
             </div>
           </div>

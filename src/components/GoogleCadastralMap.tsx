@@ -28,6 +28,7 @@ import {
   calculateShoelaceArea,
   formatArea,
 } from "../lib/geoUtils";
+import { getParcelPaletteColor } from "../lib/cadastralSegmentationEngine";
 import {
   ZoomIn,
   ZoomOut,
@@ -224,6 +225,7 @@ interface MapControllerProps {
   measuringMode: boolean;
   onMapClick: (latLng: google.maps.LatLngLiteral) => void;
   onBoundsChange?: (bounds: [number, number, number, number]) => void;
+  onZoomChange?: (zoom: number) => void;
 }
 
 const MapController: React.FC<MapControllerProps> = ({
@@ -231,8 +233,25 @@ const MapController: React.FC<MapControllerProps> = ({
   measuringMode,
   onMapClick,
   onBoundsChange,
+  onZoomChange,
 }) => {
   const map = useMap();
+
+  // Zoom change listener for LOD decluttering
+  useEffect(() => {
+    if (!map || !onZoomChange) return;
+
+    const listener = map.addListener("zoom_changed", () => {
+      const z = map.getZoom();
+      if (typeof z === "number") {
+        onZoomChange(z);
+      }
+    });
+
+    return () => {
+      google.maps.event.removeListener(listener);
+    };
+  }, [map, onZoomChange]);
 
   // Click listener for measuring mode
   useEffect(() => {
@@ -381,6 +400,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
 
   // AI Detections from Drone Camera Perception
   const [detections, setDetections] = useState<AIDetectionItem[]>([]);
+  const [currentZoom, setCurrentZoom] = useState<number>(18);
 
   useEffect(() => {
     fetch("/api/drone/detections")
@@ -504,8 +524,10 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
     }
   };
 
-  // Default cluster center
-  const defaultCenter = { lat: 28.6143, lng: 77.2095 };
+  // Default cluster center: Velachery, Chennai / Tamil Nadu
+  const defaultCenter = parcels.length > 0 && parcels[0].centroid
+    ? { lat: parcels[0].centroid.latitude, lng: parcels[0].centroid.longitude }
+    : { lat: 12.9839, lng: 80.2090 };
 
   return (
     <div className="relative w-full h-full flex flex-col bg-slate-950 overflow-hidden select-none">
@@ -514,7 +536,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
         <Map
           mapId={mapId || "DEMO_MAP_ID"}
           defaultCenter={defaultCenter}
-          defaultZoom={17}
+          defaultZoom={18}
           mapTypeId={mapTypeId}
           tilt={tilt}
           heading={heading}
@@ -529,33 +551,35 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
             measuringMode={measuringMode}
             onMapClick={(pt) => setMeasurePoints((prev) => [...prev, pt])}
             onBoundsChange={onMapBoundsChange}
+            onZoomChange={setCurrentZoom}
           />
 
           {/* Render All Cadastral Parcels */}
-          {displayedParcels.map((parcel) => {
+          {displayedParcels.map((parcel, pIdx) => {
             const isSelected = selectedParcel?.id === parcel.id;
             const isEditingThis = isSelected && isSurveyorEditing && editableCoords.length > 0;
 
             const coordsToRender = isEditingThis ? editableCoords : parcel.coordinates;
             const latLngPaths = coordsToRender.map(([lng, lat]) => ({ lat, lng }));
 
-            // Layer-based coloring - Thin Cadastral Boundaries (No giant opaque blocks)
-            let fillColor = "#0284c7"; // Sky blue default
-            let strokeColor = "#38bdf8";
-            let fillOpacity = isSelected ? 0.12 : 0.04;
-            let strokeWeight = isSelected ? 2.5 : 1.5;
+            // Harmonious Multi-Color Cadastral Palette - Distinct per adjacent property
+            const palette = getParcelPaletteColor(pIdx, parcel.landType);
+            let fillColor = palette.fill;
+            let strokeColor = isSelected ? "#38bdf8" : palette.stroke;
+            let fillOpacity = isSelected ? 0.18 : 0.08;
+            let strokeWeight = isSelected ? 2.5 : 1.4;
 
             if (showHousePerceptionOverlay) {
               if (parcel.structureCount > 0) {
                 // House / Built-up
                 fillColor = "#0284c7";
                 strokeColor = "#38bdf8";
-                fillOpacity = isSelected ? 0.12 : 0.04;
+                fillOpacity = isSelected ? 0.18 : 0.08;
               } else {
-                // Vacant Land
+                // Vacant Land / Open Plot
                 fillColor = "#10b981";
                 strokeColor = "#34d399";
-                fillOpacity = isSelected ? 0.12 : 0.04;
+                fillOpacity = isSelected ? 0.18 : 0.08;
               }
             } else if (activeLayers.uncertaintyBands) {
               const uColor = getUncertaintyColor(parcel.overallUncertainty);
@@ -569,10 +593,15 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
               fillOpacity = 0.12;
             }
 
+            // Low-confidence inferred boundary style
+            if ((1.0 - (parcel.overallUncertainty || 0.15)) < 0.65) {
+              strokeColor = "#f59e0b"; // Warning amber for uncertain boundaries
+            }
+
             if (activeLayers.topologyIssues && parcel.encroachmentDetected) {
               fillColor = "#ef4444";
               strokeColor = "#dc2626";
-              fillOpacity = 0.18;
+              fillOpacity = 0.20;
               strokeWeight = 2.5;
             }
 
@@ -610,55 +639,75 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                   }}
                 />
 
-                {/* Parcel Centroid Tag & House/Vacant Status Badge */}
+                {/* Parcel Centroid Tag with Level-of-Detail (LOD) Decluttering */}
                 {activeLayers.vectorBoundaries && (
                   <AdvancedMarker
                     position={{
                       lat: pCentroidLat,
                       lng: pCentroidLng,
                     }}
-                    zIndex={isSelected ? 30 : 5}
+                    zIndex={isSelected ? 35 : 5}
                   >
-                    <div
-                      onClick={() => onSelectParcel(parcel)}
-                      className={`cursor-pointer px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold shadow-lg border flex items-center gap-1 transition-all hover:scale-110 whitespace-nowrap backdrop-blur-md ${
-                        isSelected
-                          ? "bg-sky-600 text-white border-sky-300 ring-2 ring-sky-400/50 scale-105"
-                          : parcel.structureCount > 0
-                          ? "bg-slate-950/90 text-amber-300 border-amber-500/40 hover:border-amber-400"
-                          : "bg-slate-950/90 text-emerald-300 border-emerald-500/40 hover:border-emerald-400"
-                      }`}
-                      title={`${parcel.uprn} - ${Math.round(parcel.calculatedAreaSqMeters)}m² - ${parcel.ownerName}`}
-                    >
-                      {parcel.structureCount > 0 ? (
-                        <Home className="w-2.5 h-2.5 text-amber-400 shrink-0" />
-                      ) : (
-                        <Trees className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
-                      )}
-                      <span>
-                        {parcel.uprn.split("-").pop() || parcel.uprn}
-                      </span>
-                      {isSelected && (
-                        <span className="text-[8px] text-slate-200 border-l border-sky-400/50 pl-1">
+                    {currentZoom < 18.0 ? (
+                      /* Minimalist Micro-Pill Tag for Zoom < 18.0 */
+                      <div
+                        onClick={() => onSelectParcel(parcel)}
+                        className={`cursor-pointer px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold shadow-md border flex items-center gap-0.5 transition-all hover:scale-125 whitespace-nowrap backdrop-blur-md ${
+                          isSelected
+                            ? "bg-cyan-500 text-slate-950 border-cyan-200 ring-2 ring-cyan-400/60 scale-110"
+                            : parcel.encroachmentDetected
+                            ? "bg-slate-950/90 text-rose-400 border-rose-500/50"
+                            : "bg-slate-950/85 text-cyan-300 border-cyan-500/40"
+                        }`}
+                        title={`${parcel.uprn} - ${Math.round(parcel.calculatedAreaSqMeters)}m²`}
+                      >
+                        {parcel.surveyNumber || parcel.uprn.split("-").pop() || parcel.uprn}
+                      </div>
+                    ) : (
+                      /* Full Tag Badge for Zoom >= 18.0 */
+                      <div
+                        onClick={() => onSelectParcel(parcel)}
+                        className={`cursor-pointer px-2 py-0.5 rounded-lg text-[9px] font-mono font-bold shadow-lg border flex items-center gap-1 transition-all hover:scale-110 whitespace-nowrap backdrop-blur-md ${
+                          isSelected
+                            ? "bg-cyan-500 text-slate-950 border-cyan-200 ring-2 ring-cyan-400/60 scale-105"
+                            : parcel.structureCount > 0
+                            ? "bg-slate-950/90 text-amber-300 border-amber-500/40 hover:border-amber-400"
+                            : "bg-slate-950/90 text-emerald-300 border-emerald-500/40 hover:border-emerald-400"
+                        }`}
+                        title={`${parcel.uprn} - ${Math.round(parcel.calculatedAreaSqMeters)}m² - ${parcel.ownerName}`}
+                      >
+                        {parcel.structureCount > 0 ? (
+                          <Home className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                        ) : (
+                          <Trees className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
+                        )}
+                        <span>
+                          {parcel.surveyNumber || parcel.uprn.split("-").pop() || parcel.uprn}
+                        </span>
+                        <span className={`text-[8px] border-l pl-1 ${isSelected ? 'text-slate-900 border-slate-900/30' : 'text-slate-400 border-slate-700'}`}>
                           {Math.round(parcel.calculatedAreaSqMeters)}m²
                         </span>
-                      )}
-                      {parcel.encroachmentDetected && (
-                        <AlertTriangle className="w-2.5 h-2.5 text-rose-400 shrink-0 animate-pulse" />
-                      )}
-                    </div>
+                        {parcel.encroachmentDetected && (
+                          <AlertTriangle className="w-2.5 h-2.5 text-rose-400 shrink-0 animate-pulse" />
+                        )}
+                      </div>
+                    )}
                   </AdvancedMarker>
                 )}
               </React.Fragment>
             );
           })}
 
-          {/* Real AI-Detected Physical Objects (Individual Buildings, Open Areas, Roads) */}
+          {/* Real AI-Detected Physical Objects with Smart Decluttering */}
           {activeLayers.structuralFootprints &&
             detections.map((det) => {
               const isDetSelected = selectedDetection?.id === det.id;
+              const isLinkedToSelected = selectedParcel?.id === det.linkedParcelId;
               const isDispute = det.multiParcelCrossing || det.status === "DISPUTED";
               const isBuilding = det.type === "BUILDING";
+
+              // LOD check: Only show detection badge pin if selected or at high zoom (>= 18.5)
+              const showDetectionBadge = isDetSelected || isLinkedToSelected || currentZoom >= 18.5;
 
               const dLatLngPaths = det.polygon.map(([lng, lat]) => ({ lat, lng }));
               const dCentroidLat =
@@ -687,9 +736,9 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                   <GoogleMapPolygon
                     paths={dLatLngPaths}
                     fillColor={detFill}
-                    fillOpacity={isDetSelected ? 0.35 : isDispute ? 0.25 : 0.18}
+                    fillOpacity={isDetSelected ? 0.35 : isDispute ? 0.25 : 0.15}
                     strokeColor={detStroke}
-                    strokeWeight={isDetSelected ? 2.8 : 1.8}
+                    strokeWeight={isDetSelected ? 2.5 : 1.5}
                     zIndex={isDetSelected ? 35 : 15}
                     onClick={() => {
                       onSelectDetection?.(det);
@@ -700,41 +749,43 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                     }}
                   />
 
-                  {/* Detection Label Pin */}
-                  <AdvancedMarker
-                    position={{ lat: dCentroidLat, lng: dCentroidLng }}
-                    zIndex={isDetSelected ? 40 : 18}
-                  >
-                    <div
-                      onClick={() => {
-                        onSelectDetection?.(det);
-                        if (det.linkedParcelId) {
-                          const linked = parcels.find((p) => p.id === det.linkedParcelId);
-                          if (linked) onSelectParcel(linked);
-                        }
-                      }}
-                      className={`cursor-pointer px-1.5 py-0.5 rounded text-[8px] font-mono font-bold shadow-md border flex items-center gap-1 transition-all hover:scale-110 whitespace-nowrap backdrop-blur-md ${
-                        isDetSelected
-                          ? "bg-sky-600 text-white border-sky-300 ring-2 ring-sky-400/50"
-                          : isDispute
-                          ? "bg-rose-950/90 text-rose-300 border-rose-500/60"
-                          : isBuilding
-                          ? "bg-amber-950/90 text-amber-300 border-amber-500/60"
-                          : "bg-slate-900/90 text-emerald-300 border-emerald-500/60"
-                      }`}
-                      title={`${det.label} - ${det.areaSqM}m² (${Math.round(det.confidence * 100)}%)`}
+                  {/* Detection Label Pin (Shown only at high zoom or when active) */}
+                  {showDetectionBadge && (
+                    <AdvancedMarker
+                      position={{ lat: dCentroidLat, lng: dCentroidLng }}
+                      zIndex={isDetSelected ? 40 : 18}
                     >
-                      {isDispute ? (
-                        <AlertTriangle className="w-2.5 h-2.5 text-rose-400 shrink-0 animate-pulse" />
-                      ) : (
-                        <Sparkles className="w-2.5 h-2.5 text-amber-400 shrink-0" />
-                      )}
-                      <span>{det.id}</span>
-                      <span className="text-[7px] opacity-75">
-                        {Math.round(det.areaSqM)}m²
-                      </span>
-                    </div>
-                  </AdvancedMarker>
+                      <div
+                        onClick={() => {
+                          onSelectDetection?.(det);
+                          if (det.linkedParcelId) {
+                            const linked = parcels.find((p) => p.id === det.linkedParcelId);
+                            if (linked) onSelectParcel(linked);
+                          }
+                        }}
+                        className={`cursor-pointer px-1.5 py-0.5 rounded text-[8px] font-mono font-bold shadow-md border flex items-center gap-1 transition-all hover:scale-110 whitespace-nowrap backdrop-blur-md ${
+                          isDetSelected
+                            ? "bg-cyan-500 text-slate-950 border-cyan-200 ring-2 ring-cyan-400/50"
+                            : isDispute
+                            ? "bg-rose-950/90 text-rose-300 border-rose-500/60"
+                            : isBuilding
+                            ? "bg-amber-950/90 text-amber-300 border-amber-500/60"
+                            : "bg-slate-900/90 text-emerald-300 border-emerald-500/60"
+                        }`}
+                        title={`${det.label} - ${det.areaSqM}m² (${Math.round(det.confidence * 100)}%)`}
+                      >
+                        {isDispute ? (
+                          <AlertTriangle className="w-2.5 h-2.5 text-rose-400 shrink-0 animate-pulse" />
+                        ) : (
+                          <Sparkles className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                        )}
+                        <span>{det.id}</span>
+                        <span className="text-[7px] opacity-75">
+                          {Math.round(det.areaSqM)}m²
+                        </span>
+                      </div>
+                    </AdvancedMarker>
+                  )}
                 </React.Fragment>
               );
             })}
@@ -1235,240 +1286,126 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
       </APIProvider>
 
       {/* ==================================================== */}
-      {/* FLOATING OVERLAYS & HUD CONTROLS OVER GOOGLE SATELLITE */}
+      {/* MAP CONTROLS DOCK (BOTTOM-RIGHT HUD)                 */}
       {/* ==================================================== */}
-
-      {/* Top Left: Real-Time Places Search & House/Vacant Filter */}
-      <div className="absolute top-3 left-3 z-[400] flex flex-col gap-2 max-w-sm sm:max-w-md pointer-events-auto">
-        {/* Search Bar */}
-        <form
-          onSubmit={handleSearchAddress}
-          className="flex items-center bg-slate-900/95 border border-slate-700/90 rounded-xl shadow-2xl p-1 backdrop-blur-md"
-        >
-          <Search className="w-4 h-4 text-sky-400 ml-2 shrink-0" />
-          <input
-            type="text"
-            placeholder="Search address, village, or coordinates..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-transparent border-none outline-none text-xs text-white px-2 py-1.5 flex-1 placeholder:text-slate-500"
-          />
+      <div className="absolute bottom-6 right-6 z-20 flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl shadow-slate-950/70">
+        {/* Basemap Switcher */}
+        <div className="flex items-center bg-slate-950/80 p-0.5 rounded-xl border border-slate-800 text-xs">
           <button
-            type="submit"
-            disabled={isSearching}
-            className="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition"
+            onClick={() => setMapTypeId("hybrid")}
+            className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+              mapTypeId === "hybrid"
+                ? "bg-cyan-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
+            }`}
+            title="Google Satellite imagery with street & boundary labels"
           >
-            {isSearching ? "Locating..." : "Locate"}
+            Satellite
           </button>
-        </form>
 
-        {searchFeedback && (
-          <div className="px-3 py-1.5 rounded-lg bg-sky-950/90 border border-sky-700 text-sky-200 text-[11px] shadow-lg flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-            <span>{searchFeedback}</span>
-          </div>
+          <button
+            onClick={() => setMapTypeId("satellite")}
+            className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+              mapTypeId === "satellite"
+                ? "bg-cyan-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
+            }`}
+            title="Pure Google Satellite orthophoto (no road labels)"
+          >
+            Aerial
+          </button>
+
+          <button
+            onClick={() => setMapTypeId("roadmap")}
+            className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+              mapTypeId === "roadmap"
+                ? "bg-cyan-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Vector
+          </button>
+
+          {onSwitchToLeaflet && (
+            <button
+              onClick={onSwitchToLeaflet}
+              className="px-2 py-1 text-[10px] text-slate-400 hover:text-cyan-300 font-mono"
+              title="Switch to Leaflet / Esri Basemap"
+            >
+              Esri
+            </button>
+          )}
+        </div>
+
+        <div className="w-[1px] h-5 bg-slate-800 mx-0.5" />
+
+        {/* 3D Earth Tilt & Perspective Controls */}
+        <div className="flex items-center bg-slate-950/80 p-0.5 rounded-xl border border-slate-800 text-xs">
+          <button
+            onClick={() => setTilt(tilt === 45 ? 0 : 45)}
+            className={`px-2.5 py-1 rounded-lg font-bold font-mono transition flex items-center gap-1 ${
+              tilt === 45
+                ? "bg-amber-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
+            }`}
+            title="Toggle 45° Google Earth 3D oblique perspective"
+          >
+            <Compass className="w-3 h-3 text-amber-400" />
+            <span>{tilt === 45 ? "3D" : "2D"}</span>
+          </button>
+
+          <button
+            onClick={() => setHeading((prev) => (prev + 90) % 360)}
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            title="Rotate View 90° Clockwise"
+          >
+            <RotateCcw className="w-3.5 h-3.5 transform -scale-x-100" />
+          </button>
+
+          <button
+            onClick={() => {
+              setHeading(0);
+              setTilt(0);
+            }}
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            title="Reset North & 0° Tilt"
+          >
+            <Crosshair className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Tamil Nadu Government Map Repositories Button */}
+        {onOpenGovMapPanel && (
+          <button
+            onClick={onOpenGovMapPanel}
+            className={`px-2.5 py-1 rounded-xl font-medium flex items-center gap-1 transition text-xs shadow-sm border ${
+              activeGovLayout
+                ? "bg-amber-600 text-white border-amber-500 ring-1 ring-amber-400/40"
+                : "bg-slate-950/80 text-amber-300 hover:bg-slate-800 border-slate-800"
+            }`}
+            title="Tamil Nadu Government Map Repositories (FMB, CMDA, DTCP Layouts 1974-2026)"
+          >
+            <Landmark className="w-3.5 h-3.5 text-amber-300" />
+            <span className="hidden sm:inline">{activeGovLayout ? activeGovLayout.approvalNo : "TN Gov Maps"}</span>
+          </button>
         )}
 
-        {/* Real-time House vs Vacant Land Perception Strip */}
-        <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-xl p-1 backdrop-blur-md text-[11px] shadow-lg">
+        {selectedParcel && (
           <button
-            onClick={() => setLandFilter("ALL")}
-            className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1 ${
-              landFilter === "ALL"
-                ? "bg-slate-700 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
+            onClick={handleRunMapsGrounding}
+            disabled={isLoadingGrounding}
+            className="px-2.5 py-1 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-xl font-medium flex items-center gap-1 transition shadow-sm text-xs"
+            title="Run Google Maps AI Grounding for selected parcel"
           >
-            <Layers className="w-3 h-3" />
-            <span>All Lots ({parcels.length})</span>
+            <Sparkles className="w-3 h-3 text-amber-300" />
+            <span>{isLoadingGrounding ? "Grounding..." : "Maps AI"}</span>
           </button>
-
-          <button
-            onClick={() => setLandFilter("HOUSES")}
-            className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1 ${
-              landFilter === "HOUSES"
-                ? "bg-amber-600 text-white shadow-sm"
-                : "text-amber-400/80 hover:text-amber-300"
-            }`}
-            title="Filter to lots with detected houses/structures"
-          >
-            <Home className="w-3 h-3" />
-            <span>Houses ({parcels.filter((p) => p.structureCount > 0).length})</span>
-          </button>
-
-          <button
-            onClick={() => setLandFilter("VACANT")}
-            className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1 ${
-              landFilter === "VACANT"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "text-emerald-400/80 hover:text-emerald-300"
-            }`}
-            title="Filter to vacant lands & open plots"
-          >
-            <Trees className="w-3 h-3" />
-            <span>Vacant ({parcels.filter((p) => p.structureCount === 0).length})</span>
-          </button>
-
-          <div className="w-[1px] h-4 bg-slate-700 mx-0.5" />
-
-          {/* Toggle Perception Highlights */}
-          <button
-            onClick={() => setShowHousePerceptionOverlay((prev) => !prev)}
-            className={`p-1 rounded-lg transition ${
-              showHousePerceptionOverlay
-                ? "text-sky-400 bg-sky-500/10"
-                : "text-slate-500 hover:text-slate-300"
-            }`}
-            title="Toggle House (Amber) vs Vacant Land (Green) Satellite Highlights"
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Top Right: Unified Cadastral Map Control Deck */}
-      <div className="absolute top-3 right-3 z-[400] flex flex-col items-end gap-1.5 pointer-events-auto">
-        <div className="bg-slate-900/95 border border-slate-700/80 rounded-2xl p-1.5 shadow-2xl backdrop-blur-md flex flex-col gap-1.5 ring-1 ring-white/5">
-          {/* Tier 1: View Modes & Perspective */}
-          <div className="flex items-center gap-1">
-            {/* Basemap Switcher */}
-            <div className="flex items-center bg-slate-950/80 p-0.5 rounded-xl border border-slate-800 text-xs">
-              <button
-                onClick={() => setMapTypeId("hybrid")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition ${
-                  mapTypeId === "hybrid"
-                    ? "bg-sky-600 text-white shadow-sm"
-                    : "text-slate-400 hover:text-white"
-                }`}
-                title="Google Satellite imagery with street & boundary labels"
-              >
-                Satellite
-              </button>
-
-              <button
-                onClick={() => setMapTypeId("satellite")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition ${
-                  mapTypeId === "satellite"
-                    ? "bg-sky-600 text-white shadow-sm"
-                    : "text-slate-400 hover:text-white"
-                }`}
-                title="Pure Google Satellite orthophoto (no road labels)"
-              >
-                Aerial
-              </button>
-
-              <button
-                onClick={() => setMapTypeId("roadmap")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition ${
-                  mapTypeId === "roadmap"
-                    ? "bg-sky-600 text-white shadow-sm"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                Vector
-              </button>
-
-              {onSwitchToLeaflet && (
-                <button
-                  onClick={onSwitchToLeaflet}
-                  className="px-2 py-1 text-[10px] text-slate-400 hover:text-sky-300 font-mono"
-                  title="Switch to Leaflet / Esri Basemap"
-                >
-                  Esri
-                </button>
-              )}
-            </div>
-
-            <div className="w-[1px] h-5 bg-slate-800 mx-0.5" />
-
-            {/* 3D Oblique Earth Tilt & Perspective Controls */}
-            <div className="flex items-center bg-slate-950/80 p-0.5 rounded-xl border border-slate-800 text-xs">
-              <button
-                onClick={() => setTilt(tilt === 45 ? 0 : 45)}
-                className={`px-2.5 py-1 rounded-lg font-bold font-mono transition flex items-center gap-1 ${
-                  tilt === 45
-                    ? "bg-amber-600 text-white shadow-sm"
-                    : "text-slate-400 hover:text-white"
-                }`}
-                title="Toggle 45° Google Earth 3D oblique perspective"
-              >
-                <Compass className="w-3 h-3 text-amber-400" />
-                <span>{tilt === 45 ? "3D" : "2D"}</span>
-              </button>
-
-              <button
-                onClick={() => setHeading((prev) => (prev + 90) % 360)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-                title="Rotate View 90° Clockwise"
-              >
-                <RotateCcw className="w-3.5 h-3.5 transform -scale-x-100" />
-              </button>
-
-              <button
-                onClick={() => {
-                  setHeading(0);
-                  setTilt(0);
-                }}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-                title="Reset North & 0° Tilt"
-              >
-                <Crosshair className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Tier 2: Spatial Tools & Overlays */}
-          <div className="flex items-center gap-1 justify-end text-xs">
-            <button
-              onClick={() => {
-                setMeasuringMode((prev) => !prev);
-                if (measuringMode) setMeasurePoints([]);
-              }}
-              className={`px-2.5 py-1 rounded-lg font-medium flex items-center gap-1 transition ${
-                measuringMode
-                  ? "bg-teal-600 text-white shadow-sm"
-                  : "bg-slate-950/80 text-teal-300 hover:bg-slate-800 border border-slate-800"
-              }`}
-              title="Tape Measure Tool: Click on satellite roofs or borders to measure real distance"
-            >
-              <Ruler className="w-3.5 h-3.5" />
-              <span>{measuringMode ? "Measuring..." : "Measure"}</span>
-            </button>
-
-            {/* Tamil Nadu Government Map Repositories Button */}
-            {onOpenGovMapPanel && (
-              <button
-                onClick={onOpenGovMapPanel}
-                className={`px-2.5 py-1 rounded-lg font-medium flex items-center gap-1 transition text-xs shadow-sm border ${
-                  activeGovLayout
-                    ? "bg-amber-600 text-white border-amber-500 ring-1 ring-amber-400/40"
-                    : "bg-slate-950/80 text-amber-300 hover:bg-slate-800 border-slate-800"
-                }`}
-                title="Tamil Nadu Government Map Repositories (FMB, CMDA, DTCP Layouts 1974-2026)"
-              >
-                <Landmark className="w-3.5 h-3.5 text-amber-300" />
-                <span>{activeGovLayout ? activeGovLayout.approvalNo : "TN Gov Maps"}</span>
-              </button>
-            )}
-
-            {selectedParcel && (
-              <button
-                onClick={handleRunMapsGrounding}
-                disabled={isLoadingGrounding}
-                className="px-2.5 py-1 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-lg font-medium flex items-center gap-1 transition shadow-sm"
-                title="Run Google Maps AI Grounding for selected parcel"
-              >
-                <Sparkles className="w-3 h-3 text-amber-300" />
-                <span>{isLoadingGrounding ? "Grounding..." : "Maps AI"}</span>
-              </button>
-            )}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Floating Surveyor Adjustment Bar (When Boundary Editing is Active) */}
       {isSurveyorEditing && selectedParcel && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[450] bg-slate-900/95 border-2 border-amber-500 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 pointer-events-auto">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-900/95 border-2 border-amber-500 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 pointer-events-auto">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400">
               <Edit3 className="w-4 h-4" />
@@ -1517,7 +1454,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
 
       {/* Floating Tape Measure Result Pill */}
       {measuringMode && measurePoints.length > 1 && (
-        <div className="absolute bottom-6 left-6 z-[400] bg-slate-900/90 border border-teal-500/70 text-teal-200 px-3.5 py-2 rounded-xl shadow-xl text-xs backdrop-blur-md flex items-center gap-3 pointer-events-auto">
+        <div className="absolute bottom-6 left-20 z-20 bg-slate-900/90 border border-teal-500/70 text-teal-200 px-3.5 py-2 rounded-xl shadow-xl text-xs backdrop-blur-md flex items-center gap-3 pointer-events-auto">
           <Ruler className="w-4 h-4 text-teal-400 shrink-0" />
           <div>
             <div className="font-bold text-white text-[11px]">Tape Measure Active</div>
@@ -1536,7 +1473,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
 
       {/* Maps Grounding AI Insight Modal / Drawer */}
       {groundingInsight && (
-        <div className="absolute bottom-6 right-6 z-[450] bg-slate-900/95 border border-indigo-500/80 text-slate-200 p-4 rounded-2xl shadow-2xl max-w-md max-h-72 overflow-y-auto backdrop-blur-md text-xs pointer-events-auto animate-in fade-in slide-in-from-bottom-3">
+        <div className="absolute bottom-20 right-6 z-30 bg-slate-900/95 border border-indigo-500/80 text-slate-200 p-4 rounded-2xl shadow-2xl max-w-md max-h-72 overflow-y-auto backdrop-blur-md text-xs pointer-events-auto animate-in fade-in slide-in-from-bottom-3">
           <div className="flex items-center justify-between pb-2 border-b border-slate-800 mb-2">
             <div className="flex items-center gap-1.5 font-bold text-indigo-300">
               <Sparkles className="w-4 h-4 text-amber-300" />
@@ -1551,263 +1488,6 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
           </div>
           <div className="whitespace-pre-line text-slate-300 leading-relaxed font-sans text-[11px]">
             {groundingInsight}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================== */}
-      {/* 1967 - 2026 HISTORICAL FMB / FMDP TIMELINE & DETECT ALL BAR */}
-      {/* ========================================================== */}
-      {historicalFmbDataset && showHistoricalTimelineBar && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[450] bg-slate-900/95 border-2 border-amber-500/70 text-white rounded-2xl shadow-2xl backdrop-blur-md px-4 py-2.5 max-w-4xl w-[96%] md:w-auto pointer-events-auto">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* Title & Survey metadata */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 shrink-0">
-                <History className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-amber-300">FMB Multi-Temporal Verification</span>
-                  <span className="text-[10px] font-mono bg-amber-950 px-1.5 py-0.5 rounded border border-amber-600 text-amber-200">
-                    1967 — 2026
-                  </span>
-                  <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-700">
-                    {historicalFmbDataset.congruenceIndexPercent}% Congruence
-                  </span>
-                </div>
-                <div className="text-[10px] text-slate-400">
-                  {historicalFmbDataset.surveyNo} • {historicalFmbDataset.village}, {historicalFmbDataset.taluk} (8 Cadastral Plots)
-                </div>
-              </div>
-            </div>
-
-            {/* Central Action: DETECT ALL BUTTON */}
-            <div className="flex items-center gap-2">
-              <button
-                id="btn-detect-all-plan"
-                onClick={onTriggerDetectAll}
-                disabled={isDetectingAll}
-                className="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white text-xs font-extrabold rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 disabled:opacity-50"
-                title="Detect all discrepancies by checking if all 8 plots are equally sketched from 1967 to 2026"
-              >
-                {isDetectingAll ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Detecting All 8 Plots...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-3.5 h-3.5 text-amber-200 animate-pulse" />
-                    <span>⚡ Detect All (1967–2026 FMB)</span>
-                  </>
-                )}
-              </button>
-
-              {/* Ladder Table Button */}
-              <button
-                onClick={() => setShowLadderTable(true)}
-                className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold border border-slate-700 flex items-center gap-1 transition"
-                title="Open 1967 FMB G-Line Ladder Book Table"
-              >
-                <Table className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">FMB Ladder</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Epoch Slider / Switcher */}
-          <div className="mt-2.5 pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
-              <span className="text-slate-400 font-semibold mr-1 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-sky-400" />
-                Epoch:
-              </span>
-              <button
-                onClick={() => setActiveEpoch("1967_FMB_SURVEY")}
-                className={`px-2 py-0.5 rounded-lg font-medium transition ${
-                  activeEpoch === "1967_FMB_SURVEY"
-                    ? "bg-amber-600 text-white font-bold shadow"
-                    : "bg-slate-800 text-slate-400 hover:text-white"
-                }`}
-              >
-                📜 1967 Settlement FMB
-              </button>
-              <button
-                onClick={() => setActiveEpoch("1985_SUBDIVISION")}
-                className={`px-2 py-0.5 rounded-lg font-medium transition ${
-                  activeEpoch === "1985_SUBDIVISION"
-                    ? "bg-sky-600 text-white font-bold shadow"
-                    : "bg-slate-800 text-slate-400 hover:text-white"
-                }`}
-              >
-                📐 1985 Sub-Division
-              </button>
-              <button
-                onClick={() => setActiveEpoch("2005_TSLR_DIGITAL")}
-                className={`px-2 py-0.5 rounded-lg font-medium transition ${
-                  activeEpoch === "2005_TSLR_DIGITAL"
-                    ? "bg-indigo-600 text-white font-bold shadow"
-                    : "bg-slate-800 text-slate-400 hover:text-white"
-                }`}
-              >
-                💻 2005 TSLR Digital
-              </button>
-              <button
-                onClick={() => setActiveEpoch("2026_SATELLITE_DETECTED")}
-                className={`px-2 py-0.5 rounded-lg font-medium transition ${
-                  activeEpoch === "2026_SATELLITE_DETECTED"
-                    ? "bg-emerald-600 text-white font-bold shadow"
-                    : "bg-slate-800 text-slate-400 hover:text-white"
-                }`}
-              >
-                🛰️ 2026 Satellite
-              </button>
-              <button
-                onClick={() => setActiveEpoch("ALL_EPOCHS_OVERLAY")}
-                className={`px-2 py-0.5 rounded-lg font-medium transition ${
-                  activeEpoch === "ALL_EPOCHS_OVERLAY"
-                    ? "bg-gradient-to-r from-amber-600 via-sky-600 to-emerald-600 text-white font-bold shadow"
-                    : "bg-slate-800 text-slate-400 hover:text-white"
-                }`}
-              >
-                🔀 All Overlaid (Compare)
-              </button>
-            </div>
-
-            {/* Quick stats pills */}
-            <div className="flex items-center gap-1.5 text-[10px] font-mono">
-              <span className="text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/80">
-                ✓ 5 Equally Sketched
-              </span>
-              <span className="text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/80">
-                ⚠️ 1 Mutation Drift
-              </span>
-              <span className="text-rose-400 bg-rose-950/60 px-1.5 py-0.5 rounded border border-rose-800/80">
-                🚨 2 Encroachments
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================== */}
-      {/* PLOT CONGRUENCE INSPECTION CARD (When a plot is clicked) */}
-      {/* ========================================================== */}
-      {selectedPlotCongruence && (
-        <div className="absolute top-28 right-6 z-[450] bg-slate-900/95 border-2 border-slate-700 text-slate-100 p-4 rounded-2xl shadow-2xl max-w-sm w-full backdrop-blur-md text-xs pointer-events-auto animate-in fade-in slide-in-from-right-4">
-          <div className="flex items-start justify-between pb-2 border-b border-slate-800 mb-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm text-white">
-                  {selectedPlotCongruence.plotNumber}
-                </span>
-                <span className="text-[10px] font-mono bg-slate-800 px-1.5 py-0.5 rounded text-sky-300">
-                  {selectedPlotCongruence.uprn}
-                </span>
-              </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
-                Owner: <span className="text-slate-200 font-semibold">{selectedPlotCongruence.ownerName}</span>
-              </div>
-            </div>
-            <button
-              onClick={() => onSelectPlotCongruence && onSelectPlotCongruence(null)}
-              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition"
-              title="Close Inspector"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Congruence Status Pill */}
-          <div
-            className={`p-2.5 rounded-xl border mb-3 flex items-start gap-2 ${
-              selectedPlotCongruence.equallySketched
-                ? "bg-emerald-950/80 border-emerald-500/80 text-emerald-200"
-                : selectedPlotCongruence.driftType === "BOUNDARY_DRIFT"
-                ? "bg-amber-950/80 border-amber-500/80 text-amber-200"
-                : "bg-rose-950/80 border-rose-500/80 text-rose-200"
-            }`}
-          >
-            {selectedPlotCongruence.equallySketched ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            ) : (
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-            )}
-            <div>
-              <div className="font-bold text-xs">
-                {selectedPlotCongruence.equallySketched
-                  ? "✓ 100% Equally Sketched to FMB"
-                  : selectedPlotCongruence.driftType === "BOUNDARY_DRIFT"
-                  ? "⚠️ Mutation Boundary Drift"
-                  : "🚨 Public Road Encroachment"}
-              </div>
-              <div className="text-[10px] opacity-90 mt-0.5">
-                Shift: ±{selectedPlotCongruence.maxBoundaryShiftMeters}m (Tolerance: 0.25m)
-              </div>
-            </div>
-          </div>
-
-          {/* Comparative Multi-Epoch Area Evolution */}
-          <div className="space-y-1.5 mb-3 bg-slate-950/80 border border-slate-800 p-2.5 rounded-xl">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-              Historical Epoch Evolution (1967 - 2026)
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div>
-                <span className="text-slate-500">1967 FMB:</span>
-                <span className="font-mono text-amber-300 ml-1.5 font-semibold">
-                  {selectedPlotCongruence.area1967SqM} m²
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-500">1985 Layout:</span>
-                <span className="font-mono text-sky-300 ml-1.5 font-semibold">
-                  {selectedPlotCongruence.area1985SqM} m²
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-500">2005 TSLR:</span>
-                <span className="font-mono text-indigo-300 ml-1.5 font-semibold">
-                  {selectedPlotCongruence.area2005SqM} m²
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-500">2026 Satellite:</span>
-                <span className={`font-mono ml-1.5 font-bold ${
-                  selectedPlotCongruence.equallySketched ? "text-emerald-400" : "text-rose-400"
-                }`}>
-                  {selectedPlotCongruence.area2026SatelliteSqM} m²
-                </span>
-              </div>
-            </div>
-            {selectedPlotCongruence.areaVarianceSqM !== 0 && (
-              <div className="pt-1.5 border-t border-slate-800 text-[10px] flex items-center justify-between">
-                <span className="text-slate-400">Area Variance:</span>
-                <span className="font-mono font-bold text-rose-400">
-                  {selectedPlotCongruence.areaVarianceSqM > 0 ? "+" : ""}
-                  {selectedPlotCongruence.areaVarianceSqM} m²
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Statutory Finding Remark */}
-          <div className="text-[11px] text-slate-300 bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/60 leading-relaxed mb-3">
-            <div className="text-[9px] font-bold text-amber-400 uppercase tracking-wider mb-0.5">
-              Statutory Cadastral Finding
-            </div>
-            {selectedPlotCongruence.auditRemark}
-          </div>
-
-          {/* Close & Action Buttons */}
-          <div className="flex items-center justify-end gap-2">
-            <button
-              onClick={() => onSelectPlotCongruence && onSelectPlotCongruence(null)}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg transition"
-            >
-              Dismiss
-            </button>
           </div>
         </div>
       )}

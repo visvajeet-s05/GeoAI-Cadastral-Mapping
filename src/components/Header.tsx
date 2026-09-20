@@ -13,6 +13,7 @@ import {
   BarChart3,
   Sliders,
   FileText,
+  Zap,
 } from "lucide-react";
 import { ActiveLayers } from "../types";
 
@@ -31,6 +32,7 @@ interface HeaderProps {
   onToggleDroneHUD?: () => void;
   onOpenBlueprintModal?: () => void;
   onOpenVisualComparison?: () => void;
+  onOpenDualStreamCockpit?: () => void;
   onTriggerTestMode?: () => void;
   isDroneSplitOpen?: boolean;
   onToggleDroneSplit?: () => void;
@@ -51,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleDroneHUD,
   onOpenBlueprintModal,
   onOpenVisualComparison,
+  onOpenDualStreamCockpit,
   onTriggerTestMode,
   isDroneSplitOpen = false,
   onToggleDroneSplit,
@@ -246,6 +249,19 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden xl:inline">Velachery Pilot</span>
+            </button>
+          )}
+
+          {/* Dual-Stream Cadastral AI Cockpit */}
+          {onOpenDualStreamCockpit && (
+            <button
+              id="btn-open-dual-stream-cockpit"
+              onClick={onOpenDualStreamCockpit}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-500 hover:to-teal-500 text-xs font-bold text-white shadow-md shadow-sky-600/30 border border-sky-400/40 transition"
+              title="Launch Dual-Stream Cadastral AI Cockpit (FMB Blueprint &times; Live UAV Feed)"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+              <span>Dual-Stream AI</span>
             </button>
           )}
 

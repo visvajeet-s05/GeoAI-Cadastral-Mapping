@@ -471,3 +471,96 @@ export interface TamilNaduHierarchyNode {
   }[];
 }
 
+// ==========================================
+// DUAL-STREAM CADASTRAL AI ARCHITECTURE TYPES
+// ==========================================
+
+export type HomographyMatrix = [
+  [number, number, number],
+  [number, number, number],
+  [number, number, number]
+];
+
+export interface CoRegistrationResult {
+  homography_matrix: HomographyMatrix;
+  mean_alignment_error_meters: number;
+  confidence_score: number;
+  inliers_count?: number;
+  tps_residual_rms?: number;
+}
+
+export interface DualStreamBoundaryNode {
+  node_id: string;
+  lat: number;
+  lon: number;
+  confidence: number;
+  displacement_meters: number;
+  source_feature?: "SURVEY_STONE" | "T_JUNCTION" | "FENCE_CORNER" | "WALL_CURB";
+}
+
+export interface DualStreamParcel {
+  parcel_id: string;
+  survey_number: string;
+  blueprint_annotated_area_sqm: number;
+  reconstructed_area_sqm: number;
+  area_discrepancy_sqm: number;
+  discrepancy_flag: boolean;
+  boundary_nodes: DualStreamBoundaryNode[];
+  geojson_geometry: {
+    type: "Polygon";
+    coordinates: [number, number][][];
+  };
+}
+
+export interface DualStreamPriorityReviewItem {
+  node_id: string;
+  parcel_index?: number;
+  issue_type:
+    | "PHYSICAL_INCROACHMENT_OR_DISPLACEMENT"
+    | "PHYSICAL_ENCROACHMENT_OR_DISPLACEMENT"
+    | "SHARED_EDGE_DISPARITY"
+    | "OCR_DIMENSION_MISMATCH"
+    | "EPISTEMIC_UNCERTAINTY_HOTSPOT";
+  blueprint_offset_m: number;
+  drone_measured_m: number;
+  displacement_meters?: number;
+  priority_score: number; // P_i = α*d_Chamfer + β*|D_bp - D_dr| + γ*σ_epi^2
+  status?: "FLAGGED_FOR_HUMAN_REVIEW" | "RESOLVED" | "SURVEYOR_OVERRIDDEN";
+}
+
+export interface DualStreamConnectivityAudit {
+  total_nodes_evaluated: number;
+  shared_edges_verified: number;
+  topological_overlaps_detected: number;
+  topological_gaps_detected: number;
+  priority_review_queue: DualStreamPriorityReviewItem[];
+}
+
+export interface DualStreamVerificationResult {
+  system_status: "SUCCESS" | "WARNING" | "FAILED";
+  co_registration: CoRegistrationResult;
+  parcels: DualStreamParcel[];
+  connectivity_audit: DualStreamConnectivityAudit;
+  raw_gemini_response?: string;
+  generated_at?: number;
+  cryptographic_hash?: string;
+}
+
+export interface StreamAState {
+  rawScanLoaded: boolean;
+  otsuBinarized: boolean;
+  skeletonized: boolean;
+  gLinesExtracted: boolean;
+  fLinesExtracted: boolean;
+  ocrMasked: boolean;
+  activeFilter: "RAW" | "OTSU" | "SKELETON" | "VECTOR_OVERLAY";
+}
+
+export interface StreamBState {
+  rtspLive: boolean;
+  sam2Segmented: boolean;
+  yoloSegEdges: boolean;
+  physicalWallsExtracted: boolean;
+  activeFilter: "RGB" | "SAM2_MASK" | "YOLO_SEG" | "EDGE_OVERLAY";
+}
+
