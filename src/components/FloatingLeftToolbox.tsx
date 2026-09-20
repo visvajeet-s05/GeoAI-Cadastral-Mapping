@@ -13,7 +13,8 @@ import {
   Layers,
   HelpCircle,
   Eye,
-  Camera
+  Camera,
+  FolderOpen,
 } from "lucide-react";
 
 interface FloatingLeftToolboxProps {
@@ -25,6 +26,7 @@ interface FloatingLeftToolboxProps {
   onTriggerTestMode: () => void;
   onOpenIngestModal: () => void;
   onOpenDocumentUploadModal: () => void;
+  onOpenDocumentManager?: () => void;
   onExportGeoJSON: () => void;
   isSimulatingFlight: boolean;
   onToggleFlightSimulation: () => void;
@@ -39,6 +41,7 @@ export const FloatingLeftToolbox: React.FC<FloatingLeftToolboxProps> = ({
   onTriggerTestMode,
   onOpenIngestModal,
   onOpenDocumentUploadModal,
+  onOpenDocumentManager,
   onExportGeoJSON,
   isSimulatingFlight,
   onToggleFlightSimulation,
@@ -149,6 +152,30 @@ export const FloatingLeftToolbox: React.FC<FloatingLeftToolboxProps> = ({
 
       {/* Ingestion & Export Capsule */}
       <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl shadow-slate-950/70 flex flex-col gap-1.5">
+        <button
+          onClick={onOpenDocumentUploadModal}
+          className="p-2.5 rounded-xl text-sky-400 hover:text-sky-300 hover:bg-sky-500/20 transition flex items-center justify-center relative group"
+          title="Upload Government & Historical Documents"
+        >
+          <UploadCloud className="w-4 h-4" />
+          <span className="absolute left-14 bg-slate-950/95 border border-slate-700 text-sky-300 text-[11px] font-medium px-2 py-1 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
+            Upload Document
+          </span>
+        </button>
+
+        {onOpenDocumentManager && (
+          <button
+            onClick={onOpenDocumentManager}
+            className="p-2.5 rounded-xl text-teal-400 hover:text-teal-300 hover:bg-teal-500/20 transition flex items-center justify-center relative group"
+            title="Document Manager - View Uploaded Documents"
+          >
+            <FolderOpen className="w-4 h-4" />
+            <span className="absolute left-14 bg-slate-950/95 border border-slate-700 text-teal-300 text-[11px] font-medium px-2 py-1 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
+              Document Manager
+            </span>
+          </button>
+        )}
+
         <button
           onClick={onOpenIngestModal}
           className="p-2.5 rounded-xl text-sky-400 hover:text-sky-300 hover:bg-sky-500/20 transition flex items-center justify-center relative group"

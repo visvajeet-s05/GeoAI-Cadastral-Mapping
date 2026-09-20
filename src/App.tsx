@@ -33,6 +33,7 @@ import { AIDetectionItem } from "./components/LiveDroneSplitView";
 import { HierarchicalSearch } from "./components/HierarchicalSearch";
 import { LayerControl } from "./components/LayerControl";
 import { DocumentUploadModal } from "./components/DocumentUploadModal";
+import { DocumentManager } from "./components/DocumentManager";
 import { Sparkles, X, FileText, CheckCircle2 } from "lucide-react";
 
 export default function App() {
@@ -235,6 +236,7 @@ export default function App() {
   const [showDualStreamCockpit, setShowDualStreamCockpit] = useState<boolean>(false);
   const [comparisonParcel, setComparisonParcel] = useState<Parcel | null>(null);
   const [showDocumentUploadModal, setShowDocumentUploadModal] = useState<boolean>(false);
+  const [showDocumentManager, setShowDocumentManager] = useState<boolean>(false);
 
   // Land Context Handlers
   const handleContextChange = (context: SelectedLandContext) => {
@@ -754,11 +756,13 @@ export default function App() {
         }}
         onOpenDualStreamCockpit={() => setShowDualStreamCockpit(true)}
         onTriggerTestMode={handleTriggerTestMode}
-        onOpenIngestModal={() => setShowIngestionModal(true)}
-        onExportGeoJSON={handleExportGeoJSON}
-        isSimulatingFlight={isSimulatingFlight}
-        onToggleFlightSimulation={handleToggleFlightPlay}
-      />
+         onOpenIngestModal={() => setShowIngestionModal(true)}
+         onExportGeoJSON={handleExportGeoJSON}
+         onOpenDocumentUploadModal={() => setShowDocumentUploadModal(true)}
+         onOpenDocumentManager={() => setShowDocumentManager(true)}
+         isSimulatingFlight={isSimulatingFlight}
+         onToggleFlightSimulation={handleToggleFlightPlay}
+       />
 
       {/* ========================================================================= */}
       {/* 5. FLOATING BOTTOM FLIGHT CONTROLLER BAR                                  */}
@@ -881,6 +885,18 @@ export default function App() {
         <DocumentUploadModal
           isOpen={showDocumentUploadModal}
           onClose={() => setShowDocumentUploadModal(false)}
+          onUploadComplete={() => {
+            setShowDocumentUploadModal(false);
+            setShowDocumentManager(true);
+          }}
+        />
+      )}
+
+      {/* Document Manager Modal (Phase 2) */}
+      {showDocumentManager && (
+        <DocumentManager
+          isOpen={showDocumentManager}
+          onClose={() => setShowDocumentManager(false)}
         />
       )}
 

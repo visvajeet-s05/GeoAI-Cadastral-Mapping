@@ -76,6 +76,7 @@ export interface DocumentMetadata {
   documentType: DocumentType;
   fileFormat: FileFormat;
   fileName: string;
+  originalName?: string;
   fileSize: number;
   uploadedAt: number;
   uploadedBy: string;
@@ -109,6 +110,7 @@ export interface DocumentMetadata {
   status: DocumentStatus;
   processingSteps: ProcessingStep[];
   processingErrors?: string[];
+  versionHistory?: DocumentVersion[];
   
   // Storage
   filePath: string;
@@ -144,6 +146,14 @@ export interface DocumentMetadata {
   // Provenance
   isSimulated: boolean;
   notes?: string;
+}
+
+export interface DocumentVersion {
+  version: number;
+  timestamp: number;
+  uploadedBy: string;
+  notes: string;
+  status: DocumentStatus;
 }
 
 export interface DocumentUploadRequest {
@@ -314,4 +324,138 @@ export interface ValidationResult {
     message: string;
   }>;
   qualityScore: number;
+}
+
+export interface FmbOcrResult {
+  surveyNumber?: string;
+  subdivision?: string;
+  areaSqMeters?: number;
+  perimeterMeters?: number;
+  widthMeters?: number;
+  heightMeters?: number;
+  neighbors?: string[];
+  fieldBookRefs?: string[];
+  gLineRefs?: string[];
+  ocrText: string;
+  confidenceScore: number;
+  modelUsed: string;
+}
+
+export interface ExtractedBoundary {
+  surveyNumber: string;
+  subdivision: string;
+  coordinates: [number, number][];
+  areaSqMeters: number;
+  perimeterMeters: number;
+  centroid: { lat: number; lng: number };
+}
+
+export interface FmbProcessingResult {
+  documentId: string;
+  ocrResult: FmbOcrResult;
+  boundaryExtraction?: {
+    transformation: 'AFFINE' | 'TPS' | 'PROJECTIVE';
+    rmsErrorMeters: number;
+    gcpCount: number;
+    status: 'ACCEPTABLE' | 'REVIEW_REQUIRED' | 'FAILED';
+  };
+  boundaries: ExtractedBoundary[];
+  georeferencing?: {
+    gcpCount: number;
+    transformation: 'AFFINE' | 'TPS' | 'PROJECTIVE';
+    rmsErrorMeters: number;
+    maxResidualMeters: number;
+    status: 'ACCEPTABLE' | 'REVIEW_REQUIRED' | 'FAILED';
+    affineMatrix?: number[][];
+  };
+  qualityScore: number;
+  confidenceScore: number;
+  processingTimeMs: number;
+}
+
+export interface GovernmentImportBatch {
+  batchId: string;
+  source: GovernmentSource;
+  recordTypes: DocumentType[];
+  surveyNumber: string;
+  district: string;
+  taluk: string;
+  village: string;
+  uploadId?: string;
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'COMPLETED_WITH_ERRORS' | 'FAILED';
+  totalRecords: number;
+  processedRecords: number;
+  failedRecords: number;
+  progress: number;
+  errors: string[];
+  results: any[];
+  startedAt: number;
+  completedAt?: number;
+}
+
+export interface TnreginetRecord {
+  documentNumber: string;
+  registrationYear: number;
+  registrationDate: string;
+  documentType: 'REGISTRATION_EC' | 'SALE_DEED' | 'GIFT_DEED' | 'PARTITION_DEED';
+  parties: Array<{ name: string; type: string }>;
+  propertyDetails: {
+    surveyNumber: string;
+    subDivision?: string;
+    village: string;
+    district: string;
+    taluk: string;
+    areaSqMeters?: number;
+  };
+  registrationFees: number;
+  status: 'REGISTERED' | 'PENDING' | 'CANCELLED';
+  registrarOffice: string;
+  source: 'TNREGINET';
+  verified: boolean;
+}
+
+export interface TimelineEpoch {
+  year: number;
+  hasData: boolean;
+  recordTypes: DocumentType[];
+  documentCount: number;
+  quality: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNAVAILABLE';
+  source?: string;
+  georeferencing?: {
+    rmsErrorM: number;
+    status: string;
+  };
+}
+
+export interface TemporalComparisonResult {
+  plotId: string;
+  uprn: string;
+  ownerName: string;
+  fromYear: number;
+  toYear: number;
+  fromEpoch: string;
+  toEpoch: string;
+  fromCoordinates: [number, number][];
+  toCoordinates: [number, number][];
+  vertexDisplacementsMeters: number[];
+  maxDisplacementMeters: number;
+  meanDisplacementMeters: number;
+  areaChangeSqMeters: number;
+  areaChangePercent: number;
+  equallySketched: boolean;
+  driftType: string;
+  auditRemark: string;
+}
+
+export interface FmbOverlayGeometry {
+  boundaries: [number, number][][];
+  surveyNumbers: Array<{ surveyNumber: string; subdivision?: string }>;
+  gLine?: {
+    startCoord: [number, number];
+    endCoord: [number, number];
+    lengthMeters: number;
+    azimuthDeg: number;
+    ladderStations: Array<{ chainage: number; label: string; lat: number; lng: number }>;
+  };
+  georeferencingRmsErrorM?: number;
 }

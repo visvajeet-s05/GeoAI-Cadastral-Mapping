@@ -23,12 +23,13 @@ import type {
 interface DocumentUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onUploadComplete?: (documentId: string) => void;
 }
 
 export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
   isOpen,
   onClose,
-  onUpload,
+  onUploadComplete,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [uploading, setUploading] = useState(false);
@@ -157,6 +158,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
 
       if (data.status === 'success') {
         setUploadStatus('success');
+        onUploadComplete?.(data.documentId);
         
         // Reset after successful upload
         setTimeout(() => {

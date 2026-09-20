@@ -31,7 +31,30 @@ export type {
   DocumentType, 
   DocumentStatus, 
   GovernmentSource, 
-  DocumentUploadRequest 
+  DocumentUploadRequest,
+  DocumentMetadata,
+  DocumentVersion,
+  DocumentProcessingResult,
+  ProcessingStep,
+  FileFormat,
+  GeoreferencingRequest,
+  GeoreferencingResult,
+  HistoricalRecord,
+  TimelineNode,
+  TemporalChange,
+  GovernmentImportConfig,
+  GeoJSONPolygon,
+  ImportBatch,
+  ValidationRule,
+  ValidationResult,
+  FmbOcrResult,
+  ExtractedBoundary,
+  FmbProcessingResult,
+  GovernmentImportBatch,
+  TnreginetRecord,
+  TimelineEpoch,
+  TemporalComparisonResult,
+  FmbOverlayGeometry
 } from './types/documents';
 export type ParcelStatus =
   | "DRAFT_SEGMENTATION"
