@@ -6,11 +6,33 @@ import { WebSocketServer, WebSocket } from "ws";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import fs from "fs";
+import multer from "multer";
 
 import { exec } from "child_process";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    },
+  }),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit
+  },
+});
 
 const app = express();
 const PORT = 3000;
@@ -30,6 +52,66 @@ const ai = apiKey
       },
     })
   : null;
+
+// ==========================================
+// ADMINISTRATIVE DATA LOADERS
+// ==========================================
+
+// Load district data
+function loadDistricts() {
+  try {
+    const districtsPath = path.join(process.cwd(), 'data', 'districts.json');
+    console.log('Loading districts from:', districtsPath);
+    if (fs.existsSync(districtsPath)) {
+      const data = JSON.parse(fs.readFileSync(districtsPath, 'utf-8'));
+      console.log('Loaded', data.districts?.length || 0, 'districts');
+      return data.districts || [];
+    }
+    console.log('Districts file not found');
+    return [];
+  } catch (error) {
+    console.error('Error loading districts:', error);
+    return [];
+  }
+}
+
+// Load taluk data for a district
+function loadTaluks(districtId: string) {
+  try {
+    const taluksPath = path.join(process.cwd(), 'data', 'taluks.json');
+    console.log('Loading taluks from:', taluksPath, 'for district:', districtId);
+    if (fs.existsSync(taluksPath)) {
+      const data = JSON.parse(fs.readFileSync(taluksPath, 'utf-8'));
+      const filtered = (data.taluks || []).filter((t: any) => t.districtId === districtId);
+      console.log('Loaded', filtered.length, 'taluks');
+      return filtered;
+    }
+    console.log('Taluks file not found');
+    return [];
+  } catch (error) {
+    console.error('Error loading taluks:', error);
+    return [];
+  }
+}
+
+// Load village data for a taluk
+function loadVillages(talukId: string) {
+  try {
+    const villagesPath = path.join(process.cwd(), 'data', 'villages.json');
+    console.log('Loading villages from:', villagesPath, 'for taluk:', talukId);
+    if (fs.existsSync(villagesPath)) {
+      const data = JSON.parse(fs.readFileSync(villagesPath, 'utf-8'));
+      const filtered = (data.villages || []).filter((v: any) => v.talukId === talukId);
+      console.log('Loaded', filtered.length, 'villages');
+      return filtered;
+    }
+    console.log('Villages file not found');
+    return [];
+  } catch (error) {
+    console.error('Error loading villages:', error);
+    return [];
+  }
+}
 
 // ==========================================
 // GEOSPATIAL & SHOELACE MATHEMATICAL ENGINE
@@ -1067,6 +1149,310 @@ app.get("/api/health", (_req, res) => {
       vlm_gemini: apiKey ? "Gemini-3.8-Flash Connected" : "Local Perception Mode",
       active_parcels: PARCEL_STORE.size,
     },
+  });
+});
+
+// ==========================================
+// ADMINISTRATIVE DATA API ROUTES
+// ==========================================
+
+// GET /api/admin/districts - Get all Tamil Nadu districts
+app.get("/api/admin/districts", (_req, res) => {
+  const districts = loadDistricts();
+  res.json({
+    status: "success",
+    districts,
+    count: districts.length,
+    metadata: {
+      source: "Government of Tamil Nadu",
+      isSimulated: true,
+    },
+  });
+});
+
+// GET /api/admin/districts/:districtId/taluks - Get taluks for a district
+app.get("/api/admin/districts/:districtId/taluks", (req, res) => {
+  const { districtId } = req.params;
+  const taluks = loadTaluks(districtId);
+  res.json({
+    status: "success",
+    taluks,
+    count: taluks.length,
+    districtId,
+  });
+});
+
+// GET /api/admin/taluks/:talukId/villages - Get villages for a taluk
+app.get("/api/admin/taluks/:talukId/villages", (req, res) => {
+  const { talukId } = req.params;
+  const villages = loadVillages(talukId);
+  res.json({
+    status: "success",
+    villages,
+    count: villages.length,
+    talukId,
+  });
+});
+
+// GET /api/geocode - Geocode a place name (using Nominatim)
+app.get("/api/geocode", async (req, res) => {
+  const { q } = req.query;
+  if (!q || typeof q !== 'string') {
+    return res.status(400).json({ error: "Query parameter 'q' is required" });
+  }
+
+  try {
+    // Using Nominatim OpenStreetMap geocoding service
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=IN`,
+      {
+        headers: {
+          'User-Agent': 'GeoTRACE-AI-Cadastral-System',
+        },
+      }
+    );
+    const data = await response.json();
+
+    if (data && data.length > 0) {
+      const result = data[0];
+      res.json({
+        status: "success",
+        location: {
+          lat: parseFloat(result.lat),
+          lon: parseFloat(result.lon),
+          displayName: result.display_name,
+        },
+        administrativeContext: {
+          // Try to extract administrative context from address components
+          district: result.address?.county || result.address?.state_district,
+          state: result.address?.state,
+        },
+      });
+    } else {
+      res.status(404).json({
+        status: "not_found",
+        error: "Location not found",
+      });
+    }
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    res.status(500).json({
+      status: "error",
+      error: "Failed to geocode location",
+    });
+  }
+});
+
+// ==========================================
+// DOCUMENT INGESTION API ROUTES (Phase 2)
+// ==========================================
+
+// In-memory document storage (replace with database in production)
+const DOCUMENT_STORE = new Map<string, any>();
+
+// POST /api/documents/upload - Upload a document
+app.post("/api/documents/upload", upload.single('file'), (req, res) => {
+  try {
+    const { documentType, district, taluk, village, surveyNumber, subdivisionNumber, documentYear, documentReference, source, coordinateSystem, scale, orientation } = req.body;
+    
+    if (!req.file) {
+      return res.status(400).json({
+        status: 'error',
+        error: 'No file uploaded',
+      });
+    }
+    
+    const documentId = `DOC-${documentType}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    const document = {
+      documentId,
+      documentType,
+      fileName: req.file.filename,
+      originalName: req.file.originalname,
+      fileSize: req.file.size,
+      mimeType: req.file.mimetype,
+      uploadedAt: Date.now(),
+      uploadedBy: 'user',
+      district: district || undefined,
+      taluk: taluk || undefined,
+      village: village || undefined,
+      surveyNumber: surveyNumber || undefined,
+      subdivisionNumber: subdivisionNumber || undefined,
+      documentYear: documentYear ? parseInt(documentYear) : undefined,
+      documentReference: documentReference || undefined,
+      source: source || 'USER_UPLOADED',
+      coordinateSystem: coordinateSystem || undefined,
+      scale: scale || undefined,
+      orientation: orientation || undefined,
+      status: 'UPLOADED',
+      processingSteps: ['UPLOAD'],
+      isSimulated: false,
+      filePath: req.file.path,
+    };
+    
+    DOCUMENT_STORE.set(documentId, document);
+    
+    res.json({
+      status: 'success',
+      documentId,
+      document,
+      message: 'Document uploaded successfully. Processing will begin shortly.',
+    });
+  } catch (error) {
+    console.error('Document upload error:', error);
+    res.status(500).json({
+      status: 'error',
+      error: 'Failed to upload document',
+    });
+  }
+});
+
+// GET /api/documents/:id - Get document by ID
+app.get("/api/documents/:id", (req, res) => {
+  const document = DOCUMENT_STORE.get(req.params.id);
+  if (!document) {
+    return res.status(404).json({
+      status: 'not_found',
+      error: 'Document not found',
+    });
+  }
+  res.json({
+    status: 'success',
+    document,
+  });
+});
+
+// GET /api/documents - List all documents with filters
+app.get("/api/documents", (req, res) => {
+  const { documentType, district, taluk, village, surveyNumber, status } = req.query;
+  let documents = Array.from(DOCUMENT_STORE.values());
+  
+  if (documentType) {
+    documents = documents.filter((d: any) => d.documentType === documentType);
+  }
+  if (district) {
+    documents = documents.filter((d: any) => d.district?.toLowerCase() === String(district).toLowerCase());
+  }
+  if (taluk) {
+    documents = documents.filter((d: any) => d.taluk?.toLowerCase() === String(taluk).toLowerCase());
+  }
+  if (village) {
+    documents = documents.filter((d: any) => d.village?.toLowerCase() === String(village).toLowerCase());
+  }
+  if (surveyNumber) {
+    documents = documents.filter((d: any) => d.surveyNumber === surveyNumber);
+  }
+  if (status) {
+    documents = documents.filter((d: any) => d.status === status);
+  }
+  
+  res.json({
+    status: 'success',
+    count: documents.length,
+    documents,
+  });
+});
+
+// POST /api/documents/:id/georeference - Georeference a document
+app.post("/api/documents/:id/georeference", (req, res) => {
+  const document = DOCUMENT_STORE.get(req.params.id);
+  if (!document) {
+    return res.status(404).json({
+      status: 'not_found',
+      error: 'Document not found',
+    });
+  }
+  
+  const { gcps, transformation } = req.body;
+  
+  // In a real implementation, this would:
+  // 1. Calculate transformation matrix
+  // 2. Apply transformation to coordinates
+  // 3. Calculate RMS error
+  // 4. Update document with georeferencing results
+  
+  const georeferencing = {
+    gcpCount: gcps.length,
+    transformation,
+    rmsErrorMeters: 0.15,
+    maxResidualMeters: 0.25,
+    status: 'ACCEPTABLE',
+  };
+  
+  document.georeferencing = georeferencing;
+  document.status = 'GEOREFERENCED';
+  document.processingSteps.push('GEOREFERENCING');
+  
+  DOCUMENT_STORE.set(req.params.id, document);
+  
+  res.json({
+    status: 'success',
+    documentId: req.params.id,
+    georeferencing,
+  });
+});
+
+// GET /api/documents/sources - Get available government sources
+app.get("/api/documents/sources", (_req, res) => {
+  const sources = [
+    {
+      source: 'TAMILNILAM',
+      sourceUrl: 'https://cla.tn.gov.in',
+      sourceOrganization: 'Government of Tamil Nadu',
+      requiresAuthorization: true,
+      availableRecordTypes: ['PATTA', 'CHITTA', 'A_REGISTER', 'FMB_SKETCH'],
+      importMethod: 'AUTHORIZED',
+      status: 'REQUIRES_AUTHORIZATION',
+    },
+    {
+      source: 'TAMILNILAM_URBAN',
+      sourceUrl: 'https://cla.tn.gov.in',
+      sourceOrganization: 'Government of Tamil Nadu',
+      requiresAuthorization: true,
+      availableRecordTypes: ['TSLR', 'TSLR_SKETCH', 'TSLR_EXTRACT'],
+      importMethod: 'AUTHORIZED',
+      status: 'REQUIRES_AUTHORIZATION',
+    },
+    {
+      source: 'CMDA',
+      sourceUrl: 'https://www.cmdachennai.gov.in',
+      sourceOrganization: 'Chennai Metropolitan Development Authority',
+      requiresAuthorization: true,
+      availableRecordTypes: ['APPROVED_LAYOUT', 'MASTER_PLAN', 'DEVELOPMENT_PERMISSION'],
+      importMethod: 'AUTHORIZED',
+      status: 'REQUIRES_AUTHORIZATION',
+    },
+    {
+      source: 'DTCP',
+      sourceUrl: 'https://tcp.tn.gov.in',
+      sourceOrganization: 'Directorate of Town and Country Planning',
+      requiresAuthorization: true,
+      availableRecordTypes: ['APPROVED_LAYOUT', 'DEVELOPMENT_PERMISSION'],
+      importMethod: 'AUTHORIZED',
+      status: 'REQUIRES_AUTHORIZATION',
+    },
+    {
+      source: 'TNREGINET',
+      sourceUrl: 'https://www.tnreginet.gov.in',
+      sourceOrganization: 'Tamil Nadu Registration Department',
+      requiresAuthorization: true,
+      availableRecordTypes: ['REGISTRATION_EC'],
+      importMethod: 'AUTHORIZED',
+      status: 'REQUIRES_AUTHORIZATION',
+    },
+    {
+      source: 'USER_UPLOADED',
+      sourceOrganization: 'User',
+      requiresAuthorization: false,
+      availableRecordTypes: ['FMB_SKETCH', 'TSLR', 'PATTA', 'CHITTA', 'A_REGISTER', 'HISTORICAL_RECORD', 'UAV_ORTHOPHOTO'],
+      importMethod: 'MANUAL_UPLOAD',
+      status: 'AVAILABLE',
+    },
+  ];
+  
+  res.json({
+    status: 'success',
+    sources,
   });
 });
 

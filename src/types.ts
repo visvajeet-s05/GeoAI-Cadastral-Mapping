@@ -6,6 +6,33 @@ export type LandType =
   | "UNCLAIMED"
   | "PUBLIC_INFRASTRUCTURE";
 
+// Import new administrative and record types
+export type { District, Taluk, Village, AdministrativeGeometry, AdministrativeSelection } from './types/administrative';
+export type { 
+  RecordAvailabilityStatus, 
+  RecordType, 
+  GeometrySource, 
+  VerificationStatus, 
+  DataSource, 
+  LandRecord, 
+  RecordAvailability, 
+  LandRecordContext,
+  MeasurementTypes,
+  DiscrepancyType,
+  DiscrepancyAnalysis 
+} from './types/records';
+export type { 
+  SelectedLandContext, 
+  ContextUpdateAction, 
+  AdministrativeSearchState, 
+  MapLayerConfig 
+} from './types/context';
+export type { 
+  DocumentType, 
+  DocumentStatus, 
+  GovernmentSource, 
+  DocumentUploadRequest 
+} from './types/documents';
 export type ParcelStatus =
   | "DRAFT_SEGMENTATION"
   | "TOPOLOGY_VERIFIED"
@@ -227,6 +254,7 @@ export interface FmbPlanHistoricalDataset {
   planId: string;
   planName: string;
   surveyNumber: string;
+  surveyNo?: string; // Alternative survey number field
   village: string;
   taluk: string;
   district: string;
@@ -236,7 +264,15 @@ export interface FmbPlanHistoricalDataset {
     endCoord: [number, number];
     lengthMeters: number;
     azimuthDeg: number;
-    ladderStations: Array<{ chainage: number; label: string; lat: number; lng: number }>;
+    ladderStations: Array<{ 
+      chainage: number; 
+      label: string; 
+      lat: number; 
+      lng: number;
+      offsetLeftMeters?: number;
+      offsetRightMeters?: number;
+      groundVerified2026?: boolean;
+    }>;
   };
   plots: PlotCongruenceRecord[];
   totalPlots: number;

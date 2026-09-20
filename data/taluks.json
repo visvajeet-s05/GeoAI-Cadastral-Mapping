@@ -1,0 +1,213 @@
+{
+  "taluks": [
+    {
+      "id": "TN-03-01",
+      "code": "01",
+      "name": "Ambattur",
+      "nameTamil": "அம்பத்தூர்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-02",
+      "code": "02",
+      "name": "Aminjikarai",
+      "nameTamil": "அமிஞ்சிகரை",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-03",
+      "code": "03",
+      "name": "Ayanavaram",
+      "nameTamil": "அயனாவரம்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-04",
+      "code": "04",
+      "name": "Egmore",
+      "nameTamil": "எழுமோர்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-05",
+      "code": "05",
+      "name": "Guindy",
+      "nameTamil": "கிண்டி",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-06",
+      "code": "06",
+      "name": "Madhurandakam",
+      "nameTamil": "மதுராந்தகம்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-07",
+      "code": "07",
+      "name": "Madhavaram",
+      "nameTamil": "மாதவரம்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-08",
+      "code": "08",
+      "name": "Maduravoyal",
+      "nameTamil": "மதுரவோயல்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-09",
+      "code": "09",
+      "name": "Manali",
+      "nameTamil": "மணலி",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-10",
+      "code": "10",
+      "name": "Mylapore",
+      "nameTamil": "மயிலாப்பூர்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-11",
+      "code": "11",
+      "name": "Perambur",
+      "nameTamil": "பெரம்பூர்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-12",
+      "code": "12",
+      "name": "Poonamallee",
+      "nameTamil": "பூனமல்லி",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-13",
+      "code": "13",
+      "name": "Pudupet",
+      "nameTamil": "புடுபேட்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-14",
+      "code": "14",
+      "name": "Purasawalkam",
+      "nameTamil": "புரசவாளகம்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-15",
+      "code": "15",
+      "name": "Royapuram",
+      "nameTamil": "ராயபுரம்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-16",
+      "code": "16",
+      "name": "Saidapet",
+      "nameTamil": "சைதாபேட்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-17",
+      "code": "17",
+      "name": "Sholinganallur",
+      "nameTamil": "சோளிங்கள்ளூர்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-18",
+      "code": "18",
+      "name": "Tambaram",
+      "nameTamil": "தாம்பரம்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-19",
+      "code": "19",
+      "name": "Tondiarpet",
+      "nameTamil": "தொண்டியர்பேட்",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-20",
+      "code": "20",
+      "name": "Velachery",
+      "nameTamil": "வேலாச்சேரி",
+      "districtId": "TN-03",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    }
+  ],
+  "metadata": {
+    "totalTaluks": 20,
+    "districtId": "TN-03",
+    "districtName": "Chennai",
+    "source": "Government of Tamil Nadu",
+    "lastUpdated": "2024-01-01",
+    "version": "1.0",
+    "isSimulated": true
+  }
+}

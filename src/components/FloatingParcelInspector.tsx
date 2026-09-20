@@ -16,9 +16,11 @@ import {
   Scissors,
   HelpCircle,
   XCircle,
+  Eye,
 } from "lucide-react";
 import { Parcel, VlmAuditResult } from "../types";
 import { getLandTypeColor, getUncertaintyColor } from "../lib/geoUtils";
+import { calculateAreaDiscrepancy, formatDiscrepancyForDisplay } from "../lib/discrepancyAnalysis";
 
 interface FloatingParcelInspectorProps {
   parcel: Parcel | null;
@@ -72,8 +74,19 @@ export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = (
 
   const legalArea = parcel.historicalAreaSqM || parcel.calculatedAreaSqMeters;
   const droneArea = parcel.calculatedAreaSqMeters;
-  const areaDiff = Math.round((droneArea - legalArea) * 100) / 100;
-  const hasDiscrepancy = parcel.encroachmentDetected || Math.abs(areaDiff) > 1.5;
+  
+  // Use scientific discrepancy analysis
+  const discrepancyAnalysis = calculateAreaDiscrepancy({
+    recordedValue: legalArea,
+    observedValue: droneArea,
+    measurementType: 'plotAreaSqFt',
+    recordedSource: 'FMB',
+    observedSource: 'UAV',
+    tolerancePercent: 5,
+  });
+
+  const discrepancyDisplay = formatDiscrepancyForDisplay(discrepancyAnalysis);
+  const hasDiscrepancy = discrepancyAnalysis.severity !== 'LOW';
 
   return (
     <div
@@ -171,24 +184,27 @@ export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = (
               <span className="text-slate-400">Variance (&Delta;A):</span>
               <span
                 className={`font-bold ${
-                  Math.abs(areaDiff) > 1.5 ? "text-rose-400" : "text-emerald-400"
+                  discrepancyAnalysis.severity === 'LOW' ? "text-emerald-400" : "text-rose-400"
                 }`}
               >
-                {areaDiff > 0 ? `+${areaDiff}` : areaDiff} m²
+                {discrepancyAnalysis.difference > 0 ? `+${discrepancyAnalysis.difference.toFixed(2)}` : discrepancyAnalysis.difference.toFixed(2)} m²
               </span>
             </div>
           </div>
 
-          {/* Encroachment Discrepancy Alert */}
+          {/* Scientific Discrepancy Alert */}
           {hasDiscrepancy && (
             <div className="bg-rose-950/40 border border-rose-500/40 rounded-xl p-2.5 flex flex-col gap-1 text-[11px] text-rose-200">
               <div className="flex items-center gap-1.5 font-bold text-rose-300 text-xs">
                 <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                <span>Boundary Shift Flagged</span>
+                <span>{discrepancyDisplay.title}</span>
               </div>
               <p className="text-[10px] text-rose-300/80 font-mono leading-relaxed">
-                {parcel.encroachmentRemarks || "Physical boundary shifts 1.45m into road setback."}
+                {discrepancyDisplay.description}
               </p>
+              <div className="text-[9px] text-slate-400 mt-1">
+                Status: {discrepancyAnalysis.requiresVerification ? 'Requires Verification' : 'Within Tolerance'}
+              </div>
             </div>
           )}
 
@@ -254,7 +270,9 @@ export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = (
                 <span>Gemini 2.0 VLM Land Audit</span>
               </div>
               <div className="text-[10px] text-slate-300 font-mono">
-                {vlmAuditResult.encroachment_details || "Verified compliant with municipal master layout."}
+                {vlmAuditResult.encroachment_detected 
+                  ? "Potential spatial discrepancy detected - verification required" 
+                  : "Compliant with reference geometry - within tolerance"}
               </div>
             </div>
           )}

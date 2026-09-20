@@ -59,6 +59,7 @@ interface MapViewProps {
   driftHotspots?: DriftHotspot[];
   selectedDetection?: AIDetectionItem | null;
   onSelectDetection?: (detection: AIDetectionItem | null) => void;
+  targetLocation?: { lat: number; lng: number; zoom?: number } | null;
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -85,6 +86,7 @@ export const MapView: React.FC<MapViewProps> = ({
   driftHotspots,
   selectedDetection,
   onSelectDetection,
+  targetLocation,
 }) => {
   const [mapEngine, setMapEngine] = useState<"google" | "leaflet">("google");
   const [mapsApiKey, setMapsApiKey] = useState<string>(
@@ -585,6 +587,16 @@ export const MapView: React.FC<MapViewProps> = ({
       { duration: 0.8 }
     );
   }, [selectedParcel?.id]);
+
+  // Fly to target location from geocoding
+  useEffect(() => {
+    if (!mapInstanceRef.current || !targetLocation) return;
+    mapInstanceRef.current.flyTo(
+      [targetLocation.lat, targetLocation.lng],
+      targetLocation.zoom || 16,
+      { duration: 1.2 }
+    );
+  }, [targetLocation]);
 
   const handleZoomIn = () => mapInstanceRef.current?.zoomIn();
   const handleZoomOut = () => mapInstanceRef.current?.zoomOut();

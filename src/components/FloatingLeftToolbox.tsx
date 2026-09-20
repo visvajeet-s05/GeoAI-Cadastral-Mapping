@@ -24,6 +24,7 @@ interface FloatingLeftToolboxProps {
   onOpenDualStreamCockpit: () => void;
   onTriggerTestMode: () => void;
   onOpenIngestModal: () => void;
+  onOpenDocumentUploadModal: () => void;
   onExportGeoJSON: () => void;
   isSimulatingFlight: boolean;
   onToggleFlightSimulation: () => void;
@@ -37,6 +38,7 @@ export const FloatingLeftToolbox: React.FC<FloatingLeftToolboxProps> = ({
   onOpenDualStreamCockpit,
   onTriggerTestMode,
   onOpenIngestModal,
+  onOpenDocumentUploadModal,
   onExportGeoJSON,
   isSimulatingFlight,
   onToggleFlightSimulation,

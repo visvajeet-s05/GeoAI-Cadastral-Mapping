@@ -1,0 +1,391 @@
+{
+  "districts": [
+    {
+      "id": "TN-01",
+      "code": "01",
+      "name": "Ariyalur",
+      "nameTamil": "அரியலூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-02",
+      "code": "02",
+      "name": "Chengalpattu",
+      "nameTamil": "செங்கல்பட்டு",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03",
+      "code": "03",
+      "name": "Chennai",
+      "nameTamil": "சென்னை",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-04",
+      "code": "04",
+      "name": "Coimbatore",
+      "nameTamil": "கோயம்புத்தூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-05",
+      "code": "05",
+      "name": "Cuddalore",
+      "nameTamil": "கடலூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-06",
+      "code": "06",
+      "name": "Dharmapuri",
+      "nameTamil": "தர்மபுரி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-07",
+      "code": "07",
+      "name": "Dindigul",
+      "nameTamil": "திண்டுக்கல்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-08",
+      "code": "08",
+      "name": "Erode",
+      "nameTamil": "ஈரோடு",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-09",
+      "code": "09",
+      "name": "Kallakurichi",
+      "nameTamil": "கள்ளக்குறிச்சி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-10",
+      "code": "10",
+      "name": "Kancheepuram",
+      "nameTamil": "காஞ்சீபுரம்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-11",
+      "code": "11",
+      "name": "Kanniyakumari",
+      "nameTamil": "கன்னியாகுமரி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-12",
+      "code": "12",
+      "name": "Karur",
+      "nameTamil": "கரூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-13",
+      "code": "13",
+      "name": "Krishnagiri",
+      "nameTamil": "கிருஷ்ணகிரி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-14",
+      "code": "14",
+      "name": "Madurai",
+      "nameTamil": "மதுரை",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-15",
+      "code": "15",
+      "name": "Mayiladuthurai",
+      "nameTamil": "மயிலாடுதுறை",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-16",
+      "code": "16",
+      "name": "Nagapattinam",
+      "nameTamil": "நாகப்பட்டினம்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-17",
+      "code": "17",
+      "name": "Namakkal",
+      "nameTamil": "நாமக்கல்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-18",
+      "code": "18",
+      "name": "Perambalur",
+      "nameTamil": "பெரம்பலூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-19",
+      "code": "19",
+      "name": "Pudukkottai",
+      "nameTamil": "புதுக்கோட்டை",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-20",
+      "code": "20",
+      "name": "Ramanathapuram",
+      "nameTamil": "ராமநாதபுரம்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-21",
+      "code": "21",
+      "name": "Ranipet",
+      "nameTamil": "இராணிப்பேட்டை",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-22",
+      "code": "22",
+      "name": "Salem",
+      "nameTamil": "சேலம்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-23",
+      "code": "23",
+      "name": "Sivaganga",
+      "nameTamil": "சிவகங்கை",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-24",
+      "code": "24",
+      "name": "Tenkasi",
+      "nameTamil": "தென்காசி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-25",
+      "code": "25",
+      "name": "Thanjavur",
+      "nameTamil": "தஞ்சாவூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-26",
+      "code": "26",
+      "name": "Theni",
+      "nameTamil": "தேனி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-27",
+      "code": "27",
+      "name": "The Nilgiris",
+      "nameTamil": "நீலகிரி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-28",
+      "code": "28",
+      "name": "Thiruvallur",
+      "nameTamil": "திருவள்ளூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-29",
+      "code": "29",
+      "name": "Thiruvarur",
+      "nameTamil": "திருவாரூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-30",
+      "code": "30",
+      "name": "Thoothukudi",
+      "nameTamil": "தூத்துக்குடி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-31",
+      "code": "31",
+      "name": "Tiruchirappalli",
+      "nameTamil": "திருச்சிராப்பள்ளி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-32",
+      "code": "32",
+      "name": "Tirunelveli",
+      "nameTamil": "திருநெல்வேலி",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-33",
+      "code": "33",
+      "name": "Tirupathur",
+      "nameTamil": "திருப்பத்தூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-34",
+      "code": "34",
+      "name": "Tiruppur",
+      "nameTamil": "திருப்பூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-35",
+      "code": "35",
+      "name": "Tiruvannamalai",
+      "nameTamil": "திருவண்ணாமலை",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-36",
+      "code": "36",
+      "name": "Vellore",
+      "nameTamil": "வேலூர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-37",
+      "code": "37",
+      "name": "Viluppuram",
+      "nameTamil": "விழுப்புரம்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-38",
+      "code": "38",
+      "name": "Virudhunagar",
+      "nameTamil": "விருதுநகர்",
+      "state": "Tamil Nadu",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    }
+  ],
+  "metadata": {
+    "totalDistricts": 38,
+    "source": "Government of Tamil Nadu - Lok Bhavan",
+    "lastUpdated": "2024-01-01",
+    "version": "1.0",
+    "isSimulated": true
+  }
+}

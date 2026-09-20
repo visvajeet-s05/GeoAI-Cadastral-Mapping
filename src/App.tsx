@@ -12,6 +12,8 @@ import {
   FmbPlanHistoricalDataset,
   PlotCongruenceRecord,
   DriftHotspot,
+  SelectedLandContext,
+  MapLayerConfig,
 } from "./types";
 import { MapView } from "./components/MapView";
 import { FloatingGlassTopBar } from "./components/FloatingGlassTopBar";
@@ -28,6 +30,9 @@ import { VisualComparisonSlider } from "./components/VisualComparisonSlider";
 import { DualStreamCadastralCockpit } from "./components/DualStreamCadastralCockpit";
 import { PropertyInspectionModal } from "./components/PropertyInspectionModal";
 import { AIDetectionItem } from "./components/LiveDroneSplitView";
+import { HierarchicalSearch } from "./components/HierarchicalSearch";
+import { LayerControl } from "./components/LayerControl";
+import { DocumentUploadModal } from "./components/DocumentUploadModal";
 import { Sparkles, X, FileText, CheckCircle2 } from "lucide-react";
 
 export default function App() {
@@ -38,6 +43,139 @@ export default function App() {
   const [topologyReport, setTopologyReport] = useState<TopologyReport | null>(null);
   const [isCheckingTopology, setIsCheckingTopology] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Land Context State (New for Phase 1)
+  const [selectedLandContext, setSelectedLandContext] = useState<SelectedLandContext | null>(null);
+  const [targetLocation, setTargetLocation] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
+
+  // Map Layer Controls (New for Phase 1)
+  const [mapLayers, setMapLayers] = useState<MapLayerConfig[]>([
+    {
+      id: 'district-boundary',
+      name: 'District Boundary',
+      type: 'ADMINISTRATIVE',
+      visible: false,
+      style: { color: '#9333ea', weight: 3, fillOpacity: 0.1 },
+      source: 'Government of Tamil Nadu',
+      zIndex: 10,
+    },
+    {
+      id: 'taluk-boundary',
+      name: 'Taluk Boundary',
+      type: 'ADMINISTRATIVE',
+      visible: false,
+      style: { color: '#a855f7', weight: 2, fillOpacity: 0.15 },
+      source: 'Government of Tamil Nadu',
+      zIndex: 11,
+    },
+    {
+      id: 'village-boundary',
+      name: 'Village Boundary',
+      type: 'ADMINISTRATIVE',
+      visible: false,
+      style: { color: '#c084fc', weight: 2, fillOpacity: 0.2 },
+      source: 'Government of Tamil Nadu',
+      zIndex: 12,
+    },
+    {
+      id: 'aoi',
+      name: 'Area of Interest',
+      type: 'ADMINISTRATIVE',
+      visible: false,
+      style: { color: '#f59e0b', weight: 2, fillOpacity: 0.25, dashArray: [5, 5] },
+      source: 'Geocoded / Selected',
+      zIndex: 13,
+    },
+    {
+      id: 'government-parcel',
+      name: 'Government Parcel',
+      type: 'CADASTRAL',
+      visible: true,
+      style: { color: '#3b82f6', weight: 2, fillOpacity: 0.3 },
+      source: 'FMB / TSLR / Survey',
+      zIndex: 20,
+    },
+    {
+      id: 'survey-boundary',
+      name: 'Survey Boundary',
+      type: 'CADASTRAL',
+      visible: false,
+      style: { color: '#60a5fa', weight: 2, fillOpacity: 0.25 },
+      source: 'Survey Records',
+      zIndex: 21,
+    },
+    {
+      id: 'fmb',
+      name: 'FMB Sketch',
+      type: 'CADASTRAL',
+      visible: false,
+      style: { color: '#3b82f6', weight: 2, fillOpacity: 0.2 },
+      source: 'Field Measurement Book',
+      zIndex: 22,
+    },
+    {
+      id: 'tslr',
+      name: 'TSLR',
+      type: 'CADASTRAL',
+      visible: false,
+      style: { color: '#1d4ed8', weight: 2, fillOpacity: 0.2 },
+      source: 'Town Survey Land Register',
+      zIndex: 23,
+    },
+    {
+      id: 'building-footprint',
+      name: 'Building Footprint',
+      type: 'PHYSICAL',
+      visible: true,
+      style: { color: '#f97316', weight: 2, fillOpacity: 0.4 },
+      source: 'UAV Imagery',
+      zIndex: 30,
+    },
+    {
+      id: 'uav-observation',
+      name: 'UAV Observation',
+      type: 'PHYSICAL',
+      visible: false,
+      style: { color: '#fb923c', weight: 2, fillOpacity: 0.3 },
+      source: 'Drone Imagery',
+      zIndex: 31,
+    },
+    {
+      id: 'ai-candidate-parcel',
+      name: 'AI Candidate Parcel',
+      type: 'AI',
+      visible: false,
+      style: { color: '#06b6d4', weight: 2, fillOpacity: 0.35 },
+      source: 'AI Reconstruction',
+      zIndex: 40,
+    },
+    {
+      id: 'discrepancy',
+      name: 'Discrepancy',
+      type: 'DISCREPANCY',
+      visible: false,
+      style: { color: '#ef4444', weight: 2, fillOpacity: 0.4, dashArray: [3, 3] },
+      source: 'Comparison Analysis',
+      zIndex: 50,
+    },
+    {
+      id: 'uncertainty',
+      name: 'Uncertainty',
+      type: 'AI',
+      visible: false,
+      style: { color: '#fbbf24', weight: 1, fillOpacity: 0.5 },
+      source: 'AI Confidence',
+      zIndex: 45,
+    },
+  ]);
+
+  const handleToggleMapLayer = (layerId: string) => {
+    setMapLayers(prev =>
+      prev.map(layer =>
+        layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
+      )
+    );
+  };
 
   // Map Active Tool ("INSPECT" | "MEASURE" | "EDIT_VERTEX")
   const [activeTool, setActiveTool] = useState<"INSPECT" | "MEASURE" | "EDIT_VERTEX">("INSPECT");
@@ -96,6 +234,70 @@ export default function App() {
   const [showComparisonModal, setShowComparisonModal] = useState<boolean>(false);
   const [showDualStreamCockpit, setShowDualStreamCockpit] = useState<boolean>(false);
   const [comparisonParcel, setComparisonParcel] = useState<Parcel | null>(null);
+  const [showDocumentUploadModal, setShowDocumentUploadModal] = useState<boolean>(false);
+
+  // Land Context Handlers
+  const handleContextChange = (context: SelectedLandContext) => {
+    setSelectedLandContext(context);
+    console.log('Land context updated:', context);
+    // TODO: Trigger map navigation and data loading based on context
+  };
+
+  const handleFreeSearch = async (query: string) => {
+    console.log('Free search for:', query);
+    try {
+      const response = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      
+      if (data.status === 'success' && data.location) {
+        setTargetLocation({
+          lat: data.location.lat,
+          lng: data.location.lon,
+          zoom: 16,
+        });
+        
+        // Try to resolve administrative context
+        if (data.administrativeContext?.district) {
+          // Find matching district
+          const districts = await fetch('/api/admin/districts').then(r => r.json());
+          const matchingDistrict = districts.districts?.find((d: any) => 
+            d.name.toLowerCase() === data.administrativeContext.district.toLowerCase()
+          );
+          if (matchingDistrict) {
+            setSelectedLandContext({
+              contextId: `CTX-FREE-${Date.now()}`,
+              district: {
+                id: matchingDistrict.id,
+                name: matchingDistrict.name,
+                nameTamil: matchingDistrict.nameTamil,
+              },
+              dataAvailability: [
+                { recordType: 'PATTA', status: 'REQUIRES_AUTHORIZATION', source: 'TamilNilam' },
+                { recordType: 'CHITTA', status: 'REQUIRES_AUTHORIZATION', source: 'TamilNilam' },
+                { recordType: 'A_REGISTER', status: 'REQUIRES_AUTHORIZATION', source: 'TamilNilam' },
+                { recordType: 'FMB_SKETCH', status: 'REQUIRES_IMPORT', source: 'Survey & Land Records' },
+                { recordType: 'TSLR', status: 'PARTIAL', source: 'TamilNilam Urban' },
+              ],
+              sourceMetadata: [
+                {
+                  sourceId: 'TN-TAMILNILAM',
+                  sourceName: 'TamilNilam',
+                  organization: 'Government of Tamil Nadu',
+                  sourceType: 'OFFICIAL',
+                  accessMethod: 'AUTHORIZED',
+                  status: 'REQUIRES_AUTHORIZATION',
+                  sourceUrl: 'https://cla.tn.gov.in',
+                  notes: 'Official Tamil Nadu land record system'
+                },
+              ],
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Geocoding failed:', error);
+    }
+  };
 
   // WebSocket Live Telemetry Connection
   useEffect(() => {
@@ -486,6 +688,7 @@ export default function App() {
           ingestionMode="VIRTUAL_UAV"
           selectedDetection={selectedDetection}
           onSelectDetection={setSelectedDetection}
+          targetLocation={targetLocation}
         />
       </div>
 
@@ -519,6 +722,23 @@ export default function App() {
         onSelectParcel={selectParcel}
         onResetGranularDemo={handleResetGranularDemo}
         onScanUnderSegmentation={handleScanUnderSegmentation}
+      />
+
+      {/* ========================================================================= */}
+      {/* 3.5 HIERARCHICAL LAND SEARCH (Phase 1)                                    */}
+      {/* ========================================================================= */}
+      <HierarchicalSearch
+        onContextChange={handleContextChange}
+        onFreeSearch={handleFreeSearch}
+        existingContext={selectedLandContext}
+      />
+
+      {/* ========================================================================= */}
+      {/* 3.6 MAP LAYER CONTROL (Phase 1)                                           */}
+      {/* ========================================================================= */}
+      <LayerControl
+        layers={mapLayers}
+        onToggleLayer={handleToggleMapLayer}
       />
 
       {/* ========================================================================= */}
@@ -647,11 +867,20 @@ export default function App() {
       {/* Historical Blueprint Modal */}
       {showBlueprintModal && (
         <HistoricalBlueprintModal
+          isOpen={showBlueprintModal}
           onClose={() => setShowBlueprintModal(false)}
-          onBlueprintIngested={() => {
+          onDocumentProcessed={() => {
             fetchParcels();
             fetchTopologyReport();
           }}
+        />
+      )}
+
+      {/* Document Upload Modal (Phase 2) */}
+      {showDocumentUploadModal && (
+        <DocumentUploadModal
+          isOpen={showDocumentUploadModal}
+          onClose={() => setShowDocumentUploadModal(false)}
         />
       )}
 
@@ -683,8 +912,10 @@ export default function App() {
             </div>
             <div className="p-4 flex-1 overflow-y-auto">
               <VisualComparisonSlider
-                parcel={comparisonParcel || selectedParcel || parcels[0]}
-                fmbDataset={historicalFmbDataset}
+                sliderPosition={50}
+                onSliderChange={() => {}}
+                mode="SWIPE_COMPARISON"
+                onModeChange={() => {}}
               />
             </div>
           </div>
