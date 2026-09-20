@@ -118,6 +118,9 @@ interface ParcelSidebarProps {
   vlmAuditResult: VlmAuditResult | null;
   onOpenCertificateModal: (parcel: Parcel) => void;
   onParcelUpdated?: (parcel: Parcel, auditBlock?: AuditBlock) => void;
+  onOpenReportModal?: (parcel: Parcel) => void;
+  onOpenVisualComparison?: (parcel: Parcel) => void;
+  onOpenBlueprintModal?: () => void;
 }
 
 export const ParcelSidebar: React.FC<ParcelSidebarProps> = ({
@@ -132,6 +135,9 @@ export const ParcelSidebar: React.FC<ParcelSidebarProps> = ({
   vlmAuditResult,
   onOpenCertificateModal,
   onParcelUpdated,
+  onOpenReportModal,
+  onOpenVisualComparison,
+  onOpenBlueprintModal,
 }) => {
   const [activeTab, setActiveTab] = useState<
     "review" | "geometry" | "topology" | "uncertainty" | "vlm" | "audit_chain"
@@ -284,8 +290,11 @@ export const ParcelSidebar: React.FC<ParcelSidebarProps> = ({
             <User className="w-3 h-3 text-slate-500" />
             <span className="text-slate-300 font-medium">{parcel.ownerName}</span>
           </div>
-          <div className="text-[10px] font-mono text-slate-400">
-            PID: {parcel.geoTraceCardNumber || parcel.svamitvaCardNumber}
+          <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400">
+            <span>PID: {parcel.geoTraceCardNumber || parcel.svamitvaCardNumber}</span>
+            <span className="text-sky-400 bg-sky-950/50 px-1 rounded border border-sky-800/50">
+              TN • {parcel.district || "Chennai"} • S.No. {parcel.surveyNumber || "142"}/{parcel.subDivision || "1A"}
+            </span>
           </div>
         </div>
 
@@ -1042,25 +1051,58 @@ export const ParcelSidebar: React.FC<ParcelSidebarProps> = ({
         )}
       </div>
 
-      {/* Persistent Bottom Actions */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950/90 flex items-center gap-2 shrink-0">
-        <button
-          id="btn-open-title-cert"
-          onClick={() => onOpenCertificateModal(parcel)}
-          className="flex-1 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow flex items-center justify-center gap-1.5 transition"
-        >
-          <FileText className="w-3.5 h-3.5" />
-          <span>Generate Digital Title Seal</span>
-        </button>
+      {/* Statutory Disclaimer Bar */}
+      <div className="px-3 py-1.5 bg-slate-950 border-t border-slate-800 text-[10px] text-slate-400 text-center leading-tight">
+        ⚖️ Spatial relationships derived computationally; subject to TN Survey Act 1923 field ground verification.
+      </div>
 
-        <button
-          id="btn-quick-auto-repair"
-          onClick={() => onAutoRepairTopology(parcel.id)}
-          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
-          title="Auto-Repair & Snap Topology"
-        >
-          <Wrench className="w-3.5 h-3.5 text-sky-400" />
-        </button>
+      {/* Persistent Bottom Actions */}
+      <div className="p-2.5 border-t border-slate-800 bg-slate-950/90 flex flex-col gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5">
+          {onOpenReportModal && (
+            <button
+              id="btn-open-spatial-report"
+              onClick={() => onOpenReportModal(parcel)}
+              className="flex-1 py-1.5 px-2.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white font-semibold text-xs shadow flex items-center justify-center gap-1.5 transition"
+              title="Open Statutory Parcel Spatial Analysis & Provenance Report"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Spatial Report</span>
+            </button>
+          )}
+
+          {onOpenVisualComparison && (
+            <button
+              id="btn-open-visual-slider"
+              onClick={() => onOpenVisualComparison(parcel)}
+              className="flex-1 py-1.5 px-2.5 rounded-lg bg-sky-700/80 hover:bg-sky-600 text-white font-semibold text-xs shadow flex items-center justify-center gap-1.5 transition"
+              title="Compare 1967 Historical Blueprint vs 2026 Drone Orthomosaic"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              <span>1967 vs 2026</span>
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button
+            id="btn-open-title-cert"
+            onClick={() => onOpenCertificateModal(parcel)}
+            className="flex-1 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow flex items-center justify-center gap-1.5 transition"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Generate Digital Title Seal</span>
+          </button>
+
+          <button
+            id="btn-quick-auto-repair"
+            onClick={() => onAutoRepairTopology(parcel.id)}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
+            title="Auto-Repair & Snap Topology"
+          >
+            <Wrench className="w-3.5 h-3.5 text-sky-400" />
+          </button>
+        </div>
       </div>
     </aside>
   );

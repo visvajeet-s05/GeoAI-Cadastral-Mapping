@@ -21,6 +21,11 @@ import { ParcelSidebar } from "./components/ParcelSidebar";
 import { TitleCertificateModal } from "./components/TitleCertificateModal";
 import { DroneIngestionModal } from "./components/DroneIngestionModal";
 import { SurveyFlightStreamModal } from "./components/SurveyFlightStreamModal";
+import { CadastralSearchBar } from "./components/CadastralSearchBar";
+import { HistoricalBlueprintModal } from "./components/HistoricalBlueprintModal";
+import { ParcelAnalysisReportModal } from "./components/ParcelAnalysisReportModal";
+import { VisualComparisonSlider } from "./components/VisualComparisonSlider";
+import { LiveDroneSplitView, AIDetectionItem } from "./components/LiveDroneSplitView";
 import { Sparkles, X, FileText, CheckCircle2 } from "lucide-react";
 
 export default function App() {
@@ -36,19 +41,17 @@ export default function App() {
   const [telemetry, setTelemetry] = useState<UAVTelemetry | null>(null);
   const [currentMapBounds, setCurrentMapBounds] = useState<[number, number, number, number] | null>(null);
 
-
   // Active Map Layer Toggles
   const [activeLayers, setActiveLayers] = useState<ActiveLayers>({
     vectorBoundaries: true,
     structuralFootprints: true,
-    uncertaintyHeatmap: false,
+    uncertaintyBands: false,
     zoningColors: true,
     topologyIssues: true,
     satelliteBasemap: true,
     legalGovLayout: true,
     discrepancyOverlay: true,
     gcpControlPoints: true,
-    discrepancyHeatmap: true,
   });
 
   // Historical FMB / FMDP Sketch Verification State
@@ -63,6 +66,10 @@ export default function App() {
   const [showDroneHUD, setShowDroneHUD] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
 
+  // Live Drone Split View & AI Perception Detection State
+  const [isDroneSplitOpen, setIsDroneSplitOpen] = useState<boolean>(true);
+  const [selectedDetection, setSelectedDetection] = useState<AIDetectionItem | null>(null);
+
   // VLM Audit State
   const [isAuditingVlm, setIsAuditingVlm] = useState<boolean>(false);
   const [vlmAuditResult, setVlmAuditResult] = useState<VlmAuditResult | null>(null);
@@ -71,6 +78,10 @@ export default function App() {
   const [showCertificateModal, setShowCertificateModal] = useState<boolean>(false);
   const [showIngestionModal, setShowIngestionModal] = useState<boolean>(false);
   const [showStreamModal, setShowStreamModal] = useState<boolean>(false);
+  const [showReportModal, setShowReportModal] = useState<boolean>(false);
+  const [showBlueprintModal, setShowBlueprintModal] = useState<boolean>(false);
+  const [showComparisonModal, setShowComparisonModal] = useState<boolean>(false);
+  const [comparisonParcel, setComparisonParcel] = useState<Parcel | null>(null);
   const [streamConnected, setStreamConnected] = useState<boolean>(true);
 
   // Fetch Parcels on Mount
@@ -227,6 +238,30 @@ export default function App() {
     fetchTopologyReport();
   };
 
+  // Trigger Demonstration Test Mode (Velachery, Chennai, Tamil Nadu)
+  const handleTriggerTestMode = async () => {
+    try {
+      const res = await fetch("/api/spatial/test-mode", { method: "POST" });
+      const data = await res.json();
+      await fetchParcels();
+      await fetchTopologyReport();
+      setStatutoryNoticeModal(
+        `PILOT DEMONSTRATION ACTIVATED:\n${data.message}\n\n` +
+        `• State: Tamil Nadu\n` +
+        `• District: ${data.activeDistrict}\n` +
+        `• Taluk: ${data.activeTaluk}\n` +
+        `• Village: ${data.activeVillage}\n` +
+        `• Survey Number: S.No. ${data.surveyNumber}\n` +
+        `• Parcels Synchronized: ${data.parcelsLoaded} cadastral plots\n` +
+        `• AI Detections Active: ${data.aiDetectionsLoaded} perception records\n` +
+        `• Historical FMB Blueprints: ${data.historicalPlansLoaded} records loaded\n\n` +
+        `Statutory Reference: Tamil Nadu Survey and Boundaries Act 1923, Section 10(1) sub-division determination.`
+      );
+    } catch (e) {
+      console.error("Test mode trigger failed:", e);
+    }
+  };
+
   const displayedParcels = selectedFilter
     ? parcels.filter((p) => p.status === selectedFilter)
     : parcels;
@@ -247,6 +282,14 @@ export default function App() {
         onToggleMetricsBar={() => setShowMetricsBar((prev) => !prev)}
         showDroneHUD={showDroneHUD}
         onToggleDroneHUD={() => setShowDroneHUD((prev) => !prev)}
+        onOpenBlueprintModal={() => setShowBlueprintModal(true)}
+        onOpenVisualComparison={() => {
+          setComparisonParcel(selectedParcel || parcels[0] || null);
+          setShowComparisonModal(true);
+        }}
+        onTriggerTestMode={handleTriggerTestMode}
+        isDroneSplitOpen={isDroneSplitOpen}
+        onToggleDroneSplit={() => setIsDroneSplitOpen((prev) => !prev)}
       />
 
       {/* 2. Cadastral Spatial Key Metrics Bar */}
@@ -272,10 +315,48 @@ export default function App() {
         />
       )}
 
-      {/* 3. Main Workspace: Map Canvas + Cadastral Sidebar */}
+      {/* 3. Main Workspace: Map Canvas + Live Drone Split View + Cadastral Sidebar */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-        {/* Interactive GIS Map */}
-        <div className="flex-1 relative h-full">
+        {/* World A: Live Drone Perception & Sensor Video Stream (Left Viewport) */}
+        {isDroneSplitOpen && (
+          <div className="w-full md:w-1/2 lg:w-[48%] h-64 md:h-full shrink-0 border-b md:border-b-0 md:border-r border-slate-800 z-10">
+            <LiveDroneSplitView
+              telemetry={telemetry}
+              selectedParcel={selectedParcel}
+              onSelectParcel={(p) => {
+                selectParcel(p);
+                setIsSidebarOpen(true);
+              }}
+              parcels={parcels}
+              selectedDetection={selectedDetection}
+              onSelectDetection={(det) => {
+                setSelectedDetection(det);
+                if (det?.linkedParcelId) {
+                  const linked = parcels.find((p) => p.id === det.linkedParcelId);
+                  if (linked) {
+                    selectParcel(linked);
+                    setIsSidebarOpen(true);
+                  }
+                }
+              }}
+              isSplitScreen={isDroneSplitOpen}
+              onToggleSplitScreen={() => setIsDroneSplitOpen(false)}
+              onClose={() => setIsDroneSplitOpen(false)}
+            />
+          </div>
+        )}
+
+        {/* World B: Survey GIS Interactive Cadastral Map (Right Viewport) */}
+        <div className="flex-1 relative h-full min-w-0">
+          {/* Top Floating Search Bar */}
+          <div className="absolute top-3 left-3 z-[400] max-w-sm sm:max-w-md w-full">
+            <CadastralSearchBar
+              parcels={parcels}
+              onSelectParcel={selectParcel}
+              selectedParcelId={selectedParcel?.id}
+            />
+          </div>
+
           <MapView
             parcels={displayedParcels}
             selectedParcel={selectedParcel}
@@ -288,11 +369,13 @@ export default function App() {
             telemetry={telemetry}
             ingestionMode={ingestionMode}
             onMapBoundsChange={setCurrentMapBounds}
+            selectedDetection={selectedDetection}
+            onSelectDetection={setSelectedDetection}
           />
 
           {/* Floating button to reopen sidebar if parcel selected but sidebar closed */}
           {!isSidebarOpen && selectedParcel && (
-            <div className="absolute top-3 left-3 z-[450] flex items-center gap-2 bg-slate-900/95 border border-sky-500/60 text-white px-3 py-1.5 rounded-xl shadow-2xl backdrop-blur-md pointer-events-auto">
+            <div className="absolute top-16 left-3 z-[450] flex items-center gap-2 bg-slate-900/95 border border-sky-500/60 text-white px-3 py-1.5 rounded-xl shadow-2xl backdrop-blur-md pointer-events-auto">
               <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
               <div className="flex items-center gap-1.5 text-xs font-mono">
                 <span className="font-bold text-sky-300">{selectedParcel.uprn}</span>
@@ -324,6 +407,15 @@ export default function App() {
             isAuditingVlm={isAuditingVlm}
             vlmAuditResult={vlmAuditResult}
             onOpenCertificateModal={() => setShowCertificateModal(true)}
+            onOpenReportModal={(p) => {
+              setSelectedParcel(p);
+              setShowReportModal(true);
+            }}
+            onOpenVisualComparison={(p) => {
+              setComparisonParcel(p);
+              setShowComparisonModal(true);
+            }}
+            onOpenBlueprintModal={() => setShowBlueprintModal(true)}
             onParcelUpdated={(updatedParcel, auditBlock) => {
               setParcels((prev) =>
                 prev.map((p) => (p.id === updatedParcel.id ? updatedParcel : p))
@@ -354,6 +446,53 @@ export default function App() {
 
       {showStreamModal && (
         <SurveyFlightStreamModal onClose={() => setShowStreamModal(false)} />
+      )}
+
+      {/* Historical Blueprint & Ingestion Modal */}
+      {showBlueprintModal && (
+        <HistoricalBlueprintModal
+          onClose={() => setShowBlueprintModal(false)}
+          onBlueprintIngested={() => {
+            fetchParcels();
+            fetchTopologyReport();
+          }}
+        />
+      )}
+
+      {/* Parcel Spatial Analysis & Statutory Audit Report Modal */}
+      {showReportModal && selectedParcel && (
+        <ParcelAnalysisReportModal
+          parcel={selectedParcel}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
+
+      {/* Multi-Temporal Visual Comparison Slider Modal */}
+      {showComparisonModal && (
+        <div className="fixed inset-0 z-[650] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="px-4 py-3 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-teal-400 animate-pulse" />
+                <h3 className="font-bold text-sm text-white">
+                  Multi-Temporal Visual Inspection (1967 FMB Sketch vs 2026 Drone Orthomosaic)
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowComparisonModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 flex-1 overflow-y-auto">
+              <VisualComparisonSlider
+                parcel={comparisonParcel || selectedParcel || parcels[0]}
+                fmbDataset={historicalFmbDataset}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Statutory Audit Summary Notice Modal (Generated via Gemini VLM) */}

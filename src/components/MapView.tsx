@@ -30,11 +30,10 @@ import {
   PlusCircle,
   Trash2,
   Globe,
-  Flame,
 } from "lucide-react";
 import { GoogleCadastralMap } from "./GoogleCadastralMap";
-import { DiscrepancyHeatmapLayer } from "./DiscrepancyHeatmapLayer";
 import { DriftHotspot } from "../types";
+import { AIDetectionItem } from "./LiveDroneSplitView";
 
 interface MapViewProps {
   parcels: Parcel[];
@@ -58,6 +57,8 @@ interface MapViewProps {
   onSelectPlotCongruence?: (plot: PlotCongruenceRecord | null) => void;
   allDiscrepancies?: EncroachmentDiscrepancy[];
   driftHotspots?: DriftHotspot[];
+  selectedDetection?: AIDetectionItem | null;
+  onSelectDetection?: (detection: AIDetectionItem | null) => void;
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -82,6 +83,8 @@ export const MapView: React.FC<MapViewProps> = ({
   onSelectPlotCongruence,
   allDiscrepancies,
   driftHotspots,
+  selectedDetection,
+  onSelectDetection,
 }) => {
   const [mapEngine, setMapEngine] = useState<"google" | "leaflet">("google");
   const [mapsApiKey, setMapsApiKey] = useState<string>(
@@ -317,7 +320,7 @@ export const MapView: React.FC<MapViewProps> = ({
       let fillOpacity = isSelected ? 0.45 : 0.25;
       let weight = isSelected ? 3.5 : 2;
 
-      if (activeLayers.uncertaintyHeatmap) {
+      if (activeLayers.uncertaintyBands) {
         const uColor = getUncertaintyColor(parcel.overallUncertainty);
         fillColor = uColor.hex;
         strokeColor = uColor.hex;
@@ -626,6 +629,8 @@ export const MapView: React.FC<MapViewProps> = ({
         onSelectPlotCongruence={onSelectPlotCongruence}
         allDiscrepancies={allDiscrepancies}
         driftHotspots={driftHotspots}
+        selectedDetection={selectedDetection}
+        onSelectDetection={onSelectDetection}
       />
     );
   }
@@ -645,20 +650,6 @@ export const MapView: React.FC<MapViewProps> = ({
 
       {/* Map DOM Container */}
       <div id="gis-leaflet-canvas" ref={mapContainerRef} className="w-full h-full" />
-
-      {/* D3 Canvas Encroachment Drift Heatmap for Leaflet Mode */}
-      {mapInstanceRef.current && (
-        <DiscrepancyHeatmapLayer
-          leafletMap={mapInstanceRef.current}
-          discrepancies={allDiscrepancies ?? []}
-          hotspots={driftHotspots}
-          visible={activeLayers.discrepancyHeatmap !== false}
-          onSelectDiscrepancy={(d) => {
-            const match = parcels.find((p) => p.id === d.parcelId || p.uprn === d.uprn);
-            if (match) onSelectParcel(match);
-          }}
-        />
-      )}
 
       {/* Floating Map Navigation Controls */}
       <div className="absolute top-4 right-4 z-[500] flex flex-col gap-2">
@@ -791,7 +782,7 @@ export const MapView: React.FC<MapViewProps> = ({
           <span>Cadastral Symbology</span>
         </div>
 
-        {activeLayers.uncertaintyHeatmap ? (
+        {activeLayers.uncertaintyBands ? (
           <div className="space-y-1 text-[11px]">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-sm bg-emerald-500" />

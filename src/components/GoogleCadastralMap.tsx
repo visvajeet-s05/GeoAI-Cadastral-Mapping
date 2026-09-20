@@ -20,7 +20,7 @@ import {
   FmbPlanHistoricalDataset,
   DriftHotspot,
 } from "../types";
-import { DiscrepancyHeatmapLayer } from "./DiscrepancyHeatmapLayer";
+import { AIDetectionItem } from "./LiveDroneSplitView";
 import {
   getLandTypeColor,
   getUncertaintyColor,
@@ -60,7 +60,6 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
-  Flame,
 } from "lucide-react";
 
 // ==========================================
@@ -287,29 +286,6 @@ const MapController: React.FC<MapControllerProps> = ({
 };
 
 // ==========================================
-// SUBCOMPONENT: Discrepancy Heatmap Sublayer
-// ==========================================
-const DiscrepancyHeatmapGoogleSublayer: React.FC<{
-  discrepancies: EncroachmentDiscrepancy[];
-  hotspots?: DriftHotspot[];
-  visible: boolean;
-  onToggleVisible?: () => void;
-  onSelectDiscrepancy?: (d: EncroachmentDiscrepancy) => void;
-}> = ({ discrepancies, hotspots, visible, onToggleVisible, onSelectDiscrepancy }) => {
-  const map = useMap();
-  return (
-    <DiscrepancyHeatmapLayer
-      map={map}
-      discrepancies={discrepancies}
-      hotspots={hotspots}
-      visible={visible}
-      onToggleVisible={onToggleVisible}
-      onSelectDiscrepancy={onSelectDiscrepancy}
-    />
-  );
-};
-
-// ==========================================
 // MAIN COMPONENT: GoogleCadastralMap
 // ==========================================
 
@@ -338,6 +314,8 @@ export interface GoogleCadastralMapProps {
   onSelectPlotCongruence?: (plot: PlotCongruenceRecord | null) => void;
   allDiscrepancies?: EncroachmentDiscrepancy[];
   driftHotspots?: DriftHotspot[];
+  selectedDetection?: AIDetectionItem | null;
+  onSelectDetection?: (detection: AIDetectionItem | null) => void;
 }
 
 export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
@@ -363,49 +341,9 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
   onSelectPlotCongruence,
   allDiscrepancies,
   driftHotspots,
+  selectedDetection,
+  onSelectDetection,
 }) => {
-  // Heatmap Visibility & Data Feed
-  const [isHeatmapVisible, setIsHeatmapVisible] = useState<boolean>(
-    activeLayers.discrepancyHeatmap !== false
-  );
-  const [fetchedDiscrepancies, setFetchedDiscrepancies] = useState<EncroachmentDiscrepancy[]>([]);
-  const [fetchedHotspots, setFetchedHotspots] = useState<DriftHotspot[]>([]);
-
-  useEffect(() => {
-    if (activeLayers.discrepancyHeatmap !== undefined) {
-      setIsHeatmapVisible(activeLayers.discrepancyHeatmap);
-    }
-  }, [activeLayers.discrepancyHeatmap]);
-
-  useEffect(() => {
-    if (allDiscrepancies && allDiscrepancies.length > 0) {
-      setFetchedDiscrepancies(allDiscrepancies);
-      if (driftHotspots) setFetchedHotspots(driftHotspots);
-      return;
-    }
-
-    const loadData = async () => {
-      try {
-        const res = await fetch("/api/tn-land-records/discrepancies");
-        const json = await res.json();
-        if (json.status === "success") {
-          if (json.discrepancies) setFetchedDiscrepancies(json.discrepancies);
-          if (json.hotspots) setFetchedHotspots(json.hotspots);
-        }
-      } catch (e) {
-        console.warn("Failed to load discrepancy data:", e);
-      }
-    };
-    loadData();
-  }, [allDiscrepancies, driftHotspots]);
-
-  const resolvedDiscrepancies = useMemo<EncroachmentDiscrepancy[]>(() => {
-    const list = [...fetchedDiscrepancies];
-    if (activeDiscrepancy && !list.some((d) => d.parcelId === activeDiscrepancy.parcelId)) {
-      list.unshift(activeDiscrepancy);
-    }
-    return list;
-  }, [fetchedDiscrepancies, activeDiscrepancy]);
 
   // Historical FMB Multi-Temporal Epoch State (1967 - 2026)
   const [activeEpoch, setActiveEpoch] = useState<FmbTemporalEpoch>("ALL_EPOCHS_OVERLAY");
@@ -440,6 +378,20 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
   // Grounding Insight State
   const [groundingInsight, setGroundingInsight] = useState<string | null>(null);
   const [isLoadingGrounding, setIsLoadingGrounding] = useState(false);
+
+  // AI Detections from Drone Camera Perception
+  const [detections, setDetections] = useState<AIDetectionItem[]>([]);
+
+  useEffect(() => {
+    fetch("/api/drone/detections")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.detections) {
+          setDetections(data.detections);
+        }
+      })
+      .catch((err) => console.error("Failed to load detections for map:", err));
+  }, []);
 
   // Initialize editable coordinates when parcel editing begins
   useEffect(() => {
@@ -587,40 +539,41 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
             const coordsToRender = isEditingThis ? editableCoords : parcel.coordinates;
             const latLngPaths = coordsToRender.map(([lng, lat]) => ({ lat, lng }));
 
-            // Layer-based coloring
+            // Layer-based coloring - Thin Cadastral Boundaries (No giant opaque blocks)
             let fillColor = "#0284c7"; // Sky blue default
             let strokeColor = "#38bdf8";
-            let fillOpacity = isSelected ? 0.45 : 0.22;
-            let strokeWeight = isSelected ? 3.5 : 2;
+            let fillOpacity = isSelected ? 0.12 : 0.04;
+            let strokeWeight = isSelected ? 2.5 : 1.5;
 
             if (showHousePerceptionOverlay) {
               if (parcel.structureCount > 0) {
                 // House / Built-up
-                fillColor = "#f59e0b"; // Warm Amber
-                strokeColor = "#fbbf24";
-                fillOpacity = isSelected ? 0.5 : 0.28;
+                fillColor = "#0284c7";
+                strokeColor = "#38bdf8";
+                fillOpacity = isSelected ? 0.12 : 0.04;
               } else {
                 // Vacant Land
-                fillColor = "#10b981"; // Emerald
+                fillColor = "#10b981";
                 strokeColor = "#34d399";
-                fillOpacity = isSelected ? 0.5 : 0.25;
+                fillOpacity = isSelected ? 0.12 : 0.04;
               }
-            } else if (activeLayers.uncertaintyHeatmap) {
+            } else if (activeLayers.uncertaintyBands) {
               const uColor = getUncertaintyColor(parcel.overallUncertainty);
               fillColor = uColor.hex;
               strokeColor = uColor.hex;
-              fillOpacity = 0.4;
+              fillOpacity = 0.15;
             } else if (activeLayers.zoningColors) {
               const zColor = getLandTypeColor(parcel.landType);
               fillColor = zColor.fill;
               strokeColor = zColor.stroke;
+              fillOpacity = 0.12;
             }
 
             if (activeLayers.topologyIssues && parcel.encroachmentDetected) {
               fillColor = "#ef4444";
               strokeColor = "#dc2626";
-              fillOpacity = 0.55;
-              strokeWeight = 3.5;
+              fillOpacity = 0.18;
+              strokeWeight = 2.5;
             }
 
             const pCentroidLat =
@@ -636,7 +589,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
 
             return (
               <React.Fragment key={parcel.id}>
-                {/* Main Parcel Polygon */}
+                {/* Main Cadastral Parcel Polygon (Survey-grade thin boundary) */}
                 <GoogleMapPolygon
                   paths={latLngPaths}
                   fillColor={fillColor}
@@ -696,38 +649,108 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                     </div>
                   </AdvancedMarker>
                 )}
-
-                {/* Simulated Building Footprints on Satellite Imagery */}
-                {activeLayers.structuralFootprints && parcel.structureCount > 0 && (
-                  <GoogleMapPolygon
-                    paths={[
-                      {
-                        lat: pCentroidLat - 0.00008,
-                        lng: pCentroidLng - 0.00008,
-                      },
-                      {
-                        lat: pCentroidLat - 0.00008,
-                        lng: pCentroidLng + 0.00008,
-                      },
-                      {
-                        lat: pCentroidLat + 0.00008,
-                        lng: pCentroidLng + 0.00008,
-                      },
-                      {
-                        lat: pCentroidLat + 0.00008,
-                        lng: pCentroidLng - 0.00008,
-                      },
-                    ]}
-                    fillColor="#f59e0b"
-                    fillOpacity={0.5}
-                    strokeColor="#d97706"
-                    strokeWeight={1.5}
-                    zIndex={15}
-                  />
-                )}
               </React.Fragment>
             );
           })}
+
+          {/* Real AI-Detected Physical Objects (Individual Buildings, Open Areas, Roads) */}
+          {activeLayers.structuralFootprints &&
+            detections.map((det) => {
+              const isDetSelected = selectedDetection?.id === det.id;
+              const isDispute = det.multiParcelCrossing || det.status === "DISPUTED";
+              const isBuilding = det.type === "BUILDING";
+
+              const dLatLngPaths = det.polygon.map(([lng, lat]) => ({ lat, lng }));
+              const dCentroidLat =
+                det.polygon.reduce((sum, c) => sum + c[1], 0) / det.polygon.length;
+              const dCentroidLng =
+                det.polygon.reduce((sum, c) => sum + c[0], 0) / det.polygon.length;
+
+              const detFill = isDispute
+                ? "#f43f5e"
+                : isBuilding
+                ? "#f59e0b"
+                : det.type === "ROAD"
+                ? "#6366f1"
+                : "#10b981";
+
+              const detStroke = isDispute
+                ? "#e11d48"
+                : isBuilding
+                ? "#d97706"
+                : det.type === "ROAD"
+                ? "#4f46e5"
+                : "#059669";
+
+              return (
+                <React.Fragment key={`ai-det-${det.id}`}>
+                  <GoogleMapPolygon
+                    paths={dLatLngPaths}
+                    fillColor={detFill}
+                    fillOpacity={isDetSelected ? 0.35 : isDispute ? 0.25 : 0.18}
+                    strokeColor={detStroke}
+                    strokeWeight={isDetSelected ? 2.8 : 1.8}
+                    zIndex={isDetSelected ? 35 : 15}
+                    onClick={() => {
+                      onSelectDetection?.(det);
+                      if (det.linkedParcelId) {
+                        const linked = parcels.find((p) => p.id === det.linkedParcelId);
+                        if (linked) onSelectParcel(linked);
+                      }
+                    }}
+                  />
+
+                  {/* Detection Label Pin */}
+                  <AdvancedMarker
+                    position={{ lat: dCentroidLat, lng: dCentroidLng }}
+                    zIndex={isDetSelected ? 40 : 18}
+                  >
+                    <div
+                      onClick={() => {
+                        onSelectDetection?.(det);
+                        if (det.linkedParcelId) {
+                          const linked = parcels.find((p) => p.id === det.linkedParcelId);
+                          if (linked) onSelectParcel(linked);
+                        }
+                      }}
+                      className={`cursor-pointer px-1.5 py-0.5 rounded text-[8px] font-mono font-bold shadow-md border flex items-center gap-1 transition-all hover:scale-110 whitespace-nowrap backdrop-blur-md ${
+                        isDetSelected
+                          ? "bg-sky-600 text-white border-sky-300 ring-2 ring-sky-400/50"
+                          : isDispute
+                          ? "bg-rose-950/90 text-rose-300 border-rose-500/60"
+                          : isBuilding
+                          ? "bg-amber-950/90 text-amber-300 border-amber-500/60"
+                          : "bg-slate-900/90 text-emerald-300 border-emerald-500/60"
+                      }`}
+                      title={`${det.label} - ${det.areaSqM}m² (${Math.round(det.confidence * 100)}%)`}
+                    >
+                      {isDispute ? (
+                        <AlertTriangle className="w-2.5 h-2.5 text-rose-400 shrink-0 animate-pulse" />
+                      ) : (
+                        <Sparkles className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                      )}
+                      <span>{det.id}</span>
+                      <span className="text-[7px] opacity-75">
+                        {Math.round(det.areaSqM)}m²
+                      </span>
+                    </div>
+                  </AdvancedMarker>
+                </React.Fragment>
+              );
+            })}
+
+          {/* Drone Camera Ground Footprint (Geographic Field of View) */}
+          {telemetry?.camera_footprint_bbox && telemetry.camera_footprint_bbox.length >= 4 && (
+            <GoogleMapPolygon
+              paths={telemetry.camera_footprint_bbox.map(([lng, lat]) => ({ lat, lng }))}
+              fillColor="#06b6d4"
+              fillOpacity={0.06}
+              strokeColor="#22d3ee"
+              strokeWeight={1.8}
+              strokeOpacity={0.85}
+              zIndex={8}
+            />
+          )}
 
           {/* Surveyor Interactive Vertex Editing Draggable Markers */}
           {isSurveyorEditing &&
@@ -1208,18 +1231,6 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
               })}
             </>
           )}
-
-          {/* D3 Canvas Encroachment Drift Heatmap Layer */}
-          <DiscrepancyHeatmapGoogleSublayer
-            discrepancies={resolvedDiscrepancies}
-            hotspots={fetchedHotspots}
-            visible={isHeatmapVisible}
-            onToggleVisible={() => setIsHeatmapVisible((prev) => !prev)}
-            onSelectDiscrepancy={(d) => {
-              const match = parcels.find((p) => p.id === d.parcelId || p.uprn === d.uprn);
-              if (match) onSelectParcel(match);
-            }}
-          />
         </Map>
       </APIProvider>
 
@@ -1422,20 +1433,6 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
             >
               <Ruler className="w-3.5 h-3.5" />
               <span>{measuringMode ? "Measuring..." : "Measure"}</span>
-            </button>
-
-            {/* D3 Encroachment Drift Heatmap Toggle */}
-            <button
-              onClick={() => setIsHeatmapVisible((prev) => !prev)}
-              className={`px-2.5 py-1 rounded-lg font-medium flex items-center gap-1 transition text-xs shadow-sm border ${
-                isHeatmapVisible
-                  ? "bg-rose-600 text-white border-rose-500 shadow-md ring-1 ring-rose-400/40"
-                  : "bg-slate-950/80 text-slate-300 hover:text-rose-300 hover:bg-slate-800 border-slate-800"
-              }`}
-              title="Toggle D3 Encroachment Drift Heatmap (Satellite vs Legal Record)"
-            >
-              <Flame className={`w-3.5 h-3.5 ${isHeatmapVisible ? "text-amber-200 animate-pulse" : "text-rose-400"}`} />
-              <span>Heatmap</span>
             </button>
 
             {/* Tamil Nadu Government Map Repositories Button */}

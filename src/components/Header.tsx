@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   BarChart3,
   Sliders,
-  Flame,
+  FileText,
 } from "lucide-react";
 import { ActiveLayers } from "../types";
 
@@ -29,6 +29,11 @@ interface HeaderProps {
   onToggleMetricsBar?: () => void;
   showDroneHUD?: boolean;
   onToggleDroneHUD?: () => void;
+  onOpenBlueprintModal?: () => void;
+  onOpenVisualComparison?: () => void;
+  onTriggerTestMode?: () => void;
+  isDroneSplitOpen?: boolean;
+  onToggleDroneSplit?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -44,6 +49,11 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleMetricsBar,
   showDroneHUD = true,
   onToggleDroneHUD,
+  onOpenBlueprintModal,
+  onOpenVisualComparison,
+  onTriggerTestMode,
+  isDroneSplitOpen = false,
+  onToggleDroneSplit,
 }) => {
   return (
     <header className="bg-slate-900/95 border-b border-slate-800 text-slate-100 shadow-md shrink-0 z-30">
@@ -124,13 +134,13 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Uncertainty */}
           <button
             id="toggle-layer-uncertainty"
-            onClick={() => onToggleLayer("uncertaintyHeatmap")}
+            onClick={() => onToggleLayer("uncertaintyBands")}
             className={`px-2 py-1 rounded-md text-[11px] font-medium transition flex items-center gap-1 whitespace-nowrap ${
-              activeLayers.uncertaintyHeatmap
+              activeLayers.uncertaintyBands
                 ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold"
                 : "text-slate-400 hover:text-slate-200 border border-transparent"
             }`}
-            title="Toggle Epistemic/Aleatoric Uncertainty Heatmap"
+            title="Toggle Epistemic/Aleatoric Uncertainty Bands"
           >
             <Activity className="w-3 h-3 text-amber-400" />
             <span>Uncertainty</span>
@@ -166,21 +176,6 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Disputes</span>
           </button>
 
-          {/* D3 Encroachment Drift Heatmap */}
-          <button
-            id="toggle-layer-drift-heatmap"
-            onClick={() => onToggleLayer("discrepancyHeatmap")}
-            className={`px-2 py-1 rounded-md text-[11px] font-medium transition flex items-center gap-1 whitespace-nowrap ${
-              activeLayers.discrepancyHeatmap
-                ? "bg-rose-500/20 text-rose-300 border border-rose-500/40 font-semibold shadow-sm"
-                : "text-slate-400 hover:text-slate-200 border border-transparent"
-            }`}
-            title="Toggle D3 Encroachment Drift Density Heatmap (Satellite vs Legal Record)"
-          >
-            <Flame className={`w-3 h-3 ${activeLayers.discrepancyHeatmap ? "text-rose-400 animate-pulse" : "text-slate-500"}`} />
-            <span>Drift Heatmap</span>
-          </button>
-
           {/* Satellite switch */}
           <button
             id="toggle-basemap-satellite"
@@ -214,6 +209,63 @@ export const Header: React.FC<HeaderProps> = ({
               {isCheckingTopology ? "Validating..." : "Topology Audit"}
             </span>
           </button>
+
+          {/* Blueprints / FMB Historical Ingestion */}
+          {onOpenBlueprintModal && (
+            <button
+              id="btn-open-blueprints"
+              onClick={onOpenBlueprintModal}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-900/40 hover:bg-amber-800/60 text-xs font-medium text-amber-200 border border-amber-700/40 transition"
+              title="Ingest & Georeference Historical FMB Blueprints / TSLR Maps"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden md:inline">Blueprints</span>
+            </button>
+          )}
+
+          {/* 1967 vs 2026 Comparison Slider */}
+          {onOpenVisualComparison && (
+            <button
+              id="btn-open-comparison"
+              onClick={onOpenVisualComparison}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-teal-900/40 hover:bg-teal-800/60 text-xs font-medium text-teal-200 border border-teal-700/40 transition"
+              title="Interactive Visual Comparison (FMB vs 2026 Drone Orthomosaic)"
+            >
+              <Eye className="w-3.5 h-3.5 text-teal-400" />
+              <span className="hidden md:inline">Compare</span>
+            </button>
+          )}
+
+          {/* Pilot Demo Reset */}
+          {onTriggerTestMode && (
+            <button
+              id="btn-pilot-demo-test"
+              onClick={onTriggerTestMode}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-950 hover:bg-emerald-900/80 text-xs font-semibold text-emerald-300 border border-emerald-700/50 transition"
+              title="Reset and verify Tamil Nadu Velachery Pilot Demonstration Dataset"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden xl:inline">Velachery Pilot</span>
+            </button>
+          )}
+
+          {/* Live Drone Split-Screen Toggle */}
+          {onToggleDroneSplit && (
+            <button
+              id="btn-toggle-drone-split"
+              onClick={onToggleDroneSplit}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                isDroneSplitOpen
+                  ? "bg-sky-600 text-white border-sky-400 shadow-md ring-2 ring-sky-400/40"
+                  : "bg-slate-800/90 text-sky-300 border-sky-500/40 hover:bg-slate-800"
+              }`}
+              title="Toggle synchronized side-by-side Live Drone Camera & Cadastral Map"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <Plane className="w-3.5 h-3.5 text-sky-300" />
+              <span className="hidden sm:inline">Live Drone Split</span>
+            </button>
+          )}
 
           {/* Drone Stream HUD */}
           <button

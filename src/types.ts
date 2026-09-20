@@ -44,6 +44,16 @@ export interface Parcel {
   currentHash: string;
   createdAt: number;
   updatedAt: number;
+  // Tamil Nadu Cadastral Hierarchy & Historical Provenance
+  state?: string;
+  district?: string;
+  taluk?: string;
+  village?: string;
+  surveyNumber?: string;
+  subDivision?: string;
+  historicalYear?: number;
+  historicalSource?: string;
+  historicalAreaSqM?: number;
 }
 
 export interface AuditBlock {
@@ -99,14 +109,23 @@ export interface VlmAuditResult {
 export interface ActiveLayers {
   vectorBoundaries: boolean;
   structuralFootprints: boolean;
-  uncertaintyHeatmap: boolean;
+  uncertaintyBands: boolean;
   zoningColors: boolean;
   topologyIssues: boolean;
   satelliteBasemap: boolean;
   legalGovLayout?: boolean;
   discrepancyOverlay?: boolean;
   gcpControlPoints?: boolean;
-  discrepancyHeatmap?: boolean;
+  // Tamil Nadu Historical vs Drone Analysis Layers
+  historicalParcels?: boolean;
+  droneCoverage?: boolean;
+  detectedBuildings?: boolean;
+  detectedOpenAreas?: boolean;
+  detectedRoads?: boolean;
+  boundaryCandidates?: boolean;
+  dronePosition?: boolean;
+  cameraFootprint?: boolean;
+  visualComparisonMode?: VisualComparisonMode;
 }
 
 export interface DriftHotspot {
@@ -302,3 +321,153 @@ export interface SatelliteBBoxResponse {
   parcels: Parcel[];
   timestamp: number;
 }
+
+// ==========================================
+// TAMIL NADU HISTORICAL & DRONE INTELLIGENCE
+// ==========================================
+
+export type ProvenanceCategory = "OBSERVED" | "DERIVED" | "INFERRED" | "UNKNOWN";
+export type ConfidenceStatus = "CONFIRMED" | "PROBABLE" | "UNCERTAIN" | "UNAVAILABLE";
+
+export type DetectionType =
+  | "BUILDING"
+  | "ROAD"
+  | "OPEN_AREA"
+  | "BOUNDARY_CANDIDATE"
+  | "UNKNOWN";
+
+export interface AIDetection {
+  id: string; // e.g. "BLD-01", "OPEN-01", "ROAD-01", "BND-01"
+  type: DetectionType;
+  confidence: number; // 0.0 - 1.0
+  status: ConfidenceStatus;
+  geometry: [number, number][]; // GeoJSON [[lng, lat], ...]
+  areaSqM: number;
+  perimeterM: number;
+  historicalParcelId?: string;
+  historicalSurveyNumber?: string;
+  overlapPercentage?: number;
+  crossesBoundary?: boolean;
+  crossingParcelIds?: string[];
+  droneSurveyId: string;
+  frameId?: string;
+  timestamp: number;
+  provenance: "OBSERVED" | "DERIVED";
+  humanVerified?: boolean;
+  notes?: string;
+}
+
+export interface GroundControlPointRecord {
+  id: string;
+  name: string;
+  pixelX: number;
+  pixelY: number;
+  targetLat: number;
+  targetLng: number;
+  residualMeters: number;
+}
+
+export interface HistoricalDocument {
+  id: string;
+  documentType:
+    | "FMB_SKETCH"
+    | "TSLR_MAP"
+    | "VILLAGE_CADASTRAL"
+    | "LAYOUT_PLAN"
+    | "PLOT_BLUEPRINT";
+  title: string;
+  source: string; // e.g., "Tamil Nadu Survey & Land Records (eservices.tn.gov.in)"
+  year: number;
+  state: string;
+  district: string;
+  taluk: string;
+  village: string;
+  surveyNumber: string;
+  subDivision?: string;
+  scale?: string;
+  orientation?: string;
+  georeferencing: {
+    controlPoints: GroundControlPointRecord[];
+    transformation: "AFFINE";
+    rmsErrorM: number;
+    status: "ACCEPTABLE" | "REVIEW_REQUIRED";
+  };
+  parcelsExtracted?: number;
+  rawImageUrl?: string;
+  processedImageUrl?: string;
+  status: "DRAFT" | "REVIEW" | "APPROVED" | "REJECTED";
+}
+
+export interface ParcelSpatialAnalysis {
+  parcelId: string;
+  uprn: string;
+  surveyNumber: string;
+  subDivision: string;
+  state: string;
+  district: string;
+  taluk: string;
+  village: string;
+  historicalYear: number;
+  historicalSource: string;
+  historicalAreaSqM: number;
+  currentBuildingAreaSqM: number;
+  currentOpenAreaSqM: number;
+  currentRoadAreaSqM: number;
+  unclassifiedAreaSqM: number;
+  buildingCoveragePercent: number;
+  openAreaPercent: number;
+  boundaryAlignmentPercent: number;
+  detectedBuildingsCount: number;
+  associatedBuildings: Array<{
+    buildingId: string;
+    overlapPercent: number;
+    areaSqM: number;
+    confidence: number;
+    crossesBoundary: boolean;
+    crossingParcels?: string[];
+  }>;
+  changeCandidates: Array<{
+    type:
+      | "BUILT_UP_CHANGE"
+      | "OPEN_AREA_CHANGE"
+      | "BOUNDARY_DRIFT_CANDIDATE"
+      | "SUBDIVISION_CANDIDATE"
+      | "MERGE_CANDIDATE";
+    description: string;
+    severity: "LOW" | "MEDIUM" | "HIGH";
+    confidence: number;
+    status: "PROBABLE" | "CONFIRMED" | "UNDER_REVIEW";
+  }>;
+  provenanceBreakdown: {
+    observed: string[];
+    derived: string[];
+    inferred: string[];
+    unknown: string[];
+  };
+  georeferencingQuality: "HIGH" | "MEDIUM" | "LOW";
+  aiConfidence: "HIGH" | "MEDIUM" | "LOW";
+  overallAnalysisStatus: "CONFIRMED" | "REVIEW_RECOMMENDED" | "UNCERTAIN";
+  disclaimer: string;
+}
+
+export type VisualComparisonMode =
+  | "OVERLAY"
+  | "HISTORICAL_ONLY"
+  | "CURRENT_ONLY"
+  | "SWIPE_COMPARISON";
+
+export interface TamilNaduHierarchyNode {
+  district: string;
+  taluks: {
+    name: string;
+    villages: {
+      name: string;
+      surveyNumbers: {
+        number: string;
+        subDivisions: string[];
+        center: [number, number]; // [lat, lng]
+      }[];
+    }[];
+  }[];
+}
+

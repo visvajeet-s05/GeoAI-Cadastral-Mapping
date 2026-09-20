@@ -9,7 +9,6 @@ import {
   Building2,
   Eye,
   CheckCircle2,
-  Flame,
   ChevronDown,
   Menu,
   X,
@@ -163,27 +162,15 @@ export const ProfessionalHeader: React.FC<ProfessionalHeaderProps> = ({
                   </button>
 
                   <button
-                    onClick={() => onToggleLayer("uncertaintyHeatmap")}
+                    onClick={() => onToggleLayer("uncertaintyBands")}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-                      activeLayers.uncertaintyHeatmap
+                      activeLayers.uncertaintyBands
                         ? "bg-amber-50 text-amber-700"
                         : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                     }`}
                   >
                     <Activity className="w-4 h-4" />
-                    <span>Uncertainty Heatmap</span>
-                  </button>
-
-                  <button
-                    onClick={() => onToggleLayer("discrepancyHeatmap")}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-                      activeLayers.discrepancyHeatmap
-                        ? "bg-red-50 text-red-700"
-                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    <Flame className="w-4 h-4" />
-                    <span>Encroachment Drift</span>
+                    <span>Uncertainty Bands</span>
                   </button>
 
                   <button
