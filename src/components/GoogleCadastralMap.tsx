@@ -916,8 +916,11 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                     <Plane className="w-4 h-4 transform -rotate-45" />
                   </div>
 
-                  {/* Telemetry Tag */}
-                  <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-sky-500 text-sky-300 text-[9px] font-mono px-1.5 py-0.5 rounded shadow whitespace-nowrap">
+                  {/* Telemetry Tag - counter-rotated so text is always horizontally upright and never inverted */}
+                  <div
+                    className="absolute top-8 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-sky-500 text-sky-300 text-[9px] font-mono px-1.5 py-0.5 rounded shadow whitespace-nowrap"
+                    style={{ transform: `translateX(-50%) rotate(${-droneHeading}deg)` }}
+                  >
                     ALT: {Math.round(droneAlt)}m • GSD: {droneGsd.toFixed(1)}cm
                   </div>
                 </div>
@@ -1322,7 +1325,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
       {/* ==================================================== */}
       {/* MAP CONTROLS DOCK (BOTTOM-LEFT GIS DOCK)             */}
       {/* ==================================================== */}
-      <div className="absolute bottom-5 left-18 z-20 flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl shadow-slate-950/70">
+      <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl shadow-slate-950/70">
         {/* Basemap Switcher */}
         <div className="flex items-center bg-slate-950/80 p-0.5 rounded-xl border border-slate-800 text-xs">
           <button

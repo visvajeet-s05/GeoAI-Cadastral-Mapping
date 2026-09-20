@@ -17,7 +17,7 @@ import {
 } from "./types";
 import { MapView } from "./components/MapView";
 import { FloatingGlassTopBar } from "./components/FloatingGlassTopBar";
-import { FloatingLeftToolbox } from "./components/FloatingLeftToolbox";
+import { UnifiedDashboardSidebar } from "./components/UnifiedDashboardSidebar";
 import { FloatingFlightController } from "./components/FloatingFlightController";
 import { FloatingParcelInspector } from "./components/FloatingParcelInspector";
 import { UAVHudReticleOverlay } from "./components/UAVHudReticleOverlay";
@@ -672,42 +672,9 @@ export default function App() {
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans select-none">
+    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans flex flex-col select-none">
       {/* ========================================================================= */}
-      {/* 1. BASE LAYER: 100% Full-Bleed Spatial GIS Canvas (100vw x 100vh)       */}
-      {/* ========================================================================= */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <MapView
-          parcels={parcels}
-          selectedParcel={selectedParcel}
-          onSelectParcel={selectParcel}
-          activeLayers={activeLayers}
-          topologyReport={topologyReport}
-          isSurveyorEditing={isSurveyorEditing}
-          onSaveSurveyorAdjustment={handleSaveSurveyorAdjustment}
-          onCancelSurveyorAdjustment={() => {
-            setIsSurveyorEditing(false);
-            setActiveTool("INSPECT");
-          }}
-          telemetry={telemetry}
-          ingestionMode="VIRTUAL_UAV"
-          selectedDetection={selectedDetection}
-          onSelectDetection={setSelectedDetection}
-          targetLocation={targetLocation}
-        />
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 2. OPTICAL HUD RETICLE OVERLAY (Simulated Drone Sensor Target Tracking)  */}
-      {/* ========================================================================= */}
-      <UAVHudReticleOverlay
-        telemetry={telemetry}
-        selectedParcel={selectedParcel}
-        isVisible={isSimulatingFlight && isReticleVisible}
-      />
-
-      {/* ========================================================================= */}
-      {/* 3. FLOATING GLASS TOP NAVIGATION BAR                                      */}
+      {/* 1. TOP DOCKED APP BAR                                                     */}
       {/* ========================================================================= */}
       <FloatingGlassTopBar
         activeLayers={activeLayers}
@@ -734,102 +701,128 @@ export default function App() {
       />
 
       {/* ========================================================================= */}
-      {/* 3.5 HIERARCHICAL LAND SEARCH (Toggleable Drawer)                          */}
+      {/* 2. MAIN WORKSPACE CONTAINER (Sidebar + Map Viewport)                      */}
       {/* ========================================================================= */}
-      <HierarchicalSearch
-        onContextChange={handleContextChange}
-        onFreeSearch={handleFreeSearch}
-        existingContext={selectedLandContext}
-        isOpen={showHierarchicalSearch}
-        onClose={() => setShowHierarchicalSearch(false)}
-      />
-
-      {/* ========================================================================= */}
-      {/* 3.6 MAP LAYER CONTROL (Toggleable Drawer)                                 */}
-      {/* ========================================================================= */}
-      <LayerControl
-        layers={mapLayers}
-        onToggleLayer={handleToggleMapLayer}
-        isOpen={showLayerControl}
-        onClose={() => setShowLayerControl(false)}
-      />
-
-      {/* ========================================================================= */}
-      {/* 4. FLOATING LEFT TOOLBOX DRAWER                                           */}
-      {/* ========================================================================= */}
-      <FloatingLeftToolbox
-        activeTool={activeTool}
-        onSelectTool={handleSelectTool}
-        onOpenBlueprintModal={() => setShowBlueprintModal(true)}
-        onOpenVisualComparison={() => {
-          setComparisonParcel(selectedParcel || parcels[0] || null);
-          setShowComparisonModal(true);
-        }}
-        onOpenDualStreamCockpit={() => setShowDualStreamCockpit(true)}
-        onTriggerTestMode={handleTriggerTestMode}
-        onOpenIngestModal={() => setShowIngestionModal(true)}
-        onExportGeoJSON={handleExportGeoJSON}
-        onOpenDocumentUploadModal={() => setShowDocumentUploadModal(true)}
-        onOpenDocumentManager={() => setShowDocumentManager(true)}
-        isSimulatingFlight={isSimulatingFlight}
-        onToggleFlightSimulation={handleToggleFlightPlay}
-        isLayerControlOpen={showLayerControl}
-        onToggleLayerControl={() => setShowLayerControl((prev) => !prev)}
-      />
-
-      {/* ========================================================================= */}
-      {/* 5. FLOATING BOTTOM FLIGHT CONTROLLER BAR                                  */}
-      {/* ========================================================================= */}
-      {isSimulatingFlight && (
-        <FloatingFlightController
-          telemetry={telemetry}
-          isPlaying={isSimulatingFlight}
-          onTogglePlay={handleToggleFlightPlay}
-          onResetFlight={handleResetFlight}
-          altitude={flightAltitude}
-          onAltitudeChange={handleAltitudeChange}
-          speed={flightSpeed}
-          onSpeedChange={handleSpeedChange}
-          zone={flightZone}
-          onZoneChange={handleZoneChange}
-          isFollowDrone={isFollowDrone}
-          onToggleFollowDrone={() => setIsFollowDrone((prev) => !prev)}
-          isReticleVisible={isReticleVisible}
-          onToggleReticle={() => setIsReticleVisible((prev) => !prev)}
-        />
-      )}
-
-      {/* ========================================================================= */}
-      {/* 6. FLOATING RIGHT PARCEL INSPECTION DRAWER                                */}
-      {/* ========================================================================= */}
-      {selectedParcel && (
-        <FloatingParcelInspector
-          parcel={selectedParcel}
-          onClose={() => setSelectedParcel(null)}
-          onOpenPropertyInspection={() => setShowPropertyInspectionModal(true)}
-          onOpenCertificateModal={() => setShowCertificateModal(true)}
-          onOpenReportModal={(p) => {
-            setSelectedParcel(p);
-            setShowReportModal(true);
-          }}
-          onOpenVisualComparison={(p) => {
-            setComparisonParcel(p);
+      <div className="relative flex-1 w-full h-full min-h-0 flex overflow-hidden">
+        {/* Docked Left Tooling Sidebar */}
+        <UnifiedDashboardSidebar
+          activeTool={activeTool}
+          onSelectTool={handleSelectTool}
+          isLayerControlOpen={showLayerControl}
+          onToggleLayerControl={() => setShowLayerControl((prev) => !prev)}
+          isHierarchicalSearchOpen={showHierarchicalSearch}
+          onToggleHierarchicalSearch={() => setShowHierarchicalSearch((prev) => !prev)}
+          onOpenDualStreamCockpit={() => setShowDualStreamCockpit(true)}
+          onOpenBlueprintModal={() => setShowBlueprintModal(true)}
+          onOpenVisualComparison={() => {
+            setComparisonParcel(selectedParcel || parcels[0] || null);
             setShowComparisonModal(true);
           }}
-          onRunVlmAudit={handleRunVlmAudit}
-          isAuditingVlm={isAuditingVlm}
-          vlmAuditResult={vlmAuditResult}
-          onAutoRepairTopology={handleAutoRepairTopology}
-          isSurveyorEditing={isSurveyorEditing}
-          onToggleSurveyorEditing={() => {
-            const next = !isSurveyorEditing;
-            setIsSurveyorEditing(next);
-            setActiveTool(next ? "EDIT_VERTEX" : "INSPECT");
-          }}
-          onSplitParcel={handleSplitParcel}
-          onUpdateParcelStatus={handleUpdateParcelStatus}
+          onTriggerTestMode={handleTriggerTestMode}
+          onOpenDocumentUploadModal={() => setShowDocumentUploadModal(true)}
+          onOpenDocumentManager={() => setShowDocumentManager(true)}
+          onOpenIngestModal={() => setShowIngestionModal(true)}
+          onExportGeoJSON={handleExportGeoJSON}
+          isSimulatingFlight={isSimulatingFlight}
+          onToggleFlightSimulation={handleToggleFlightPlay}
         />
-      )}
+
+        {/* Map Viewport Area */}
+        <main className="relative flex-1 h-full min-w-0 overflow-hidden bg-slate-950">
+          <MapView
+            parcels={parcels}
+            selectedParcel={selectedParcel}
+            onSelectParcel={selectParcel}
+            activeLayers={activeLayers}
+            topologyReport={topologyReport}
+            isSurveyorEditing={isSurveyorEditing}
+            onSaveSurveyorAdjustment={handleSaveSurveyorAdjustment}
+            onCancelSurveyorAdjustment={() => {
+              setIsSurveyorEditing(false);
+              setActiveTool("INSPECT");
+            }}
+            telemetry={telemetry}
+            ingestionMode="VIRTUAL_UAV"
+            selectedDetection={selectedDetection}
+            onSelectDetection={setSelectedDetection}
+            targetLocation={targetLocation}
+          />
+
+          {/* Optical HUD Reticle Overlay */}
+          <UAVHudReticleOverlay
+            telemetry={telemetry}
+            selectedParcel={selectedParcel}
+            isVisible={isSimulatingFlight && isReticleVisible}
+          />
+
+          {/* Hierarchical Land Search Drawer */}
+          <HierarchicalSearch
+            onContextChange={handleContextChange}
+            onFreeSearch={handleFreeSearch}
+            existingContext={selectedLandContext}
+            isOpen={showHierarchicalSearch}
+            onClose={() => setShowHierarchicalSearch(false)}
+          />
+
+          {/* Map Layer Control Drawer */}
+          <LayerControl
+            layers={mapLayers}
+            onToggleLayer={handleToggleMapLayer}
+            isOpen={showLayerControl}
+            onClose={() => setShowLayerControl(false)}
+          />
+
+          {/* Bottom Flight Controller Bar */}
+          {isSimulatingFlight && (
+            <FloatingFlightController
+              telemetry={telemetry}
+              isPlaying={isSimulatingFlight}
+              onTogglePlay={handleToggleFlightPlay}
+              onResetFlight={handleResetFlight}
+              altitude={flightAltitude}
+              onAltitudeChange={handleAltitudeChange}
+              speed={flightSpeed}
+              onSpeedChange={handleSpeedChange}
+              zone={flightZone}
+              onZoneChange={handleZoneChange}
+              isFollowDrone={isFollowDrone}
+              onToggleFollowDrone={() => setIsFollowDrone((prev) => !prev)}
+              isReticleVisible={isReticleVisible}
+              onToggleReticle={() => setIsReticleVisible((prev) => !prev)}
+            />
+          )}
+
+          {/* Right Parcel Inspection Drawer */}
+          {selectedParcel && (
+            <FloatingParcelInspector
+              parcel={selectedParcel}
+              onClose={() => setSelectedParcel(null)}
+              onOpenPropertyInspection={() => setShowPropertyInspectionModal(true)}
+              onOpenCertificateModal={() => setShowCertificateModal(true)}
+              onOpenReportModal={(p) => {
+                setSelectedParcel(p);
+                setShowReportModal(true);
+              }}
+              onOpenVisualComparison={(p) => {
+                setComparisonParcel(p);
+                setShowComparisonModal(true);
+              }}
+              onRunVlmAudit={handleRunVlmAudit}
+              isAuditingVlm={isAuditingVlm}
+              vlmAuditResult={vlmAuditResult}
+              onAutoRepairTopology={handleAutoRepairTopology}
+              isSurveyorEditing={isSurveyorEditing}
+              onToggleSurveyorEditing={() => {
+                const next = !isSurveyorEditing;
+                setIsSurveyorEditing(next);
+                setActiveTool(next ? "EDIT_VERTEX" : "INSPECT");
+              }}
+              onSplitParcel={handleSplitParcel}
+              onUpdateParcelStatus={handleUpdateParcelStatus}
+            />
+          )}
+        </main>
+      </div>
 
       {/* ========================================================================= */}
       {/* 7. MODALS & SUB-WORKBENCHES                                               */}

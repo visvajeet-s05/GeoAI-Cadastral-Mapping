@@ -220,7 +220,7 @@ export const HierarchicalSearch: React.FC<HierarchicalSearchProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-20 right-4 z-30 pointer-events-auto transition-all animate-in fade-in slide-in-from-right-4 w-92 max-w-[calc(100vw-2rem)]">
+    <div className="absolute top-3 right-3 z-30 pointer-events-auto transition-all animate-in fade-in slide-in-from-right-4 w-92 max-w-[calc(100vw-2rem)]">
       <div className="bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-slate-950/70 w-full max-h-[calc(100vh-6.5rem)] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">

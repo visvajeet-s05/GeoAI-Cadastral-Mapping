@@ -90,7 +90,7 @@ export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = (
 
   return (
     <div
-      className={`fixed top-20 right-4 bottom-6 z-20 pointer-events-auto transition-transform duration-300 ease-out flex items-start ${
+      className={`absolute top-3 right-3 bottom-3 z-20 pointer-events-auto transition-transform duration-300 ease-out flex items-start ${
         isCollapsed ? "translate-x-[calc(100%-2.5rem)]" : "translate-x-0"
       }`}
     >
