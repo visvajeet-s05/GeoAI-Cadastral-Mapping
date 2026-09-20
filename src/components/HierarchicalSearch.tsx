@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, MapPin, ChevronDown, Loader2, Building2, FileText, AlertCircle } from "lucide-react";
+import { Search, MapPin, ChevronDown, Loader2, Building2, FileText, AlertCircle, X } from "lucide-react";
 import type { District, Taluk, Village } from "../types/administrative";
 import type { SelectedLandContext, AdministrativeSearchState } from "../types/context";
 
@@ -7,12 +7,16 @@ interface HierarchicalSearchProps {
   onContextChange: (context: SelectedLandContext) => void;
   onFreeSearch: (query: string) => void;
   existingContext?: SelectedLandContext | null;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export const HierarchicalSearch: React.FC<HierarchicalSearchProps> = ({
   onContextChange,
   onFreeSearch,
   existingContext,
+  isOpen = true,
+  onClose,
 }) => {
   const [searchState, setSearchState] = useState<AdministrativeSearchState>({
     districts: [],
@@ -213,28 +217,41 @@ export const HierarchicalSearch: React.FC<HierarchicalSearchProps> = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="absolute top-3.5 right-4 z-30 pointer-events-auto">
-      <div className="bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-slate-950/60 max-w-md">
+    <div className="absolute top-20 right-4 z-30 pointer-events-auto transition-all animate-in fade-in slide-in-from-right-4 w-92 max-w-[calc(100vw-2rem)]">
+      <div className="bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-slate-950/70 w-full max-h-[calc(100vh-6.5rem)] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Search className="w-4 h-4 text-cyan-400" />
-            <span className="text-sm font-bold text-white">SEARCH PLOTS</span>
+            <span className="text-sm font-bold text-white tracking-wide">SEARCH PLOTS</span>
           </div>
-          <button
-            onClick={() => setIsFreeSearchMode(!isFreeSearchMode)}
-            className={`text-xs px-2 py-1 rounded-lg transition ${
-              isFreeSearchMode
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                : 'bg-slate-700/50 text-slate-300 border border-slate-600/50'
-            }`}
-          >
-            {isFreeSearchMode ? 'Hierarchical' : 'Free Search'}
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setIsFreeSearchMode(!isFreeSearchMode)}
+              className={`text-xs px-2 py-1 rounded-lg transition ${
+                isFreeSearchMode
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                  : 'bg-slate-700/50 text-slate-300 border border-slate-600/50'
+              }`}
+            >
+              {isFreeSearchMode ? 'Hierarchical' : 'Free Search'}
+            </button>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition ml-1"
+                title="Close Search Panel"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 overflow-y-auto">
           {isFreeSearchMode ? (
             /* Free Geographic Search */
             <div className="space-y-3">

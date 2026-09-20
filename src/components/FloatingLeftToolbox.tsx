@@ -30,6 +30,8 @@ interface FloatingLeftToolboxProps {
   onExportGeoJSON: () => void;
   isSimulatingFlight: boolean;
   onToggleFlightSimulation: () => void;
+  isLayerControlOpen?: boolean;
+  onToggleLayerControl?: () => void;
 }
 
 export const FloatingLeftToolbox: React.FC<FloatingLeftToolboxProps> = ({
@@ -45,6 +47,8 @@ export const FloatingLeftToolbox: React.FC<FloatingLeftToolboxProps> = ({
   onExportGeoJSON,
   isSimulatingFlight,
   onToggleFlightSimulation,
+  isLayerControlOpen,
+  onToggleLayerControl,
 }) => {
   return (
     <div className="absolute top-20 left-4 z-20 flex flex-col gap-2 pointer-events-auto">
@@ -97,6 +101,24 @@ export const FloatingLeftToolbox: React.FC<FloatingLeftToolboxProps> = ({
             Surveyor Vertex Edit
           </span>
         </button>
+
+        {/* 4. Map Layers Drawer Toggle */}
+        {onToggleLayerControl && (
+          <button
+            onClick={onToggleLayerControl}
+            className={`p-2.5 rounded-xl transition flex items-center justify-center relative group ${
+              isLayerControlOpen
+                ? "bg-cyan-500/25 text-cyan-300 border border-cyan-500/50 shadow-lg shadow-cyan-500/20"
+                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+            }`}
+            title="Toggle Map Layers Drawer"
+          >
+            <Layers className="w-4 h-4" />
+            <span className="absolute left-14 bg-slate-950/95 border border-slate-700 text-slate-100 text-[11px] font-medium px-2 py-1 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50">
+              Map Layers Drawer
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Cadastral AI & Multi-Modal Modules Glass Capsule */}

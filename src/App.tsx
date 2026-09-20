@@ -237,6 +237,8 @@ export default function App() {
   const [comparisonParcel, setComparisonParcel] = useState<Parcel | null>(null);
   const [showDocumentUploadModal, setShowDocumentUploadModal] = useState<boolean>(false);
   const [showDocumentManager, setShowDocumentManager] = useState<boolean>(false);
+  const [showLayerControl, setShowLayerControl] = useState<boolean>(false);
+  const [showHierarchicalSearch, setShowHierarchicalSearch] = useState<boolean>(false);
 
   // Land Context Handlers
   const handleContextChange = (context: SelectedLandContext) => {
@@ -362,6 +364,7 @@ export default function App() {
 
   const selectParcel = async (parcel: Parcel) => {
     setSelectedParcel(parcel);
+    setShowHierarchicalSearch(false);
     setIsSurveyorEditing(false);
     setVlmAuditResult(null);
 
@@ -724,23 +727,31 @@ export default function App() {
         onSelectParcel={selectParcel}
         onResetGranularDemo={handleResetGranularDemo}
         onScanUnderSegmentation={handleScanUnderSegmentation}
+        isHierarchicalSearchOpen={showHierarchicalSearch}
+        onToggleHierarchicalSearch={() => setShowHierarchicalSearch((prev) => !prev)}
+        isLayerControlOpen={showLayerControl}
+        onToggleLayerControl={() => setShowLayerControl((prev) => !prev)}
       />
 
       {/* ========================================================================= */}
-      {/* 3.5 HIERARCHICAL LAND SEARCH (Phase 1)                                    */}
+      {/* 3.5 HIERARCHICAL LAND SEARCH (Toggleable Drawer)                          */}
       {/* ========================================================================= */}
       <HierarchicalSearch
         onContextChange={handleContextChange}
         onFreeSearch={handleFreeSearch}
         existingContext={selectedLandContext}
+        isOpen={showHierarchicalSearch}
+        onClose={() => setShowHierarchicalSearch(false)}
       />
 
       {/* ========================================================================= */}
-      {/* 3.6 MAP LAYER CONTROL (Phase 1)                                           */}
+      {/* 3.6 MAP LAYER CONTROL (Toggleable Drawer)                                 */}
       {/* ========================================================================= */}
       <LayerControl
         layers={mapLayers}
         onToggleLayer={handleToggleMapLayer}
+        isOpen={showLayerControl}
+        onClose={() => setShowLayerControl(false)}
       />
 
       {/* ========================================================================= */}
@@ -756,13 +767,15 @@ export default function App() {
         }}
         onOpenDualStreamCockpit={() => setShowDualStreamCockpit(true)}
         onTriggerTestMode={handleTriggerTestMode}
-         onOpenIngestModal={() => setShowIngestionModal(true)}
-         onExportGeoJSON={handleExportGeoJSON}
-         onOpenDocumentUploadModal={() => setShowDocumentUploadModal(true)}
-         onOpenDocumentManager={() => setShowDocumentManager(true)}
-         isSimulatingFlight={isSimulatingFlight}
-         onToggleFlightSimulation={handleToggleFlightPlay}
-       />
+        onOpenIngestModal={() => setShowIngestionModal(true)}
+        onExportGeoJSON={handleExportGeoJSON}
+        onOpenDocumentUploadModal={() => setShowDocumentUploadModal(true)}
+        onOpenDocumentManager={() => setShowDocumentManager(true)}
+        isSimulatingFlight={isSimulatingFlight}
+        onToggleFlightSimulation={handleToggleFlightPlay}
+        isLayerControlOpen={showLayerControl}
+        onToggleLayerControl={() => setShowLayerControl((prev) => !prev)}
+      />
 
       {/* ========================================================================= */}
       {/* 5. FLOATING BOTTOM FLIGHT CONTROLLER BAR                                  */}

@@ -35,6 +35,10 @@ interface FloatingGlassTopBarProps {
   onSelectParcel: (parcel: Parcel) => void;
   onResetGranularDemo?: () => void;
   onScanUnderSegmentation?: () => void;
+  isHierarchicalSearchOpen?: boolean;
+  onToggleHierarchicalSearch?: () => void;
+  isLayerControlOpen?: boolean;
+  onToggleLayerControl?: () => void;
 }
 
 export const FloatingGlassTopBar: React.FC<FloatingGlassTopBarProps> = ({
@@ -55,6 +59,10 @@ export const FloatingGlassTopBar: React.FC<FloatingGlassTopBarProps> = ({
   onSelectParcel,
   onResetGranularDemo,
   onScanUnderSegmentation,
+  isHierarchicalSearchOpen,
+  onToggleHierarchicalSearch,
+  isLayerControlOpen,
+  onToggleLayerControl,
 }) => {
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [showStatsModal, setShowStatsModal] = React.useState(false);
@@ -184,7 +192,39 @@ export const FloatingGlassTopBar: React.FC<FloatingGlassTopBarProps> = ({
 
         {/* Right: Telemetry Badges & Quick Search */}
         <div className="flex items-center gap-2 pointer-events-auto">
-          {/* Search Trigger */}
+          {/* 1. Map Layers Toggle Button */}
+          {onToggleLayerControl && (
+            <button
+              onClick={onToggleLayerControl}
+              className={`p-2 rounded-2xl backdrop-blur-xl border text-xs font-mono transition flex items-center gap-1.5 shadow-2xl ${
+                isLayerControlOpen
+                  ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 ring-1 ring-cyan-500/30"
+                  : "bg-slate-900/85 border-white/10 text-slate-300 hover:text-white hover:border-cyan-500/40"
+              }`}
+              title="Toggle Map Layers Drawer"
+            >
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden xl:inline">Layers</span>
+            </button>
+          )}
+
+          {/* 2. Hierarchical Search Drawer Toggle */}
+          {onToggleHierarchicalSearch && (
+            <button
+              onClick={onToggleHierarchicalSearch}
+              className={`p-2 rounded-2xl backdrop-blur-xl border text-xs font-mono transition flex items-center gap-1.5 shadow-2xl ${
+                isHierarchicalSearchOpen
+                  ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 ring-1 ring-cyan-500/30"
+                  : "bg-slate-900/85 border-white/10 text-slate-300 hover:text-white hover:border-cyan-500/40"
+              }`}
+              title="Search Land Records & Administrative Hierarchy"
+            >
+              <Search className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Search Records</span>
+            </button>
+          )}
+
+          {/* 3. Quick Plot Filter Input */}
           <div className="relative">
             {isSearchOpen ? (
               <div className="flex items-center bg-slate-900/90 backdrop-blur-xl border border-cyan-500/40 rounded-2xl px-3 py-1.5 shadow-2xl">
@@ -193,8 +233,8 @@ export const FloatingGlassTopBar: React.FC<FloatingGlassTopBarProps> = ({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  placeholder="Search UPRN / S.No / Owner..."
-                  className="bg-transparent border-none text-xs text-white placeholder-slate-400 focus:outline-none w-48 sm:w-64 font-mono"
+                  placeholder="Plot / S.No..."
+                  className="bg-transparent border-none text-xs text-white placeholder-slate-400 focus:outline-none w-36 sm:w-48 font-mono"
                   autoFocus
                 />
                 <button
@@ -211,16 +251,16 @@ export const FloatingGlassTopBar: React.FC<FloatingGlassTopBarProps> = ({
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="p-2 rounded-2xl bg-slate-900/85 backdrop-blur-xl border border-white/10 text-slate-300 hover:text-white hover:border-cyan-500/40 shadow-2xl transition flex items-center gap-1.5 text-xs font-mono"
-                title="Search cadastral parcel database"
+                title="Quick search plot list"
               >
-                <Search className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="hidden sm:inline">Search Plots</span>
+                <Search className="w-3.5 h-3.5 text-slate-400" />
+                <span className="hidden md:inline">Quick Plot</span>
               </button>
             )}
 
             {/* Search Dropdown Results */}
             {isSearchOpen && filteredParcels.length > 0 && (
-              <div className="absolute top-12 left-0 right-0 bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/40 rounded-2xl shadow-2xl p-2 max-h-64 overflow-y-auto space-y-1 z-50">
+              <div className="absolute top-12 right-0 bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/40 rounded-2xl shadow-2xl p-2 w-72 max-h-64 overflow-y-auto space-y-1 z-50">
                 {filteredParcels.map((p) => (
                   <div
                     key={p.id}

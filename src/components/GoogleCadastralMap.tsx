@@ -237,6 +237,18 @@ const MapController: React.FC<MapControllerProps> = ({
 }) => {
   const map = useMap();
 
+  // Clean Map Styling: Suppress noisy commercial POIs, stores, and transit to highlight cadastral boundaries
+  useEffect(() => {
+    if (!map) return;
+    map.setOptions({
+      styles: [
+        { featureType: "poi", stylers: [{ visibility: "off" }] },
+        { featureType: "transit", stylers: [{ visibility: "off" }] },
+        { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+      ],
+    });
+  }, [map]);
+
   // Zoom change listener for LOD decluttering
   useEffect(() => {
     if (!map || !onZoomChange) return;
@@ -726,8 +738,8 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
               const isDispute = det.multiParcelCrossing || det.status === "DISPUTED";
               const isBuilding = det.type === "BUILDING";
 
-              // LOD check: Only show detection badge pin if selected or at high zoom (>= 18.5)
-              const showDetectionBadge = isDetSelected || isLinkedToSelected || currentZoom >= 18.5;
+              // LOD check: Only show detection badge pin if selected or on dispute at very high zoom to avoid cluttering cadastral parcels
+              const showDetectionBadge = isDetSelected || isLinkedToSelected || (isDispute && currentZoom >= 19.0);
 
               const dLatLngPaths = det.polygon.map(([lng, lat]) => ({ lat, lng }));
               const dCentroidLat =
@@ -978,21 +990,23 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                       zIndex={isRoad ? 25 : 8}
                     />
 
-                    {/* Official Legal Plot / Road Reserve Tag */}
-                    <AdvancedMarker position={{ lat: cLat, lng: cLng }} zIndex={30}>
-                      <div
-                        className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold shadow-lg border backdrop-blur-sm whitespace-nowrap ${
-                          isRoad
-                            ? "bg-amber-950/90 text-amber-300 border-amber-500"
-                            : isOsr
-                            ? "bg-emerald-950/90 text-emerald-300 border-emerald-500"
-                            : "bg-sky-950/90 text-sky-300 border-sky-500"
-                        }`}
-                      >
-                        <span>{b.plotNumber}</span>
-                        <span className="opacity-75 ml-1">({Math.round(b.legalAreaSqM)}m²)</span>
-                      </div>
-                    </AdvancedMarker>
+                    {/* Official Legal Plot / Road Reserve Tag (Hidden if vector parcel boundaries already render tags to avoid duplicate overlay) */}
+                    {(!activeLayers.vectorBoundaries || isRoad || isOsr) && (
+                      <AdvancedMarker position={{ lat: cLat, lng: cLng }} zIndex={30}>
+                        <div
+                          className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold shadow-lg border backdrop-blur-sm whitespace-nowrap ${
+                            isRoad
+                              ? "bg-amber-950/90 text-amber-300 border-amber-500"
+                              : isOsr
+                              ? "bg-emerald-950/90 text-emerald-300 border-emerald-500"
+                              : "bg-sky-950/90 text-sky-300 border-sky-500"
+                          }`}
+                        >
+                          <span>{b.plotNumber}</span>
+                          <span className="opacity-75 ml-1">({Math.round(b.legalAreaSqM)}m²)</span>
+                        </div>
+                      </AdvancedMarker>
+                    )}
                   </React.Fragment>
                 );
               })}
@@ -1306,9 +1320,9 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
       </APIProvider>
 
       {/* ==================================================== */}
-      {/* MAP CONTROLS DOCK (BOTTOM-RIGHT HUD)                 */}
+      {/* MAP CONTROLS DOCK (BOTTOM-LEFT GIS DOCK)             */}
       {/* ==================================================== */}
-      <div className="absolute bottom-6 right-6 z-20 flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl shadow-slate-950/70">
+      <div className="absolute bottom-5 left-18 z-20 flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl shadow-slate-950/70">
         {/* Basemap Switcher */}
         <div className="flex items-center bg-slate-950/80 p-0.5 rounded-xl border border-slate-800 text-xs">
           <button

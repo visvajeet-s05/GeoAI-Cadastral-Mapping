@@ -1,21 +1,27 @@
 import React from "react";
-import { Layers, Eye, EyeOff, ChevronDown, ChevronRight } from "lucide-react";
+import { Layers, Eye, EyeOff, ChevronDown, ChevronRight, X } from "lucide-react";
 import type { MapLayerConfig } from "../types/context";
 
 interface LayerControlProps {
   layers: MapLayerConfig[];
   onToggleLayer: (layerId: string) => void;
   onToggleGroup?: (groupType: string) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export const LayerControl: React.FC<LayerControlProps> = ({
   layers,
   onToggleLayer,
   onToggleGroup,
+  isOpen = true,
+  onClose,
 }) => {
   const [expandedGroups, setExpandedGroups] = React.useState<Set<string>>(
     new Set(['ADMINISTRATIVE', 'CADASTRAL'])
   );
+
+  if (!isOpen) return null;
 
   const groupedLayers = layers.reduce((acc, layer) => {
     if (!acc[layer.type]) {
@@ -70,12 +76,23 @@ export const LayerControl: React.FC<LayerControlProps> = ({
   };
 
   return (
-    <div className="absolute top-20 left-4 z-20 pointer-events-auto">
-      <div className="bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-slate-950/60 max-w-xs">
+    <div className="absolute top-20 left-18 z-30 pointer-events-auto transition-all animate-in fade-in slide-in-from-left-4">
+      <div className="bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-slate-950/70 w-72 max-w-xs overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-white/10 flex items-center gap-2">
-          <Layers className="w-4 h-4 text-cyan-400" />
-          <span className="text-sm font-bold text-white">MAP LAYERS</span>
+        <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-cyan-400" />
+            <span className="text-sm font-bold text-white tracking-wide">MAP LAYERS</span>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              title="Close Map Layers"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Layer Groups */}
