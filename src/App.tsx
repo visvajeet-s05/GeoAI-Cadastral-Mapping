@@ -26,6 +26,7 @@ import { HistoricalBlueprintModal } from "./components/HistoricalBlueprintModal"
 import { ParcelAnalysisReportModal } from "./components/ParcelAnalysisReportModal";
 import { VisualComparisonSlider } from "./components/VisualComparisonSlider";
 import { DualStreamCadastralCockpit } from "./components/DualStreamCadastralCockpit";
+import { PropertyInspectionModal } from "./components/PropertyInspectionModal";
 import { AIDetectionItem } from "./components/LiveDroneSplitView";
 import { Sparkles, X, FileText, CheckCircle2 } from "lucide-react";
 
@@ -86,7 +87,7 @@ export default function App() {
   const [isAuditingVlm, setIsAuditingVlm] = useState<boolean>(false);
   const [vlmAuditResult, setVlmAuditResult] = useState<VlmAuditResult | null>(null);
 
-  // Modals
+  const [showPropertyInspectionModal, setShowPropertyInspectionModal] = useState<boolean>(false);
   const [showCertificateModal, setShowCertificateModal] = useState<boolean>(false);
   const [showIngestionModal, setShowIngestionModal] = useState<boolean>(false);
   const [showStreamModal, setShowStreamModal] = useState<boolean>(false);
@@ -568,6 +569,7 @@ export default function App() {
         <FloatingParcelInspector
           parcel={selectedParcel}
           onClose={() => setSelectedParcel(null)}
+          onOpenPropertyInspection={() => setShowPropertyInspectionModal(true)}
           onOpenCertificateModal={() => setShowCertificateModal(true)}
           onOpenReportModal={(p) => {
             setSelectedParcel(p);
@@ -595,6 +597,20 @@ export default function App() {
       {/* ========================================================================= */}
       {/* 7. MODALS & SUB-WORKBENCHES                                               */}
       {/* ========================================================================= */}
+
+      {/* High-Resolution Local Property Inspection & Verification Modal */}
+      {showPropertyInspectionModal && selectedParcel && (
+        <PropertyInspectionModal
+          parcel={selectedParcel}
+          onClose={() => setShowPropertyInspectionModal(false)}
+          onStartBoundaryEdit={() => {
+            setIsSurveyorEditing(true);
+            setActiveTool("EDIT_VERTEX");
+          }}
+          onSplitParcel={handleSplitParcel}
+          onUpdateStatus={handleUpdateParcelStatus}
+        />
+      )}
 
       {/* Dual-Stream Cadastral AI Architecture Cockpit Modal */}
       {showDualStreamCockpit && (

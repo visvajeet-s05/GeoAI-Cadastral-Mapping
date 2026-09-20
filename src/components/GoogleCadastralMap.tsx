@@ -286,7 +286,7 @@ const MapController: React.FC<MapControllerProps> = ({
     };
   }, [map, onBoundsChange]);
 
-  // Fly to selected parcel
+  // Fly/Zoom to selected parcel with optimal single-property high-res context
   useEffect(() => {
     if (!map || !selectedParcel) return;
     const lat =
@@ -298,6 +298,10 @@ const MapController: React.FC<MapControllerProps> = ({
 
     if (lat != null && lng != null) {
       map.panTo({ lat, lng });
+      const currentZ = map.getZoom() || 18;
+      if (currentZ < 19.5) {
+        map.setZoom(20);
+      }
     }
   }, [map, selectedParcel]);
 
@@ -563,46 +567,50 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
             const latLngPaths = coordsToRender.map(([lng, lat]) => ({ lat, lng }));
 
             // Harmonious Multi-Color Cadastral Palette - Distinct per adjacent property
+            const isAnySelected = Boolean(selectedParcel);
             const palette = getParcelPaletteColor(pIdx, parcel.landType);
             let fillColor = palette.fill;
-            let strokeColor = isSelected ? "#38bdf8" : palette.stroke;
-            let fillOpacity = isSelected ? 0.18 : 0.08;
-            let strokeWeight = isSelected ? 2.5 : 1.4;
+            let strokeColor = isSelected ? "#22d3ee" : isAnySelected ? "#475569" : palette.stroke;
+            let fillOpacity = isSelected ? 0.30 : isAnySelected ? 0.04 : 0.10;
+            let strokeWeight = isSelected ? 3.5 : isAnySelected ? 1.0 : 1.4;
 
-            if (showHousePerceptionOverlay) {
+            if (isSelected) {
+              fillColor = "#06b6d4";
+              strokeColor = "#22d3ee";
+            } else if (showHousePerceptionOverlay) {
               if (parcel.structureCount > 0) {
                 // House / Built-up
                 fillColor = "#0284c7";
-                strokeColor = "#38bdf8";
-                fillOpacity = isSelected ? 0.18 : 0.08;
+                strokeColor = isAnySelected ? "#475569" : "#38bdf8";
+                fillOpacity = isSelected ? 0.30 : isAnySelected ? 0.04 : 0.08;
               } else {
                 // Vacant Land / Open Plot
                 fillColor = "#10b981";
-                strokeColor = "#34d399";
-                fillOpacity = isSelected ? 0.18 : 0.08;
+                strokeColor = isAnySelected ? "#334155" : "#34d399";
+                fillOpacity = isSelected ? 0.30 : isAnySelected ? 0.04 : 0.08;
               }
             } else if (activeLayers.uncertaintyBands) {
               const uColor = getUncertaintyColor(parcel.overallUncertainty);
               fillColor = uColor.hex;
-              strokeColor = uColor.hex;
-              fillOpacity = 0.15;
+              strokeColor = isAnySelected && !isSelected ? "#475569" : uColor.hex;
+              fillOpacity = isSelected ? 0.30 : isAnySelected ? 0.04 : 0.12;
             } else if (activeLayers.zoningColors) {
               const zColor = getLandTypeColor(parcel.landType);
               fillColor = zColor.fill;
-              strokeColor = zColor.stroke;
-              fillOpacity = 0.12;
+              strokeColor = isAnySelected && !isSelected ? "#475569" : zColor.stroke;
+              fillOpacity = isSelected ? 0.30 : isAnySelected ? 0.04 : 0.10;
             }
 
             // Low-confidence inferred boundary style
-            if ((1.0 - (parcel.overallUncertainty || 0.15)) < 0.65) {
+            if (!isSelected && (1.0 - (parcel.overallUncertainty || 0.15)) < 0.65) {
               strokeColor = "#f59e0b"; // Warning amber for uncertain boundaries
             }
 
-            if (activeLayers.topologyIssues && parcel.encroachmentDetected) {
+            if (activeLayers.topologyIssues && parcel.encroachmentDetected && !isSelected) {
               fillColor = "#ef4444";
               strokeColor = "#dc2626";
-              fillOpacity = 0.20;
-              strokeWeight = 2.5;
+              fillOpacity = 0.15;
+              strokeWeight = 2.0;
             }
 
             const pCentroidLat =
@@ -625,7 +633,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                   fillOpacity={fillOpacity}
                   strokeColor={strokeColor}
                   strokeWeight={strokeWeight}
-                  zIndex={isSelected ? 10 : 2}
+                  zIndex={isSelected ? 25 : 2}
                   onClick={() => onSelectParcel(parcel)}
                   onMouseOver={(e) => {
                     setHoveredParcel(parcel);
@@ -638,6 +646,18 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                     setHoverPosition(null);
                   }}
                 />
+
+                {/* Visible Property Corner Vertex Pegs (When Selected) */}
+                {isSelected &&
+                  parcel.coordinates.map(([vLng, vLat], vIdx) => (
+                    <AdvancedMarker
+                      key={`peg-${parcel.id}-${vIdx}`}
+                      position={{ lat: vLat, lng: vLng }}
+                      zIndex={40}
+                    >
+                      <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 border-2 border-white shadow-lg ring-2 ring-cyan-500/50 -translate-x-1.5 -translate-y-1.5" />
+                    </AdvancedMarker>
+                  ))}
 
                 {/* Parcel Centroid Tag with Level-of-Detail (LOD) Decluttering */}
                 {activeLayers.vectorBoundaries && (

@@ -23,6 +23,7 @@ import { getLandTypeColor, getUncertaintyColor } from "../lib/geoUtils";
 interface FloatingParcelInspectorProps {
   parcel: Parcel | null;
   onClose: () => void;
+  onOpenPropertyInspection?: (parcel: Parcel) => void;
   onOpenCertificateModal: () => void;
   onOpenReportModal: (parcel: Parcel) => void;
   onOpenVisualComparison: (parcel: Parcel) => void;
@@ -39,6 +40,7 @@ interface FloatingParcelInspectorProps {
 export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = ({
   parcel,
   onClose,
+  onOpenPropertyInspection,
   onOpenCertificateModal,
   onOpenReportModal,
   onOpenVisualComparison,
@@ -292,6 +294,15 @@ export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = (
 
           {/* Action Buttons */}
           <div className="space-y-1.5 pt-1">
+            {/* High-Resolution Single Property Inspection Window */}
+            <button
+              onClick={() => onOpenPropertyInspection?.(parcel)}
+              className="w-full py-2 px-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-500/25 transition active:scale-98"
+            >
+              <Eye className="w-3.5 h-3.5 text-cyan-200" />
+              <span>Inspect Property (High-Res Crop)</span>
+            </button>
+
             {/* Split Parcel Action */}
             <button
               onClick={async () => {
