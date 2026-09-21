@@ -196,22 +196,22 @@ export const HierarchicalSearch: React.FC<HierarchicalSearchProps> = ({
       const response = await fetch(`/api/geocode?q=${encodeURIComponent(freeSearchQuery)}`);
       const data = await response.json();
       
-      if (data.location) {
-        onFreeSearch(freeSearchQuery);
-        // Try to resolve administrative context
-        if (data.administrativeContext) {
-          setSelectedDistrict(data.administrativeContext.districtId || "");
-          if (data.administrativeContext.talukId) {
-            setSelectedTaluk(data.administrativeContext.talukId);
-          }
-          if (data.administrativeContext.villageId) {
-            setSelectedVillage(data.administrativeContext.villageId);
-          }
+      onFreeSearch(freeSearchQuery);
+      // Try to resolve administrative context if available
+      if (data?.location && data?.administrativeContext) {
+        if (data.administrativeContext.districtId) {
+          setSelectedDistrict(data.administrativeContext.districtId);
+        }
+        if (data.administrativeContext.talukId) {
+          setSelectedTaluk(data.administrativeContext.talukId);
+        }
+        if (data.administrativeContext.villageId) {
+          setSelectedVillage(data.administrativeContext.villageId);
         }
       }
     } catch (error) {
       console.error('Geocoding failed:', error);
-      alert('Failed to resolve location. Please try administrative search.');
+      onFreeSearch(freeSearchQuery);
     } finally {
       setIsSearchingFree(false);
     }
@@ -260,6 +260,12 @@ export const HierarchicalSearch: React.FC<HierarchicalSearchProps> = ({
                   type="text"
                   value={freeSearchQuery}
                   onChange={(e) => setFreeSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleFreeSearch();
+                    }
+                  }}
                   placeholder="Enter locality (e.g., Villivakkam, Ambattur...)"
                   className="w-full bg-slate-800/50 border border-slate-600/50 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 />

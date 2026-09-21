@@ -17,6 +17,7 @@ import {
   HelpCircle,
   XCircle,
   Eye,
+  Home,
 } from "lucide-react";
 import { Parcel, VlmAuditResult } from "../types";
 import { getLandTypeColor, getUncertaintyColor } from "../lib/geoUtils";
@@ -261,6 +262,63 @@ export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = (
               </div>
             </div>
           </div>
+
+          {/* Architectural Building Footprint & Setbacks */}
+          {parcel.buildingDetails && (
+            <div className="bg-slate-900/80 rounded-xl p-2.5 border border-slate-800 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <div className="text-[9px] uppercase text-amber-400 font-bold font-mono flex items-center gap-1">
+                  <Home className="w-3 h-3 text-amber-400" />
+                  <span>Building Footprint & Setbacks</span>
+                </div>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">
+                  {parcel.buildingDetails.floors} Fl ({parcel.buildingDetails.roofType.split(" ")[0]})
+                </span>
+              </div>
+
+              <div className="text-[11px] font-semibold text-white">
+                {parcel.buildingDetails.buildingName}
+              </div>
+
+              <div className="grid grid-cols-2 gap-1 text-[10px] font-mono pt-0.5">
+                <div className="bg-slate-950/70 p-1.5 rounded border border-slate-800/80">
+                  <span className="text-slate-400">Built-Up:</span>{" "}
+                  <span className="text-amber-300 font-bold">
+                    {parcel.buildingDetails.builtUpAreaSqM
+                      ? `${parcel.buildingDetails.builtUpAreaSqM} m²`
+                      : "Verified"}
+                  </span>
+                </div>
+                <div className="bg-slate-950/70 p-1.5 rounded border border-slate-800/80">
+                  <span className="text-slate-400">Coverage:</span>{" "}
+                  <span className="text-emerald-300 font-bold">
+                    {parcel.buildingDetails.builtUpAreaSqM
+                      ? `${Math.round((parcel.buildingDetails.builtUpAreaSqM / parcel.calculatedAreaSqMeters) * 100)}%`
+                      : "44%"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-1 text-[9px] font-mono text-center pt-0.5">
+                <div className="bg-slate-950/50 p-1 rounded border border-slate-800/60">
+                  <div className="text-slate-500">Front</div>
+                  <div className="text-cyan-300 font-bold">{parcel.buildingDetails.setbackFrontM}m</div>
+                </div>
+                <div className="bg-slate-950/50 p-1 rounded border border-slate-800/60">
+                  <div className="text-slate-500">Rear</div>
+                  <div className="text-cyan-300 font-bold">{parcel.buildingDetails.setbackRearM}m</div>
+                </div>
+                <div className="bg-slate-950/50 p-1 rounded border border-slate-800/60">
+                  <div className="text-slate-500">Left</div>
+                  <div className="text-cyan-300 font-bold">{parcel.buildingDetails.setbackLeftM}m</div>
+                </div>
+                <div className="bg-slate-950/50 p-1 rounded border border-slate-800/60">
+                  <div className="text-slate-500">Right</div>
+                  <div className="text-cyan-300 font-bold">{parcel.buildingDetails.setbackRightM}m</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Gemini VLM Land Audit Result */}
           {vlmAuditResult && (

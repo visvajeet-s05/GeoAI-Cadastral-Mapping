@@ -417,28 +417,37 @@ export const MapView: React.FC<MapViewProps> = ({
         polyGroup.addLayer(marker);
       }
 
-      // Building Footprints Layer (YOLOv8 Segmentation simulation)
-      if (activeLayers.structuralFootprints && parcel.structureCount > 0) {
-        const centroidLat = parcel.centroid.latitude;
-        const centroidLon = parcel.centroid.longitude;
+      // Building Footprints Layer (Architectural Building Footprint)
+      if (activeLayers.structuralFootprints && (parcel.buildingFootprint || parcel.structureCount > 0)) {
+        let buildingLatLngs: L.LatLngExpression[] = [];
 
-        // Simulate building footprint slightly smaller than parcel centroid
-        const buildingOffset = 0.00008;
-        const buildingLatLngs: L.LatLngExpression[] = [
-          [centroidLat - buildingOffset, centroidLon - buildingOffset],
-          [centroidLat + buildingOffset, centroidLon - buildingOffset],
-          [centroidLat + buildingOffset, centroidLon + buildingOffset],
-          [centroidLat - buildingOffset, centroidLon + buildingOffset],
-        ];
+        if (parcel.buildingFootprint && parcel.buildingFootprint.length >= 3) {
+          buildingLatLngs = parcel.buildingFootprint.map(([lng, lat]) => [lat, lng] as [number, number]);
+        } else {
+          const centroidLat = parcel.centroid.latitude;
+          const centroidLon = parcel.centroid.longitude;
+          const buildingOffset = 0.00008;
+          buildingLatLngs = [
+            [centroidLat - buildingOffset, centroidLon - buildingOffset],
+            [centroidLat + buildingOffset, centroidLon - buildingOffset],
+            [centroidLat + buildingOffset, centroidLon + buildingOffset],
+            [centroidLat - buildingOffset, centroidLon + buildingOffset],
+          ];
+        }
 
+        const isSelected = selectedParcel?.id === parcel.id;
         const buildingPoly = L.polygon(buildingLatLngs, {
-          color: "#475569",
-          weight: 1.5,
-          fillColor: "#334155",
-          fillOpacity: 0.75,
+          color: isSelected ? "#0284c7" : "#d97706",
+          weight: isSelected ? 2.5 : 1.6,
+          fillColor: isSelected ? "#38bdf8" : "#f59e0b",
+          fillOpacity: isSelected ? 0.45 : 0.28,
         });
 
-        buildingPoly.bindTooltip("Building Footprint (YOLOv8 Structural Segment)");
+        const tooltipText = parcel.buildingDetails
+          ? `${parcel.buildingDetails.buildingName} (${parcel.buildingDetails.builtUpAreaSqM || 0}m²)`
+          : `Building Footprint (${parcel.uprn})`;
+        buildingPoly.bindTooltip(tooltipText);
+        buildingPoly.on("click", () => onSelectParcel(parcel));
         footprintGroup.addLayer(buildingPoly);
       }
     });
@@ -658,6 +667,7 @@ export const MapView: React.FC<MapViewProps> = ({
         driftHotspots={driftHotspots}
         selectedDetection={selectedDetection}
         onSelectDetection={onSelectDetection}
+        targetLocation={targetLocation}
       />
     );
   }

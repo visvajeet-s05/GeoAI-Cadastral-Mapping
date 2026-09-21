@@ -8,6 +8,7 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import fs from "fs";
 import multer from "multer";
+import { HIGH_PRECISION_PARCELS } from "./src/data/cadastralDataset";
 
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -330,6 +331,18 @@ interface ParcelData {
   historicalYear?: number;
   historicalSource?: string;
   historicalAreaSqM?: number;
+  buildingFootprint?: [number, number][];
+  buildingDetails?: {
+    buildingName?: string;
+    roofType?: string;
+    floors?: number;
+    builtUpAreaSqM?: number;
+    setbackFrontM?: number;
+    setbackRearM?: number;
+    setbackLeftM?: number;
+    setbackRightM?: number;
+  };
+  compoundWall?: [number, number][];
   createdAt: number;
   updatedAt: number;
 }
@@ -350,732 +363,8 @@ function initializeMockParcels() {
   PARCEL_STORE.clear();
   AUDIT_LEDGER_STORE.clear();
 
-  const granularData: Array<{
-    id: string;
-    uprn: string;
-    geoTraceCardNumber: string;
-    svamitvaCardNumber: string;
-    ownerName: string;
-    ownerNationalId: string;
-    landType: ParcelData["landType"];
-    status: ParcelData["status"];
-    rawOffsets: [number, number][];
-    structureCount: number;
-    complianceScore: number;
-    encroachmentDetected: boolean;
-    encroachmentRemarks?: string;
-    aleatoric: number;
-    epistemic: number;
-    surveyNumber: string;
-    subDivision: string;
-    historicalAreaSqM?: number;
-  }> = [
-    // =========================================================================
-    // BLOCK A: SOUTH RESIDENTIAL ROW (Plots 142/1 to 142/8) - Individual Houses
-    // Width: ~12-15m, Depth: ~18-22m, Separated by compound walls & front setback
-    // =========================================================================
-    {
-      id: "PRCL-GT-101",
-      uprn: "GT-VEL-142/1",
-      geoTraceCardNumber: "GT-PID-2026-101-A",
-      svamitvaCardNumber: "GT-PID-2026-101-A",
-      ownerName: "K. Ramanathan",
-      ownerNationalId: "AADHAAR-XXXX-7721",
-      landType: "RESIDENTIAL",
-      status: "TITLE_ISSUED",
-      rawOffsets: [
-        [0.00000, 0.00000],
-        [0.00018, 0.00000],
-        [0.00018, 0.00022],
-        [0.00000, 0.00022],
-        [0.00000, 0.00000],
-      ],
-      structureCount: 1,
-      complianceScore: 98,
-      encroachmentDetected: false,
-      aleatoric: 0.12,
-      epistemic: 0.08,
-      surveyNumber: "142",
-      subDivision: "1",
-    },
-    {
-      id: "PRCL-GT-102",
-      uprn: "GT-VEL-142/2",
-      geoTraceCardNumber: "GT-PID-2026-102-B",
-      svamitvaCardNumber: "GT-PID-2026-102-B",
-      ownerName: "S. Meenakshi Sundaram",
-      ownerNationalId: "AADHAAR-XXXX-9943",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00018, 0.00000],
-        [0.00036, 0.00000],
-        [0.00036, 0.00022],
-        [0.00018, 0.00022],
-        [0.00018, 0.00000],
-      ],
-      structureCount: 1,
-      complianceScore: 95,
-      encroachmentDetected: false,
-      aleatoric: 0.14,
-      epistemic: 0.11,
-      surveyNumber: "142",
-      subDivision: "2",
-    },
-    {
-      id: "PRCL-GT-103",
-      uprn: "GT-VEL-142/3",
-      geoTraceCardNumber: "GT-PID-2026-103-C",
-      svamitvaCardNumber: "GT-PID-2026-103-C",
-      ownerName: "V. Mohan Gupta",
-      ownerNationalId: "AADHAAR-XXXX-3312",
-      landType: "RESIDENTIAL",
-      status: "ENCROACHMENT_DISPUTE",
-      rawOffsets: [
-        [0.00036, -0.00008],
-        [0.00054, -0.00008],
-        [0.00054, 0.00022],
-        [0.00036, 0.00022],
-        [0.00036, -0.00008],
-      ],
-      structureCount: 1,
-      complianceScore: 62,
-      encroachmentDetected: true,
-      encroachmentRemarks: "Compound wall & front porch protrude 1.45m south into statutory 12m Public Road Reserve.",
-      aleatoric: 0.48,
-      epistemic: 0.52,
-      surveyNumber: "142",
-      subDivision: "3",
-    },
-    {
-      id: "PRCL-GT-104",
-      uprn: "GT-VEL-142/4",
-      geoTraceCardNumber: "GT-PID-2026-104-D",
-      svamitvaCardNumber: "GT-PID-2026-104-D",
-      ownerName: "A. Selvakumar",
-      ownerNationalId: "AADHAAR-XXXX-8821",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00054, 0.00000],
-        [0.00072, 0.00000],
-        [0.00072, 0.00022],
-        [0.00054, 0.00022],
-        [0.00054, 0.00000],
-      ],
-      structureCount: 1,
-      complianceScore: 94,
-      encroachmentDetected: false,
-      aleatoric: 0.16,
-      epistemic: 0.14,
-      surveyNumber: "142",
-      subDivision: "4",
-    },
-    {
-      id: "PRCL-GT-105",
-      uprn: "GT-VEL-142/5",
-      geoTraceCardNumber: "GT-PID-2026-105-E",
-      svamitvaCardNumber: "GT-PID-2026-105-E",
-      ownerName: "P. Krishnan Kutty",
-      ownerNationalId: "AADHAAR-XXXX-1029",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00072, 0.00000],
-        [0.00090, 0.00000],
-        [0.00090, 0.00022],
-        [0.00072, 0.00022],
-        [0.00072, 0.00000],
-      ],
-      structureCount: 1,
-      complianceScore: 96,
-      encroachmentDetected: false,
-      aleatoric: 0.15,
-      epistemic: 0.10,
-      surveyNumber: "142",
-      subDivision: "5",
-    },
-    {
-      id: "PRCL-GT-106",
-      uprn: "GT-VEL-142/6",
-      geoTraceCardNumber: "GT-PID-2026-106-F",
-      svamitvaCardNumber: "GT-PID-2026-106-F",
-      ownerName: "R. Ananthi",
-      ownerNationalId: "AADHAAR-XXXX-4421",
-      landType: "RESIDENTIAL",
-      status: "TITLE_ISSUED",
-      rawOffsets: [
-        [0.00090, 0.00000],
-        [0.00108, 0.00000],
-        [0.00108, 0.00022],
-        [0.00090, 0.00022],
-        [0.00090, 0.00000],
-      ],
-      structureCount: 1,
-      complianceScore: 97,
-      encroachmentDetected: false,
-      aleatoric: 0.11,
-      epistemic: 0.09,
-      surveyNumber: "142",
-      subDivision: "6",
-    },
-    {
-      id: "PRCL-GT-107",
-      uprn: "GT-VEL-142/7",
-      geoTraceCardNumber: "GT-PID-2026-107-G",
-      svamitvaCardNumber: "GT-PID-2026-107-G",
-      ownerName: "T. Vijayaraghavan",
-      ownerNationalId: "AADHAAR-XXXX-5511",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00108, 0.00000],
-        [0.00126, 0.00000],
-        [0.00126, 0.00022],
-        [0.00108, 0.00022],
-        [0.00108, 0.00000],
-      ],
-      structureCount: 1,
-      complianceScore: 92,
-      encroachmentDetected: false,
-      aleatoric: 0.18,
-      epistemic: 0.15,
-      surveyNumber: "142",
-      subDivision: "7",
-    },
-    {
-      id: "PRCL-GT-108",
-      uprn: "GT-VEL-142/8",
-      geoTraceCardNumber: "GT-PID-2026-108-H",
-      svamitvaCardNumber: "GT-PID-2026-108-H",
-      ownerName: "M. Balasubramanian",
-      ownerNationalId: "AADHAAR-XXXX-6632",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00126, 0.00000],
-        [0.00144, 0.00000],
-        [0.00144, 0.00022],
-        [0.00126, 0.00022],
-        [0.00126, 0.00000],
-      ],
-      structureCount: 1,
-      complianceScore: 95,
-      encroachmentDetected: false,
-      aleatoric: 0.14,
-      epistemic: 0.12,
-      surveyNumber: "142",
-      subDivision: "8",
-    },
-
-    // =========================================================================
-    // BLOCK B: NORTH RESIDENTIAL ROW (Plots 142/9 to 142/16) - Individual Houses
-    // Located north across the 12m Scheme Road (y: 0.00034 to 0.00056)
-    // =========================================================================
-    {
-      id: "PRCL-GT-109",
-      uprn: "GT-VEL-142/9",
-      geoTraceCardNumber: "GT-PID-2026-109-I",
-      svamitvaCardNumber: "GT-PID-2026-109-I",
-      ownerName: "G. Soundararajan",
-      ownerNationalId: "AADHAAR-XXXX-1234",
-      landType: "RESIDENTIAL",
-      status: "TITLE_ISSUED",
-      rawOffsets: [
-        [0.00000, 0.00034],
-        [0.00018, 0.00034],
-        [0.00018, 0.00056],
-        [0.00000, 0.00056],
-        [0.00000, 0.00034],
-      ],
-      structureCount: 1,
-      complianceScore: 98,
-      encroachmentDetected: false,
-      aleatoric: 0.10,
-      epistemic: 0.08,
-      surveyNumber: "142",
-      subDivision: "9",
-    },
-    {
-      id: "PRCL-GT-110",
-      uprn: "GT-VEL-142/10",
-      geoTraceCardNumber: "GT-PID-2026-110-J",
-      svamitvaCardNumber: "GT-PID-2026-110-J",
-      ownerName: "N. Kalyani",
-      ownerNationalId: "AADHAAR-XXXX-2345",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00018, 0.00034],
-        [0.00036, 0.00034],
-        [0.00036, 0.00056],
-        [0.00018, 0.00056],
-        [0.00018, 0.00034],
-      ],
-      structureCount: 1,
-      complianceScore: 94,
-      encroachmentDetected: false,
-      aleatoric: 0.16,
-      epistemic: 0.12,
-      surveyNumber: "142",
-      subDivision: "10",
-    },
-    {
-      id: "PRCL-GT-111",
-      uprn: "GT-VEL-142/11",
-      geoTraceCardNumber: "GT-PID-2026-111-K",
-      svamitvaCardNumber: "GT-PID-2026-111-K",
-      ownerName: "K. Venkatesh",
-      ownerNationalId: "AADHAAR-XXXX-3456",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00036, 0.00034],
-        [0.00054, 0.00034],
-        [0.00054, 0.00056],
-        [0.00036, 0.00056],
-        [0.00036, 0.00034],
-      ],
-      structureCount: 1,
-      complianceScore: 96,
-      encroachmentDetected: false,
-      aleatoric: 0.13,
-      epistemic: 0.10,
-      surveyNumber: "142",
-      subDivision: "11",
-    },
-    {
-      id: "PRCL-GT-112",
-      uprn: "GT-VEL-142/12",
-      geoTraceCardNumber: "GT-PID-2026-112-L",
-      svamitvaCardNumber: "GT-PID-2026-112-L",
-      ownerName: "S. Bharathi",
-      ownerNationalId: "AADHAAR-XXXX-4567",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00054, 0.00034],
-        [0.00072, 0.00034],
-        [0.00072, 0.00056],
-        [0.00054, 0.00056],
-        [0.00054, 0.00034],
-      ],
-      structureCount: 1,
-      complianceScore: 93,
-      encroachmentDetected: false,
-      aleatoric: 0.18,
-      epistemic: 0.14,
-      surveyNumber: "142",
-      subDivision: "12",
-    },
-    {
-      id: "PRCL-GT-113",
-      uprn: "GT-VEL-142/13",
-      geoTraceCardNumber: "GT-PID-2026-113-M",
-      svamitvaCardNumber: "GT-PID-2026-113-M",
-      ownerName: "D. Padmavathi",
-      ownerNationalId: "AADHAAR-XXXX-5678",
-      landType: "RESIDENTIAL",
-      status: "TITLE_ISSUED",
-      rawOffsets: [
-        [0.00072, 0.00034],
-        [0.00090, 0.00034],
-        [0.00090, 0.00056],
-        [0.00072, 0.00056],
-        [0.00072, 0.00034],
-      ],
-      structureCount: 1,
-      complianceScore: 97,
-      encroachmentDetected: false,
-      aleatoric: 0.11,
-      epistemic: 0.09,
-      surveyNumber: "142",
-      subDivision: "13",
-    },
-    {
-      id: "PRCL-GT-114",
-      uprn: "GT-VEL-142/14",
-      geoTraceCardNumber: "GT-PID-2026-114-N",
-      svamitvaCardNumber: "GT-PID-2026-114-N",
-      ownerName: "C. Murugesan",
-      ownerNationalId: "AADHAAR-XXXX-6789",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00090, 0.00034],
-        [0.00108, 0.00034],
-        [0.00108, 0.00056],
-        [0.00090, 0.00056],
-        [0.00090, 0.00034],
-      ],
-      structureCount: 1,
-      complianceScore: 91,
-      encroachmentDetected: false,
-      aleatoric: 0.19,
-      epistemic: 0.16,
-      surveyNumber: "142",
-      subDivision: "14",
-    },
-    {
-      id: "PRCL-GT-115",
-      uprn: "GT-VEL-142/15",
-      geoTraceCardNumber: "GT-PID-2026-115-O",
-      svamitvaCardNumber: "GT-PID-2026-115-O",
-      ownerName: "J. Radhakrishnan",
-      ownerNationalId: "AADHAAR-XXXX-7890",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00108, 0.00034],
-        [0.00126, 0.00034],
-        [0.00126, 0.00056],
-        [0.00108, 0.00056],
-        [0.00108, 0.00034],
-      ],
-      structureCount: 1,
-      complianceScore: 95,
-      encroachmentDetected: false,
-      aleatoric: 0.15,
-      epistemic: 0.12,
-      surveyNumber: "142",
-      subDivision: "15",
-    },
-    {
-      id: "PRCL-GT-116",
-      uprn: "GT-VEL-142/16",
-      geoTraceCardNumber: "GT-PID-2026-116-P",
-      svamitvaCardNumber: "GT-PID-2026-116-P",
-      ownerName: "L. Vasantha",
-      ownerNationalId: "AADHAAR-XXXX-8901",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00126, 0.00034],
-        [0.00144, 0.00034],
-        [0.00144, 0.00056],
-        [0.00126, 0.00056],
-        [0.00126, 0.00034],
-      ],
-      structureCount: 1,
-      complianceScore: 96,
-      encroachmentDetected: false,
-      aleatoric: 0.13,
-      epistemic: 0.10,
-      surveyNumber: "142",
-      subDivision: "16",
-    },
-
-    // =========================================================================
-    // BLOCK C: VACANT LAND & OPEN PLOTS (8 Distinct Vacant Plots)
-    // Structure Count = 0, clearly identified with green boundaries and uncertainty tags
-    // =========================================================================
-    {
-      id: "PRCL-VAC-201",
-      uprn: "GT-VAC-142/17",
-      geoTraceCardNumber: "GT-PID-2026-VAC-01",
-      svamitvaCardNumber: "GT-PID-2026-VAC-01",
-      ownerName: "Thirumalai Housing Corporation",
-      ownerNationalId: "CIN-U45200TN-2018",
-      landType: "UNCLAIMED",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00000, 0.00068],
-        [0.00022, 0.00068],
-        [0.00022, 0.00092],
-        [0.00000, 0.00092],
-        [0.00000, 0.00068],
-      ],
-      structureCount: 0,
-      complianceScore: 92,
-      encroachmentDetected: false,
-      aleatoric: 0.22,
-      epistemic: 0.18,
-      surveyNumber: "142",
-      subDivision: "17",
-    },
-    {
-      id: "PRCL-VAC-202",
-      uprn: "GT-VAC-142/18",
-      geoTraceCardNumber: "GT-PID-2026-VAC-02",
-      svamitvaCardNumber: "GT-PID-2026-VAC-02",
-      ownerName: "N. Sundararajan (Unbuilt Plot)",
-      ownerNationalId: "AADHAAR-XXXX-9128",
-      landType: "UNCLAIMED",
-      status: "DRAFT_SEGMENTATION",
-      rawOffsets: [
-        [0.00022, 0.00068],
-        [0.00044, 0.00068],
-        [0.00044, 0.00092],
-        [0.00022, 0.00092],
-        [0.00022, 0.00068],
-      ],
-      structureCount: 0,
-      complianceScore: 89,
-      encroachmentDetected: false,
-      aleatoric: 0.28,
-      epistemic: 0.25,
-      surveyNumber: "142",
-      subDivision: "18",
-    },
-    {
-      id: "PRCL-VAC-203",
-      uprn: "GT-VAC-142/19",
-      geoTraceCardNumber: "GT-PID-2026-VAC-03",
-      svamitvaCardNumber: "GT-PID-2026-VAC-03",
-      ownerName: "Velachery Layout Promoters",
-      ownerNationalId: "PAN-CORP-4402",
-      landType: "UNCLAIMED",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00044, 0.00068],
-        [0.00066, 0.00068],
-        [0.00066, 0.00092],
-        [0.00044, 0.00092],
-        [0.00044, 0.00068],
-      ],
-      structureCount: 0,
-      complianceScore: 94,
-      encroachmentDetected: false,
-      aleatoric: 0.20,
-      epistemic: 0.16,
-      surveyNumber: "142",
-      subDivision: "19",
-    },
-    {
-      id: "PRCL-VAC-204",
-      uprn: "GT-VAC-142/20",
-      geoTraceCardNumber: "GT-PID-2026-VAC-04",
-      svamitvaCardNumber: "GT-PID-2026-VAC-04",
-      ownerName: "Panchayat Green Buffer Reserve (OSR)",
-      ownerNationalId: "PAN-PANCH-0091",
-      landType: "PUBLIC_INFRASTRUCTURE",
-      status: "TITLE_ISSUED",
-      rawOffsets: [
-        [0.00066, 0.00068],
-        [0.00092, 0.00068],
-        [0.00092, 0.00092],
-        [0.00066, 0.00092],
-        [0.00066, 0.00068],
-      ],
-      structureCount: 0,
-      complianceScore: 99,
-      encroachmentDetected: false,
-      aleatoric: 0.09,
-      epistemic: 0.07,
-      surveyNumber: "142",
-      subDivision: "20",
-    },
-    {
-      id: "PRCL-VAC-205",
-      uprn: "GT-VAC-143/1",
-      geoTraceCardNumber: "GT-PID-2026-VAC-05",
-      svamitvaCardNumber: "GT-PID-2026-VAC-05",
-      ownerName: "B. Karthikeyan (Vacant Infill)",
-      ownerNationalId: "AADHAAR-XXXX-4491",
-      landType: "UNCLAIMED",
-      status: "DRAFT_SEGMENTATION",
-      rawOffsets: [
-        [0.00092, 0.00068],
-        [0.00114, 0.00068],
-        [0.00114, 0.00092],
-        [0.00092, 0.00092],
-        [0.00092, 0.00068],
-      ],
-      structureCount: 0,
-      complianceScore: 88,
-      encroachmentDetected: false,
-      aleatoric: 0.32,
-      epistemic: 0.28,
-      surveyNumber: "143",
-      subDivision: "1",
-    },
-    {
-      id: "PRCL-VAC-206",
-      uprn: "GT-VAC-143/2",
-      geoTraceCardNumber: "GT-PID-2026-VAC-06",
-      svamitvaCardNumber: "GT-PID-2026-VAC-06",
-      ownerName: "Harish & Ramesh Meena (Co-Owners)",
-      ownerNationalId: "AADHAAR-XXXX-1029",
-      landType: "AGRICULTURAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00114, 0.00068],
-        [0.00144, 0.00068],
-        [0.00144, 0.00092],
-        [0.00114, 0.00092],
-        [0.00114, 0.00068],
-      ],
-      structureCount: 0,
-      complianceScore: 91,
-      encroachmentDetected: false,
-      aleatoric: 0.26,
-      epistemic: 0.22,
-      surveyNumber: "143",
-      subDivision: "2",
-    },
-
-    // =========================================================================
-    // BLOCK D: COMMERCIAL & MIXED-USE PROPERTIES (West Frontage)
-    // =========================================================================
-    {
-      id: "PRCL-COM-301",
-      uprn: "GT-COM-142/21",
-      geoTraceCardNumber: "GT-PID-2026-COM-01",
-      svamitvaCardNumber: "GT-PID-2026-COM-01",
-      ownerName: "Nilgiris Supermarket & Retail",
-      ownerNationalId: "GSTIN-33AAACN1234F1Z",
-      landType: "COMMERCIAL",
-      status: "TITLE_ISSUED",
-      rawOffsets: [
-        [-0.00030, 0.00000],
-        [-0.00008, 0.00000],
-        [-0.00008, 0.00024],
-        [-0.00030, 0.00024],
-        [-0.00030, 0.00000],
-      ],
-      structureCount: 1,
-      complianceScore: 96,
-      encroachmentDetected: false,
-      aleatoric: 0.15,
-      epistemic: 0.12,
-      surveyNumber: "142",
-      subDivision: "21",
-    },
-    {
-      id: "PRCL-COM-302",
-      uprn: "GT-COM-142/22",
-      geoTraceCardNumber: "GT-PID-2026-COM-02",
-      svamitvaCardNumber: "GT-PID-2026-COM-02",
-      ownerName: "Apollo Pharmacy & Diagnostic Center",
-      ownerNationalId: "GSTIN-33AAACA4567G1Z",
-      landType: "COMMERCIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [-0.00030, 0.00034],
-        [-0.00008, 0.00034],
-        [-0.00008, 0.00058],
-        [-0.00030, 0.00058],
-        [-0.00030, 0.00034],
-      ],
-      structureCount: 1,
-      complianceScore: 94,
-      encroachmentDetected: false,
-      aleatoric: 0.17,
-      epistemic: 0.14,
-      surveyNumber: "142",
-      subDivision: "22",
-    },
-    {
-      id: "PRCL-COM-303",
-      uprn: "GT-COM-142/23",
-      geoTraceCardNumber: "GT-PID-2026-COM-03",
-      svamitvaCardNumber: "GT-PID-2026-COM-03",
-      ownerName: "State Bank of India Branch & ATM",
-      ownerNationalId: "RBI-BANK-002",
-      landType: "COMMERCIAL",
-      status: "TITLE_ISSUED",
-      rawOffsets: [
-        [-0.00030, 0.00068],
-        [-0.00008, 0.00068],
-        [-0.00008, 0.00092],
-        [-0.00030, 0.00092],
-        [-0.00030, 0.00068],
-      ],
-      structureCount: 1,
-      complianceScore: 99,
-      encroachmentDetected: false,
-      aleatoric: 0.08,
-      epistemic: 0.06,
-      surveyNumber: "142",
-      subDivision: "23",
-    },
-
-    // =========================================================================
-    // BLOCK E: CIVIC & IRREGULAR / CORNER PLOTS
-    // =========================================================================
-    {
-      id: "PRCL-CIVIC-401",
-      uprn: "GT-CIV-142/24",
-      geoTraceCardNumber: "GT-PID-2026-CIV-01",
-      svamitvaCardNumber: "GT-PID-2026-CIV-01",
-      ownerName: "Velachery Community Hall & Sports Complex",
-      ownerNationalId: "PAN-PANCH-0091",
-      landType: "PUBLIC_INFRASTRUCTURE",
-      status: "TITLE_ISSUED",
-      rawOffsets: [
-        [0.00150, 0.00000],
-        [0.00185, 0.00000],
-        [0.00185, 0.00045],
-        [0.00150, 0.00045],
-        [0.00150, 0.00000],
-      ],
-      structureCount: 2,
-      complianceScore: 98,
-      encroachmentDetected: false,
-      aleatoric: 0.10,
-      epistemic: 0.08,
-      surveyNumber: "142",
-      subDivision: "24",
-    },
-    {
-      id: "PRCL-IRR-501",
-      uprn: "GT-IRR-142/25",
-      geoTraceCardNumber: "GT-PID-2026-IRR-01",
-      svamitvaCardNumber: "GT-PID-2026-IRR-01",
-      ownerName: "Chandrasekaran & Sons (L-Shaped Plot)",
-      ownerNationalId: "AADHAAR-XXXX-9901",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00150, 0.00055],
-        [0.00185, 0.00055],
-        [0.00185, 0.00078],
-        [0.00168, 0.00078],
-        [0.00168, 0.00095],
-        [0.00150, 0.00095],
-        [0.00150, 0.00055],
-      ],
-      structureCount: 1,
-      complianceScore: 93,
-      encroachmentDetected: false,
-      aleatoric: 0.22,
-      epistemic: 0.18,
-      surveyNumber: "142",
-      subDivision: "25",
-    },
-    {
-      id: "PRCL-IRR-502",
-      uprn: "GT-IRR-142/26",
-      geoTraceCardNumber: "GT-PID-2026-IRR-02",
-      svamitvaCardNumber: "GT-PID-2026-IRR-02",
-      ownerName: "M. Vasanthi (Corner Chamfered Plot)",
-      ownerNationalId: "AADHAAR-XXXX-8812",
-      landType: "RESIDENTIAL",
-      status: "TOPOLOGY_VERIFIED",
-      rawOffsets: [
-        [0.00168, 0.00078],
-        [0.00185, 0.00078],
-        [0.00185, 0.00090],
-        [0.00178, 0.00095],
-        [0.00168, 0.00095],
-        [0.00168, 0.00078],
-      ],
-      structureCount: 1,
-      complianceScore: 95,
-      encroachmentDetected: false,
-      aleatoric: 0.16,
-      epistemic: 0.13,
-      surveyNumber: "142",
-      subDivision: "26",
-    },
-  ];
-
-  for (const item of granularData) {
-    const coords: [number, number][] = item.rawOffsets.map(([dx, dy]) => [
-      Math.round((BASE_LON + dx) * 10000000) / 10000000,
-      Math.round((BASE_LAT + dy) * 10000000) / 10000000,
-    ]);
-
+  for (const item of HIGH_PRECISION_PARCELS) {
+    const coords = item.coordinates;
     const metrics = computeMetrics(coords);
     const overallUncertainty = Math.sqrt(
       (item.aleatoric ** 2 + item.epistemic ** 2) / 2.0
@@ -1089,7 +378,7 @@ function initializeMockParcels() {
       "SURV-GOV-901",
       "K. Ramanathan (Chief Cadastral Officer)",
       "INITIAL_INGESTION",
-      `Vectorized from high-resolution UAV drone orthomosaic. Surface area: ${metrics.areaSqMeters} m².`
+      `Vectorized from high-resolution UAV drone orthomosaic. Surface area: ${metrics.areaSqMeters} m² with verified architectural building footprint.`
     );
 
     const parcel: ParcelData = {
@@ -1102,6 +391,8 @@ function initializeMockParcels() {
       landType: item.landType,
       status: item.status,
       coordinates: coords,
+      buildingFootprint: item.buildingFootprint,
+      buildingDetails: item.buildingDetails,
       calculatedAreaSqMeters: metrics.areaSqMeters,
       perimeterMeters: metrics.perimeterMeters,
       centroid: metrics.centroid,
@@ -1194,20 +485,538 @@ app.get("/api/admin/taluks/:talukId/villages", (req, res) => {
   });
 });
 
-// GET /api/geocode - Geocode a place name (using Nominatim)
+// ==========================================
+// GLOBAL & REGIONAL CADASTRAL PRESETS
+// ==========================================
+
+interface CadastralLocationPreset {
+  id: string;
+  name: string;
+  aliases: string[];
+  lat: number;
+  lon: number;
+  category: "CHENNAI" | "TAMIL_NADU" | "INDIA" | "GLOBAL";
+  district: string;
+  state: string;
+  country: string;
+  description: string;
+  defaultZoom?: number;
+}
+
+const GLOBAL_CADASTRAL_PRESETS: CadastralLocationPreset[] = [
+  // Chennai Core Cadastral Sectors
+  {
+    id: "loc-velachery",
+    name: "Velachery Town (S.No. 142), Chennai",
+    aliases: ["velachery", "velacheri", "velachery town", "142", "gt-vel"],
+    lat: 12.9839,
+    lon: 80.2090,
+    category: "CHENNAI",
+    district: "Chennai",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "High-precision urban cadastral zone with verified building footprints & legal road reserve",
+    defaultZoom: 19.5,
+  },
+  {
+    id: "loc-guindy",
+    name: "Guindy Industrial Estate, Chennai",
+    aliases: ["guindy", "guindy industrial", "guindy estate", "kathipara"],
+    lat: 13.0067,
+    lon: 80.2025,
+    category: "CHENNAI",
+    district: "Chennai",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Mixed commercial & light industrial survey subdivision",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-adyar",
+    name: "Adyar Riverfront Sector, Chennai",
+    aliases: ["adyar", "adyar river", "gandhi nagar", "kotturpuram"],
+    lat: 13.0012,
+    lon: 80.2565,
+    category: "CHENNAI",
+    district: "Chennai",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Residential & riparian buffer cadastral registry",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-tnagar",
+    name: "T. Nagar Commercial Hub, Chennai",
+    aliases: ["t nagar", "t.nagar", "thyagaraya nagar", "ranganathan st", "panagal park"],
+    lat: 13.0418,
+    lon: 80.2341,
+    category: "CHENNAI",
+    district: "Chennai",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Dense commercial and retail multi-story building blocks",
+    defaultZoom: 19.0,
+  },
+  {
+    id: "loc-mylapore",
+    name: "Mylapore Historic Ward, Chennai",
+    aliases: ["mylapore", "kapaleeshwarar", "san thome", "mandaveli"],
+    lat: 13.0368,
+    lon: 80.2676,
+    category: "CHENNAI",
+    district: "Chennai",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Heritage residential & institutional plots with dense setbacks",
+    defaultZoom: 19.0,
+  },
+  {
+    id: "loc-annanagar",
+    name: "Anna Nagar Sector 1, Chennai",
+    aliases: ["anna nagar", "roundtana", "tower park", "anna nagar east"],
+    lat: 13.0850,
+    lon: 80.2101,
+    category: "CHENNAI",
+    district: "Chennai",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Planned grid layout cadastral blocks with wide statutory road widths",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-omr",
+    name: "OMR Sholinganallur Tech Corridor, Chennai",
+    aliases: ["omr", "sholinganallur", "old mahabalipuram road", "karapakkam", "navalur"],
+    lat: 12.9010,
+    lon: 80.2279,
+    category: "CHENNAI",
+    district: "Chengalpattu",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "High-tech SEZ campus & commercial IT park cadastral grid",
+    defaultZoom: 18.0,
+  },
+  {
+    id: "loc-marinabeach",
+    name: "Marina Promenade & Santhome, Chennai",
+    aliases: ["marina", "marina beach", "kamarajar salai", "triplicane coast"],
+    lat: 13.0500,
+    lon: 80.2824,
+    category: "CHENNAI",
+    district: "Chennai",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Coastal regulation zone and municipal public amenities",
+    defaultZoom: 18.0,
+  },
+  {
+    id: "loc-tambaram",
+    name: "Tambaram Municipal Zone, Chennai",
+    aliases: ["tambaram", "tambaram sanatorium", "selaiyur"],
+    lat: 12.9249,
+    lon: 80.1000,
+    category: "CHENNAI",
+    district: "Chengalpattu",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Suburban residential and railway infrastructure plots",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-porur",
+    name: "Porur Junction & Lake Sector, Chennai",
+    aliases: ["porur", "ramachandra", "mount poonamallee"],
+    lat: 13.0382,
+    lon: 80.1565,
+    category: "CHENNAI",
+    district: "Chennai",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Rapidly urbanizing commercial & mixed residential cadastral blocks",
+    defaultZoom: 18.5,
+  },
+  // Tamil Nadu Districts
+  {
+    id: "loc-coimbatore",
+    name: "Coimbatore Gandhipuram Central, TN",
+    aliases: ["coimbatore", "kovai", "gandhipuram", "rs puram"],
+    lat: 11.0168,
+    lon: 76.9558,
+    category: "TAMIL_NADU",
+    district: "Coimbatore",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Tier-2 industrial hub & textile corridor survey sector",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-madurai",
+    name: "Madurai Meenakshi Central Ward, TN",
+    aliases: ["madurai", "meenakshi amman", "simmakkal"],
+    lat: 9.9252,
+    lon: 78.1198,
+    category: "TAMIL_NADU",
+    district: "Madurai",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Historic concentric street layout with high density housing",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-trichy",
+    name: "Tiruchirappalli Cantonment, TN",
+    aliases: ["trichy", "tiruchirappalli", "thillai nagar", "rockfort"],
+    lat: 10.7905,
+    lon: 78.7047,
+    category: "TAMIL_NADU",
+    district: "Tiruchirappalli",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Central Tamil Nadu agrarian & municipal survey sector",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-salem",
+    name: "Salem Central Fairlands, TN",
+    aliases: ["salem", "fairlands", "shevapet"],
+    lat: 11.6643,
+    lon: 78.1460,
+    category: "TAMIL_NADU",
+    district: "Salem",
+    state: "Tamil Nadu",
+    country: "India",
+    description: "Steel & mineral trading municipal cadastral block",
+    defaultZoom: 18.5,
+  },
+  // Major Indian Tech Metros
+  {
+    id: "loc-bengaluru",
+    name: "Bengaluru Electronic City & Indiranagar, KA",
+    aliases: ["bengaluru", "bangalore", "electronic city", "indiranagar", "whitefield", "koramangala"],
+    lat: 12.9716,
+    lon: 77.5946,
+    category: "INDIA",
+    district: "Bengaluru Urban",
+    state: "Karnataka",
+    country: "India",
+    description: "India's premier technology park and planned layouts",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-hyderabad",
+    name: "Hyderabad Hitec City & Cyberabad, TS",
+    aliases: ["hyderabad", "hitec city", "cyberabad", "gachibowli", "madhapur"],
+    lat: 17.4435,
+    lon: 78.3772,
+    category: "INDIA",
+    district: "Hyderabad",
+    state: "Telangana",
+    country: "India",
+    description: "High-density cyber corridor and modern planned commercial campuses",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-mumbai",
+    name: "Mumbai BKC & Nariman Point, MH",
+    aliases: ["mumbai", "bombay", "bkc", "bandra kurla", "nariman point", "colaba"],
+    lat: 19.0657,
+    lon: 72.8687,
+    category: "INDIA",
+    district: "Mumbai Suburban",
+    state: "Maharashtra",
+    country: "India",
+    description: "Financial capital high-value skyscraper and statutory road grid",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-delhi",
+    name: "New Delhi Connaught Place & Central Vista, DL",
+    aliases: ["delhi", "new delhi", "connaught place", "cp", "central vista", "aerocity"],
+    lat: 28.6315,
+    lon: 77.2167,
+    category: "INDIA",
+    district: "New Delhi",
+    state: "Delhi",
+    country: "India",
+    description: "Radial heritage layout and government statutory land records",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-pune",
+    name: "Pune Hinjawadi Tech Park, MH",
+    aliases: ["pune", "hinjawadi", "koregaon park", "wakad", "baner"],
+    lat: 18.5913,
+    lon: 73.7389,
+    category: "INDIA",
+    district: "Pune",
+    state: "Maharashtra",
+    country: "India",
+    description: "Automotive & software campus survey boundaries",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-kolkata",
+    name: "Kolkata Salt Lake Sector V, WB",
+    aliases: ["kolkata", "calcutta", "salt lake", "new town", "park street"],
+    lat: 22.5867,
+    lon: 88.4178,
+    category: "INDIA",
+    district: "North 24 Parganas",
+    state: "West Bengal",
+    country: "India",
+    description: "Planned township grid sectors and commercial zones",
+    defaultZoom: 18.5,
+  },
+  // Global Landmarks & Metros
+  {
+    id: "loc-london",
+    name: "London Westminster & City, UK",
+    aliases: ["london", "westminster", "city of london", "canary wharf", "uk"],
+    lat: 51.4995,
+    lon: -0.1248,
+    category: "GLOBAL",
+    district: "Greater London",
+    state: "England",
+    country: "United Kingdom",
+    description: "HM Land Registry cadastral title plan sector with historic building footprints",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-newyork",
+    name: "New York Manhattan Times Square, USA",
+    aliases: ["new york", "nyc", "manhattan", "times square", "brooklyn", "usa"],
+    lat: 40.7580,
+    lon: -73.9855,
+    category: "GLOBAL",
+    district: "New York County",
+    state: "New York",
+    country: "United States",
+    description: "Borough tax block & lot (BBL) grid system with structural footprints",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-tokyo",
+    name: "Tokyo Shinjuku Metropolitan Sector, JP",
+    aliases: ["tokyo", "shinjuku", "shibuya", "ginza", "japan"],
+    lat: 35.6938,
+    lon: 139.7034,
+    category: "GLOBAL",
+    district: "Tokyo",
+    state: "Kanto",
+    country: "Japan",
+    description: "Ultra-dense Japanese chome land registry and multi-tier parcel lots",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-singapore",
+    name: "Singapore Marina Bay Financial Centre, SG",
+    aliases: ["singapore", "marina bay", "raffles place", "jurong", "sg"],
+    lat: 1.2838,
+    lon: 103.8591,
+    category: "GLOBAL",
+    district: "Central Region",
+    state: "Singapore",
+    country: "Singapore",
+    description: "SLA (Singapore Land Authority) 3D cadastral land & strata lots",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-dubai",
+    name: "Dubai Downtown Burj Khalifa Sector, UAE",
+    aliases: ["dubai", "downtown dubai", "burj khalifa", "business bay", "uae"],
+    lat: 25.1972,
+    lon: 55.2744,
+    category: "GLOBAL",
+    district: "Dubai",
+    state: "Dubai",
+    country: "United Arab Emirates",
+    description: "Dubai Land Department (DLD) modern master-planned cadastral parcels",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-sanfrancisco",
+    name: "San Francisco Financial & Market St, USA",
+    aliases: ["san francisco", "sf", "silicon valley", "bay area", "soma"],
+    lat: 37.7879,
+    lon: -122.4075,
+    category: "GLOBAL",
+    district: "San Francisco",
+    state: "California",
+    country: "United States",
+    description: "Assessor-Recorder parcel map blocks and building footprints",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-paris",
+    name: "Paris Champs-Élysées & 8th Arrondissement, FR",
+    aliases: ["paris", "champs elysees", "eiffel", "france"],
+    lat: 48.8698,
+    lon: 2.3075,
+    category: "GLOBAL",
+    district: "Paris",
+    state: "Île-de-France",
+    country: "France",
+    description: "Cadastre Français historical Haussmannian parcel divisions",
+    defaultZoom: 18.5,
+  },
+  {
+    id: "loc-sydney",
+    name: "Sydney CBD & Circular Quay, AU",
+    aliases: ["sydney", "circular quay", "sydney cbd", "australia"],
+    lat: -33.8568,
+    lon: 151.2153,
+    category: "GLOBAL",
+    district: "Sydney",
+    state: "New South Wales",
+    country: "Australia",
+    description: "NSW Land Registry Services Torrens title parcels and easements",
+    defaultZoom: 18.5,
+  },
+];
+
+// GET /api/geocode/presets - Get all available curated global & regional presets
+app.get("/api/geocode/presets", (_req, res) => {
+  res.json({
+    status: "success",
+    count: GLOBAL_CADASTRAL_PRESETS.length,
+    presets: GLOBAL_CADASTRAL_PRESETS,
+  });
+});
+
+// GET /api/geocode/suggest - Quick autocomplete suggestions for real-time live search
+app.get("/api/geocode/suggest", (req, res) => {
+  const { q } = req.query;
+  if (!q || typeof q !== "string" || !q.trim()) {
+    return res.json({
+      status: "success",
+      suggestions: GLOBAL_CADASTRAL_PRESETS.slice(0, 10).map((p) => ({
+        id: p.id,
+        name: p.name,
+        lat: p.lat,
+        lon: p.lon,
+        category: p.category,
+        district: p.district,
+        state: p.state,
+        country: p.country,
+        description: p.description,
+      })),
+    });
+  }
+
+  const query = q.trim().toLowerCase();
+
+  // Match presets by name or alias
+  const matched = GLOBAL_CADASTRAL_PRESETS.filter(
+    (p) =>
+      p.name.toLowerCase().includes(query) ||
+      p.aliases.some((a) => a.includes(query) || query.includes(a)) ||
+      p.district.toLowerCase().includes(query) ||
+      p.state.toLowerCase().includes(query) ||
+      p.country.toLowerCase().includes(query)
+  );
+
+  res.json({
+    status: "success",
+    query: q,
+    suggestions: matched.slice(0, 8).map((p) => ({
+      id: p.id,
+      name: p.name,
+      lat: p.lat,
+      lon: p.lon,
+      category: p.category,
+      district: p.district,
+      state: p.state,
+      country: p.country,
+      description: p.description,
+    })),
+  });
+});
+
+// GET /api/geocode - Global real-time forward geocoder (Presets + Coordinate Parser + Global Nominatim)
 app.get("/api/geocode", async (req, res) => {
   const { q } = req.query;
-  if (!q || typeof q !== 'string') {
+  if (!q || typeof q !== 'string' || !q.trim()) {
     return res.status(400).json({ error: "Query parameter 'q' is required" });
   }
 
+  const rawQuery = q.trim();
+  const lowerQuery = rawQuery.toLowerCase();
+
+  // 1. Direct Latitude/Longitude coordinate matching (e.g., "12.9839, 80.2090" or "13.0827 80.2707")
+  const coordRegex = /^([-+]?\d{1,2}(?:\.\d+)?)[,\s]+([-+]?\d{1,3}(?:\.\d+)?)$/;
+  const coordMatch = rawQuery.match(coordRegex);
+  if (coordMatch) {
+    const lat = parseFloat(coordMatch[1]);
+    const lon = parseFloat(coordMatch[2]);
+    if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      return res.json({
+        status: "success",
+        location: {
+          lat,
+          lon,
+          displayName: `Coordinate Location (${lat.toFixed(5)}, ${lon.toFixed(5)})`,
+        },
+        administrativeContext: {
+          district: "Custom Coordinates",
+          state: "Global Geodetic",
+        },
+        source: "DIRECT_COORDINATES",
+      });
+    }
+  }
+
+  // 2. High-speed Built-in Presets Matching
+  const exactPreset = GLOBAL_CADASTRAL_PRESETS.find(
+    (p) =>
+      p.name.toLowerCase() === lowerQuery ||
+      p.aliases.includes(lowerQuery)
+  );
+  if (exactPreset) {
+    return res.json({
+      status: "success",
+      location: {
+        lat: exactPreset.lat,
+        lon: exactPreset.lon,
+        displayName: exactPreset.name,
+      },
+      administrativeContext: {
+        district: exactPreset.district,
+        state: exactPreset.state,
+      },
+      preset: exactPreset,
+      source: "INSTANT_PRESET",
+    });
+  }
+
+  const partialPreset = GLOBAL_CADASTRAL_PRESETS.find(
+    (p) =>
+      p.name.toLowerCase().includes(lowerQuery) ||
+      p.aliases.some((a) => lowerQuery.includes(a) || a.includes(lowerQuery))
+  );
+  if (partialPreset) {
+    return res.json({
+      status: "success",
+      location: {
+        lat: partialPreset.lat,
+        lon: partialPreset.lon,
+        displayName: partialPreset.name,
+      },
+      administrativeContext: {
+        district: partialPreset.district,
+        state: partialPreset.state,
+      },
+      preset: partialPreset,
+      source: "INSTANT_PRESET",
+    });
+  }
+
+  // 3. Global OpenStreetMap Geocoding (without any country restriction)
   try {
-    // Using Nominatim OpenStreetMap geocoding service
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=IN`,
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(rawQuery)}&limit=3&addressdetails=1`,
       {
         headers: {
-          'User-Agent': 'GeoTRACE-AI-Cadastral-System',
+          'User-Agent': 'GeoTRACE-AI-Global-Cadastral-Perception/2.0',
         },
       }
     );
@@ -1215,7 +1024,7 @@ app.get("/api/geocode", async (req, res) => {
 
     if (data && data.length > 0) {
       const result = data[0];
-      res.json({
+      return res.json({
         status: "success",
         location: {
           lat: parseFloat(result.lat),
@@ -1223,22 +1032,36 @@ app.get("/api/geocode", async (req, res) => {
           displayName: result.display_name,
         },
         administrativeContext: {
-          // Try to extract administrative context from address components
-          district: result.address?.county || result.address?.state_district,
-          state: result.address?.state,
+          district: result.address?.county || result.address?.state_district || result.address?.city || result.address?.town,
+          state: result.address?.state || result.address?.region,
+          country: result.address?.country,
         },
-      });
-    } else {
-      res.status(404).json({
-        status: "not_found",
-        error: "Location not found",
+        source: "GLOBAL_NOMINATIM",
       });
     }
+
+    // If Nominatim returned no results, fallback to Velachery
+    res.status(404).json({
+      status: "not_found",
+      error: `Location "${rawQuery}" not found. Try entering a city, area name, or coordinates.`,
+      availablePresets: GLOBAL_CADASTRAL_PRESETS.slice(0, 6).map((p) => p.name),
+    });
   } catch (error) {
-    console.error('Geocoding error:', error);
-    res.status(500).json({
-      status: "error",
-      error: "Failed to geocode location",
+    console.error('Global geocoding error:', error);
+    // On network error fallback to best fuzzy preset or Velachery
+    const fallback = GLOBAL_CADASTRAL_PRESETS[0];
+    res.json({
+      status: "success",
+      location: {
+        lat: fallback.lat,
+        lon: fallback.lon,
+        displayName: `${fallback.name} (Offline Fallback)`,
+      },
+      administrativeContext: {
+        district: fallback.district,
+        state: fallback.state,
+      },
+      source: "FALLBACK_PRESET",
     });
   }
 });
@@ -1903,6 +1726,386 @@ app.get("/api/parcels", (req, res) => {
   res.json({
     count: parcels.length,
     parcels,
+  });
+});
+
+// ==========================================
+// DYNAMIC GLOBAL CADASTRAL RELOCATION ENGINE
+// ==========================================
+
+function generateParcelsForLocation(
+  baseLat: number,
+  baseLon: number,
+  locationName: string,
+  stateName?: string,
+  districtName?: string,
+  talukName?: string,
+  villageName?: string
+): ParcelData[] {
+  // If close to Velachery S.No. 142 (within ~800m), restore official high-precision dataset
+  const dLat = Math.abs(baseLat - 12.9839);
+  const dLon = Math.abs(baseLon - 80.2090);
+  if (dLat < 0.008 && dLon < 0.008) {
+    initializeMockParcels();
+    if (typeof virtualUAV !== "undefined" && virtualUAV?.relocate) {
+      virtualUAV.relocate(80.2090, 12.9839);
+    }
+    return Array.from(PARCEL_STORE.values());
+  }
+
+  PARCEL_STORE.clear();
+  AUDIT_LEDGER_STORE.clear();
+
+  // Create clean location identifier prefix
+  const cleanCode =
+    locationName
+      .replace(/[^a-zA-Z]/g, "")
+      .slice(0, 4)
+      .toUpperCase() || "CAD";
+
+  // WGS84 Geodesic conversion at target latitude
+  const latRad = (baseLat * Math.PI) / 180.0;
+  const cosLat = Math.cos(latRad);
+  const degLonPerM = 1.0 / (111320.0 * (cosLat === 0 ? 0.0001 : cosLat));
+  const degLatPerM = 1.0 / 111132.0;
+
+  // 1. Statutory Public Road Reserve Corridor (East-West axis, width 12m, length 240m)
+  const roadHalfLenM = 120;
+  const roadHalfWidthM = 6;
+  const roadPoly: [number, number][] = [
+    [baseLon - roadHalfLenM * degLonPerM, baseLat + roadHalfWidthM * degLatPerM],
+    [baseLon + roadHalfLenM * degLonPerM, baseLat + roadHalfWidthM * degLatPerM],
+    [baseLon + roadHalfLenM * degLonPerM, baseLat - roadHalfWidthM * degLatPerM],
+    [baseLon - roadHalfLenM * degLonPerM, baseLat - roadHalfWidthM * degLatPerM],
+    [baseLon - roadHalfLenM * degLonPerM, baseLat + roadHalfWidthM * degLatPerM],
+  ];
+
+  const generatedList: ParcelData[] = [];
+
+  const roadMetrics = computeMetrics(roadPoly);
+  const roadId = `PRCL-${cleanCode}-ROAD`;
+  const roadGenesis = createAuditBlock(
+    roadId,
+    0,
+    GENESIS_HASH,
+    roadPoly,
+    "SURV-GOV-901",
+    "Chief Cadastral Surveyor",
+    "INITIAL_INGESTION",
+    `Public Road Reserve & Utility Corridor vectorized for ${locationName}`
+  );
+
+  const roadParcel: ParcelData = {
+    id: roadId,
+    uprn: `GT-${cleanCode}-ROAD/ROW`,
+    geoTraceCardNumber: `GT-${cleanCode}-ROAD-2026`,
+    svamitvaCardNumber: `GT-${cleanCode}-ROAD-2026`,
+    ownerName: `Municipal Corporation (${locationName} Statutory Road Right of Way)`,
+    ownerNationalId: `GOV-PUB-ROAD-${cleanCode}`,
+    landType: "PUBLIC_INFRASTRUCTURE",
+    status: "TITLE_ISSUED",
+    coordinates: roadPoly,
+    calculatedAreaSqMeters: roadMetrics.areaSqMeters,
+    perimeterMeters: roadMetrics.perimeterMeters,
+    centroid: roadMetrics.centroid,
+    vertexCount: roadMetrics.vertexCount,
+    epistemicUncertainty: 0.04,
+    aleatoricUncertainty: 0.05,
+    overallUncertainty: 0.045,
+    structureCount: 0,
+    complianceScore: 100,
+    encroachmentDetected: false,
+    state: stateName || "State Land Registry",
+    district: districtName || locationName,
+    taluk: talukName || locationName,
+    village: villageName || locationName,
+    surveyNumber: "100",
+    subDivision: "ROAD",
+    historicalYear: 1972,
+    historicalSource: `Cadastral Survey Plan - Statutory Road Reserve`,
+    historicalAreaSqM: roadMetrics.areaSqMeters,
+    currentHash: roadGenesis.currentHash,
+    createdAt: Date.now() - 86400000 * 5,
+    updatedAt: Date.now() - 10000,
+  };
+
+  generatedList.push(roadParcel);
+  PARCEL_STORE.set(roadId, roadParcel);
+  AUDIT_LEDGER_STORE.set(roadId, [roadGenesis]);
+
+  // Sample owners and architectural profiles adapted to urban parcel grid
+  const sampleOwners = [
+    { name: "Apex Commercial Hub & Retail Plaza", type: "COMMERCIAL", bName: "Apex Commercial Complex & Retail Arcade", floors: 4, roof: "RCC Flat Terrace + Commercial Awning" },
+    { name: "Dr. Arvind S. & Family", type: "RESIDENTIAL", bName: "Arvind Residence & Villa Courtyard", floors: 2, roof: "RCC Flat Terrace + Solar Panels" },
+    { name: "Sunview Cooperative Housing Society", type: "RESIDENTIAL", bName: "Sunview Twin Villa A", floors: 2, roof: "Terracotta Tiled Hip Roof" },
+    { name: "Green Park Municipal Garden & Reserve", type: "UNCLAIMED", bName: "Park Pavilion & Community Pergola", floors: 1, roof: "Tensile Canopy Structure" },
+    { name: "V. Meenakshi Sundaram", type: "RESIDENTIAL", bName: "Meenakshi Illam Residence", floors: 3, roof: "RCC Terrace with North Parapet" },
+    { name: "Metro Tech Labs & IT Services", type: "COMMERCIAL", bName: "Metro Innovation Campus & Labs", floors: 4, roof: "RCC Flat Terrace + HVAC Deck" },
+    { name: "R. Balasubramaniam (Surveyor & Legal Counsel)", type: "RESIDENTIAL", bName: "Balaji Heritage Residence", floors: 2, roof: "RCC Terrace with West Garden" },
+    { name: "Telecom Infrastructure Tower Co.", type: "PUBLIC_INFRASTRUCTURE", bName: "Public Utility Tower & Control Room", floors: 1, roof: "Steel Framework & Shelter" },
+    { name: "Highland Properties & Realty LLP", type: "COMMERCIAL", bName: "Highland Square Boutique Offices", floors: 3, roof: "Modern Insulated Composite Roof" },
+    { name: "S. Priya & K. Ganesh", type: "RESIDENTIAL", bName: "Ganesh Nivas Duplex Villa", floors: 2, roof: "RCC Terrace + Pergola" },
+    { name: "Nandhini & Sons Logistics", type: "COMMERCIAL", bName: "Nandhini Commercial Depot & Office", floors: 2, roof: "Pre-Engineered Metal Roof" },
+    { name: "E. Karthikeyan", type: "RESIDENTIAL", bName: "Karthik Villa Residence", floors: 2, roof: "RCC Flat Terrace" },
+    { name: "City Water & Sewerage Pumping Board", type: "PUBLIC_INFRASTRUCTURE", bName: "Pumping Station & Sub-Office", floors: 1, roof: "Industrial Monopitch Roof" },
+    { name: "T. Rajalakshmi", type: "RESIDENTIAL", bName: "Lakshmi Nilayam Independent House", floors: 2, roof: "RCC Terrace + Garden Deck" },
+    { name: "Bavani Agro Exports", type: "AGRICULTURAL", bName: "Agro Storage & Inspection Facility", floors: 1, roof: "Pitched Truss Roof" },
+    { name: "A. Mohamed Farooq", type: "RESIDENTIAL", bName: "Farooq Villa & Courtyard", floors: 2, roof: "RCC Terraced Villa" },
+  ];
+
+  const numCols = 8;
+  const colWidthM = 28;
+  const startXM = -(numCols * colWidthM) / 2.0;
+
+  let plotIndex = 0;
+
+  // North Row (y from +roadHalfWidthM to +roadHalfWidthM + 30m)
+  for (let i = 0; i < numCols; i++) {
+    const xLeftM = startXM + i * colWidthM;
+    const xRightM = xLeftM + colWidthM;
+    const yBottomM = roadHalfWidthM;
+    const yTopM = roadHalfWidthM + 30;
+
+    const coords: [number, number][] = [
+      [baseLon + xLeftM * degLonPerM, baseLat + yBottomM * degLatPerM],
+      [baseLon + xRightM * degLonPerM, baseLat + yBottomM * degLatPerM],
+      [baseLon + xRightM * degLonPerM, baseLat + yTopM * degLatPerM],
+      [baseLon + xLeftM * degLonPerM, baseLat + yTopM * degLatPerM],
+      [baseLon + xLeftM * degLonPerM, baseLat + yBottomM * degLatPerM],
+    ];
+
+    const sbXM = 3.5;
+    const sbYM = 3.5;
+    const bCoords: [number, number][] = [
+      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
+      [baseLon + (xRightM - sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
+      [baseLon + (xRightM - sbXM) * degLonPerM, baseLat + (yTopM - sbYM) * degLatPerM],
+      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yTopM - sbYM) * degLatPerM],
+      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
+    ];
+
+    const sNum = 101 + plotIndex;
+    const pId = `PRCL-${cleanCode}-${sNum}`;
+    const ownerData = sampleOwners[plotIndex % sampleOwners.length];
+    const metrics = computeMetrics(coords);
+    const bMetrics = computeMetrics(bCoords);
+
+    const genesis = createAuditBlock(
+      pId,
+      0,
+      GENESIS_HASH,
+      coords,
+      "SURV-GOV-901",
+      "Chief Cadastral Surveyor",
+      "INITIAL_INGESTION",
+      `Vectorized cadastral plot for S.No ${sNum}/1 in ${locationName}`
+    );
+
+    const parcel: ParcelData = {
+      id: pId,
+      uprn: `GT-${cleanCode}-${sNum}/1`,
+      geoTraceCardNumber: `GT-${cleanCode}-${sNum}-A`,
+      svamitvaCardNumber: `GT-${cleanCode}-${sNum}-A`,
+      ownerName: ownerData.name,
+      ownerNationalId: `ID-${cleanCode}-${1000 + plotIndex}`,
+      landType: ownerData.type as any,
+      status: "TITLE_ISSUED",
+      coordinates: coords,
+      buildingFootprint: bCoords,
+      buildingDetails: {
+        buildingName: ownerData.bName,
+        roofType: ownerData.roof,
+        floors: ownerData.floors,
+        builtUpAreaSqM: Math.round(bMetrics.areaSqMeters * ownerData.floors),
+        setbackFrontM: 3.5,
+        setbackRearM: 3.5,
+        setbackLeftM: 3.5,
+        setbackRightM: 3.5,
+      },
+      calculatedAreaSqMeters: metrics.areaSqMeters,
+      perimeterMeters: metrics.perimeterMeters,
+      centroid: metrics.centroid,
+      vertexCount: metrics.vertexCount,
+      epistemicUncertainty: 0.05 + (plotIndex % 4) * 0.01,
+      aleatoricUncertainty: 0.07 + (plotIndex % 3) * 0.01,
+      overallUncertainty: 0.065,
+      structureCount: 1,
+      complianceScore: 97 + (plotIndex % 3),
+      encroachmentDetected: false,
+      state: stateName || "State Land Registry",
+      district: districtName || locationName,
+      taluk: talukName || locationName,
+      village: villageName || locationName,
+      surveyNumber: String(sNum),
+      subDivision: "1",
+      historicalYear: 1972,
+      historicalSource: `Cadastral Sheet S.No. ${sNum} (${locationName})`,
+      historicalAreaSqM: metrics.areaSqMeters,
+      currentHash: genesis.currentHash,
+      createdAt: Date.now() - 86400000 * 3,
+      updatedAt: Date.now() - 3600000,
+    };
+
+    generatedList.push(parcel);
+    PARCEL_STORE.set(pId, parcel);
+    AUDIT_LEDGER_STORE.set(pId, [genesis]);
+    plotIndex++;
+  }
+
+  // South Row (y from -roadHalfWidthM - 30m to -roadHalfWidthM)
+  for (let i = 0; i < numCols; i++) {
+    const xLeftM = startXM + i * colWidthM;
+    const xRightM = xLeftM + colWidthM;
+    const yBottomM = -roadHalfWidthM - 30;
+    const yTopM = -roadHalfWidthM;
+
+    const coords: [number, number][] = [
+      [baseLon + xLeftM * degLonPerM, baseLat + yBottomM * degLatPerM],
+      [baseLon + xRightM * degLonPerM, baseLat + yBottomM * degLatPerM],
+      [baseLon + xRightM * degLonPerM, baseLat + yTopM * degLatPerM],
+      [baseLon + xLeftM * degLonPerM, baseLat + yTopM * degLatPerM],
+      [baseLon + xLeftM * degLonPerM, baseLat + yBottomM * degLatPerM],
+    ];
+
+    const sbXM = 3.5;
+    const sbYM = 3.5;
+    const bCoords: [number, number][] = [
+      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
+      [baseLon + (xRightM - sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
+      [baseLon + (xRightM - sbXM) * degLonPerM, baseLat + (yTopM - sbYM) * degLatPerM],
+      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yTopM - sbYM) * degLatPerM],
+      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
+    ];
+
+    const sNum = 101 + plotIndex;
+    const pId = `PRCL-${cleanCode}-${sNum}`;
+    const ownerData = sampleOwners[plotIndex % sampleOwners.length];
+    const metrics = computeMetrics(coords);
+    const bMetrics = computeMetrics(bCoords);
+
+    const genesis = createAuditBlock(
+      pId,
+      0,
+      GENESIS_HASH,
+      coords,
+      "SURV-GOV-901",
+      "Chief Cadastral Surveyor",
+      "INITIAL_INGESTION",
+      `Vectorized cadastral plot for S.No ${sNum}/1 in ${locationName}`
+    );
+
+    const parcel: ParcelData = {
+      id: pId,
+      uprn: `GT-${cleanCode}-${sNum}/1`,
+      geoTraceCardNumber: `GT-${cleanCode}-${sNum}-A`,
+      svamitvaCardNumber: `GT-${cleanCode}-${sNum}-A`,
+      ownerName: ownerData.name,
+      ownerNationalId: `ID-${cleanCode}-${1000 + plotIndex}`,
+      landType: ownerData.type as any,
+      status: "TITLE_ISSUED",
+      coordinates: coords,
+      buildingFootprint: bCoords,
+      buildingDetails: {
+        buildingName: ownerData.bName,
+        roofType: ownerData.roof,
+        floors: ownerData.floors,
+        builtUpAreaSqM: Math.round(bMetrics.areaSqMeters * ownerData.floors),
+        setbackFrontM: 3.5,
+        setbackRearM: 3.5,
+        setbackLeftM: 3.5,
+        setbackRightM: 3.5,
+      },
+      calculatedAreaSqMeters: metrics.areaSqMeters,
+      perimeterMeters: metrics.perimeterMeters,
+      centroid: metrics.centroid,
+      vertexCount: metrics.vertexCount,
+      epistemicUncertainty: 0.05 + (plotIndex % 4) * 0.01,
+      aleatoricUncertainty: 0.07 + (plotIndex % 3) * 0.01,
+      overallUncertainty: 0.065,
+      structureCount: 1,
+      complianceScore: 97 + (plotIndex % 3),
+      encroachmentDetected: false,
+      state: stateName || "State Land Registry",
+      district: districtName || locationName,
+      taluk: talukName || locationName,
+      village: villageName || locationName,
+      surveyNumber: String(sNum),
+      subDivision: "1",
+      historicalYear: 1972,
+      historicalSource: `Cadastral Sheet S.No. ${sNum} (${locationName})`,
+      historicalAreaSqM: metrics.areaSqMeters,
+      currentHash: genesis.currentHash,
+      createdAt: Date.now() - 86400000 * 3,
+      updatedAt: Date.now() - 3600000,
+    };
+
+    generatedList.push(parcel);
+    PARCEL_STORE.set(pId, parcel);
+    AUDIT_LEDGER_STORE.set(pId, [genesis]);
+    plotIndex++;
+  }
+
+  // Relocate Virtual UAV flight telemetry to fly around this new sector
+  if (typeof virtualUAV !== "undefined" && virtualUAV?.relocate) {
+    virtualUAV.relocate(baseLon, baseLat);
+  }
+
+  return generatedList;
+}
+
+// POST /api/parcels/relocate - Relocate cadastral grid to any global or regional coordinate
+app.post("/api/parcels/relocate", (req, res) => {
+  const { lat, lng, lon, locationName, state, district, taluk, village } = req.body;
+  const targetLat = typeof lat === "number" ? lat : parseFloat(lat);
+  const targetLon = typeof lng === "number" ? lng : typeof lon === "number" ? lon : parseFloat(lng || lon);
+
+  if (isNaN(targetLat) || isNaN(targetLon)) {
+    return res.status(400).json({ error: "Valid numeric 'lat' and 'lng' are required" });
+  }
+
+  const name = locationName || `Cadastral Sector (${targetLat.toFixed(4)}, ${targetLon.toFixed(4)})`;
+  const parcels = generateParcelsForLocation(
+    targetLat,
+    targetLon,
+    name,
+    state,
+    district,
+    taluk,
+    village
+  );
+
+  res.json({
+    status: "success",
+    location: {
+      lat: targetLat,
+      lon: targetLon,
+      displayName: name,
+    },
+    count: parcels.length,
+    parcels,
+  });
+});
+
+// POST /api/drone/relocate - Relocate UAV simulation center
+app.post("/api/drone/relocate", (req, res) => {
+  const { lat, lng, lon } = req.body;
+  const targetLat = typeof lat === "number" ? lat : parseFloat(lat);
+  const targetLon = typeof lng === "number" ? lng : typeof lon === "number" ? lon : parseFloat(lng || lon);
+
+  if (isNaN(targetLat) || isNaN(targetLon)) {
+    return res.status(400).json({ error: "Valid numeric 'lat' and 'lng' are required" });
+  }
+
+  if (typeof virtualUAV !== "undefined" && virtualUAV?.relocate) {
+    virtualUAV.relocate(targetLon, targetLat);
+  }
+
+  res.json({
+    status: "success",
+    droneLocation: {
+      latitude: targetLat,
+      longitude: targetLon,
+    },
   });
 });
 
@@ -6540,6 +6743,23 @@ class VirtualUAVSimulator {
     this.progressAlongLeg = 0.0;
     this.longitude = this.waypoints[0][0];
     this.latitude = this.waypoints[0][1];
+  }
+
+  relocate(baseLon: number, baseLat: number) {
+    this.longitude = baseLon;
+    this.latitude = baseLat;
+    this.waypoints = [
+      [baseLon - 0.0010, baseLat - 0.0008],
+      [baseLon + 0.0010, baseLat - 0.0008],
+      [baseLon + 0.0010, baseLat - 0.0002],
+      [baseLon - 0.0010, baseLat - 0.0002],
+      [baseLon - 0.0010, baseLat + 0.0004],
+      [baseLon + 0.0010, baseLat + 0.0004],
+      [baseLon + 0.0010, baseLat + 0.0009],
+      [baseLon - 0.0010, baseLat + 0.0009],
+    ];
+    this.currentWpIdx = 0;
+    this.progressAlongLeg = 0.0;
   }
 
   setAltitude(alt: number) {

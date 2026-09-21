@@ -104,6 +104,19 @@ export interface Parcel {
   historicalYear?: number;
   historicalSource?: string;
   historicalAreaSqM?: number;
+  // High-Precision Architectural & Satellite Footprint
+  buildingFootprint?: [number, number][];
+  buildingDetails?: {
+    buildingName?: string;
+    roofType?: string;
+    floors?: number;
+    builtUpAreaSqM?: number;
+    setbackFrontM?: number;
+    setbackRearM?: number;
+    setbackLeftM?: number;
+    setbackRightM?: number;
+  };
+  compoundWall?: [number, number][];
 }
 
 export interface AuditBlock {

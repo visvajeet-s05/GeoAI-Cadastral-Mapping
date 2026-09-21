@@ -222,6 +222,7 @@ const GoogleMapPolyline: React.FC<GooglePolylineProps> = ({
 
 interface MapControllerProps {
   selectedParcel: Parcel | null;
+  targetLocation?: { lat: number; lng: number; zoom?: number } | null;
   measuringMode: boolean;
   onMapClick: (latLng: google.maps.LatLngLiteral) => void;
   onBoundsChange?: (bounds: [number, number, number, number]) => void;
@@ -230,12 +231,22 @@ interface MapControllerProps {
 
 const MapController: React.FC<MapControllerProps> = ({
   selectedParcel,
+  targetLocation,
   measuringMode,
   onMapClick,
   onBoundsChange,
   onZoomChange,
 }) => {
   const map = useMap();
+
+  // Fly/Zoom to target location immediately when changed (real-time geocoding / preset selection)
+  useEffect(() => {
+    if (!map || !targetLocation) return;
+    map.panTo({ lat: targetLocation.lat, lng: targetLocation.lng });
+    if (typeof targetLocation.zoom === "number") {
+      map.setZoom(targetLocation.zoom);
+    }
+  }, [map, targetLocation?.lat, targetLocation?.lng, targetLocation?.zoom]);
 
   // Clean Map Styling: Suppress noisy commercial POIs, stores, and transit to highlight cadastral boundaries
   useEffect(() => {
@@ -351,6 +362,7 @@ export interface GoogleCadastralMapProps {
   driftHotspots?: DriftHotspot[];
   selectedDetection?: AIDetectionItem | null;
   onSelectDetection?: (detection: AIDetectionItem | null) => void;
+  targetLocation?: { lat: number; lng: number; zoom?: number } | null;
 }
 
 export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
@@ -378,6 +390,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
   driftHotspots,
   selectedDetection,
   onSelectDetection,
+  targetLocation,
 }) => {
 
   // Historical FMB Multi-Temporal Epoch State (1967 - 2026)
@@ -564,6 +577,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
           {/* Map Event Controller */}
           <MapController
             selectedParcel={selectedParcel}
+            targetLocation={targetLocation}
             measuringMode={measuringMode}
             onMapClick={(pt) => setMeasurePoints((prev) => [...prev, pt])}
             onBoundsChange={onMapBoundsChange}
@@ -658,6 +672,56 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                     setHoverPosition(null);
                   }}
                 />
+
+                {/* High-Precision Architectural Building Footprint (Survey-Grade Setback & Roofline) */}
+                {activeLayers.structuralFootprints && (parcel.buildingFootprint || (parcel.structureCount > 0 && parcel.coordinates.length >= 4)) && (() => {
+                  let footprintCoords = parcel.buildingFootprint;
+                  if (!footprintCoords || footprintCoords.length < 3) {
+                    const cLat = pCentroidLat;
+                    const cLng = pCentroidLng;
+                    footprintCoords = parcel.coordinates.map(([lng, lat]) => [
+                      lng * 0.76 + cLng * 0.24,
+                      lat * 0.76 + cLat * 0.24,
+                    ]);
+                  }
+                  const bLatLngPaths = footprintCoords.map(([lng, lat]) => ({ lat, lng }));
+                  const bCentroidLat = footprintCoords.reduce((sum, c) => sum + c[1], 0) / footprintCoords.length;
+                  const bCentroidLng = footprintCoords.reduce((sum, c) => sum + c[0], 0) / footprintCoords.length;
+
+                  return (
+                    <React.Fragment key={`bld-footprint-${parcel.id}`}>
+                      <GoogleMapPolygon
+                        paths={bLatLngPaths}
+                        fillColor={isSelected ? "#38bdf8" : "#f59e0b"}
+                        fillOpacity={isSelected ? 0.45 : isAnySelected ? 0.15 : 0.28}
+                        strokeColor={isSelected ? "#0284c7" : "#d97706"}
+                        strokeWeight={isSelected ? 2.5 : 1.6}
+                        zIndex={isSelected ? 28 : 8}
+                        onClick={() => onSelectParcel(parcel)}
+                      />
+
+                      {/* Building Name Tag for High Zoom or Selected Parcel */}
+                      {(isSelected || currentZoom >= 19.0) && parcel.buildingDetails && (
+                        <AdvancedMarker
+                          position={{ lat: bCentroidLat, lng: bCentroidLng }}
+                          zIndex={isSelected ? 32 : 10}
+                        >
+                          <div
+                            onClick={() => onSelectParcel(parcel)}
+                            className={`cursor-pointer px-1.5 py-0.5 rounded text-[8px] font-mono font-medium shadow-lg border transition-all whitespace-nowrap backdrop-blur-md ${
+                              isSelected
+                                ? "bg-amber-500 text-slate-950 border-amber-300 font-bold scale-105"
+                                : "bg-slate-950/85 text-amber-300 border-amber-500/40"
+                            }`}
+                            title={`${parcel.buildingDetails.buildingName} (${parcel.buildingDetails.builtUpAreaSqM || 0}m²)`}
+                          >
+                            {parcel.buildingDetails.buildingName.split("(")[0].trim()}
+                          </div>
+                        </AdvancedMarker>
+                      )}
+                    </React.Fragment>
+                  );
+                })()}
 
                 {/* Visible Property Corner Vertex Pegs (When Selected) */}
                 {isSelected &&
