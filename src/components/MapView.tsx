@@ -27,6 +27,9 @@ import {
   TopologyValidationResult,
   VertexViolation,
 } from "../lib/topologyValidation";
+import { ParcelBoundaryHealthLegend } from "./ParcelBoundaryHealthLegend";
+import { useRasterLayer } from "../hooks/useRasterLayer";
+import { ActiveRasterLayerConfig, RasterSpatialMetadata } from "../types/raster";
 import {
   ZoomIn,
   ZoomOut,
@@ -75,6 +78,8 @@ interface MapViewProps {
   selectedDetection?: AIDetectionItem | null;
   onSelectDetection?: (detection: AIDetectionItem | null) => void;
   targetLocation?: { lat: number; lng: number; zoom?: number } | null;
+  activeRaster?: ActiveRasterLayerConfig | null;
+  onRasterMetadataExtracted?: (metadata: RasterSpatialMetadata) => void;
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -102,6 +107,8 @@ export const MapView: React.FC<MapViewProps> = ({
   selectedDetection,
   onSelectDetection,
   targetLocation,
+  activeRaster,
+  onRasterMetadataExtracted,
 }) => {
   const [mapEngine, setMapEngine] = useState<"google" | "leaflet">("google");
   const [mapsApiKey, setMapsApiKey] = useState<string>(
@@ -136,6 +143,15 @@ export const MapView: React.FC<MapViewProps> = ({
 
   const [editableCoords, setEditableCoords] = useState<[number, number][]>([]);
   const [liveDragValidation, setLiveDragValidation] = useState<TopologyValidationResult | null>(null);
+  const [leafletMap, setLeafletMap] = useState<L.Map | null>(null);
+
+  // Cloud-Optimized GeoTIFF & XYZ Raster Layer Hook
+  const { zoomToExtent: zoomToRasterExtent } = useRasterLayer({
+    map: leafletMap,
+    config: activeRaster || null,
+    onMetadataExtracted: onRasterMetadataExtracted,
+    onError: (err) => console.warn("Raster Layer Notice:", err),
+  });
   const [measuringMode, setMeasuringMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState<[number, number][]>([]);
   const [zoomLevel, setZoomLevel] = useState<number>(18);
@@ -208,8 +224,10 @@ export const MapView: React.FC<MapViewProps> = ({
     onMapBoundsChange?.([initBounds.getWest(), initBounds.getSouth(), initBounds.getEast(), initBounds.getNorth()]);
 
     mapInstanceRef.current = map;
+    setLeafletMap(map);
 
     return () => {
+      setLeafletMap(null);
       map.remove();
       mapInstanceRef.current = null;
     };
@@ -413,11 +431,31 @@ export const MapView: React.FC<MapViewProps> = ({
         strokeColor = zColor.stroke;
       }
 
-      if (activeLayers.topologyIssues && parcel.encroachmentDetected) {
-        fillColor = "#EF4444";
-        strokeColor = "#DC2626";
-        fillOpacity = 0.55;
-        weight = 3.5;
+      if (activeLayers.topologyIssues) {
+        const report = topologyReport?.individualReports?.find((r) => r.id === parcel.id);
+        const hasSelfInt = report ? report.hasSelfIntersection : false;
+        const isOverlap =
+          parcel.encroachmentDetected ||
+          (topologyReport?.overlaps?.some(
+            (o) => o.parcelAUprn === parcel.uprn || o.parcelBUprn === parcel.uprn
+          ) ?? false);
+
+        if (hasSelfInt) {
+          fillColor = "#EF4444";
+          strokeColor = "#DC2626";
+          fillOpacity = 0.55;
+          weight = 3.5;
+        } else if (isOverlap) {
+          fillColor = "#F59E0B";
+          strokeColor = "#D97706";
+          fillOpacity = 0.5;
+          weight = 3.0;
+        } else {
+          fillColor = "#10B981";
+          strokeColor = "#059669";
+          fillOpacity = 0.35;
+          weight = 2.5;
+        }
       }
 
       // Main Parcel Polygon
@@ -937,6 +975,16 @@ export const MapView: React.FC<MapViewProps> = ({
           >
             <Crosshair className="w-4 h-4 text-sky-400" />
           </button>
+          {activeRaster && activeRaster.visible && (
+            <button
+              id="map-btn-fit-raster"
+              onClick={zoomToRasterExtent}
+              className="w-8 h-8 flex items-center justify-center rounded text-emerald-400 hover:text-white hover:bg-emerald-600/30 transition border border-emerald-500/30"
+              title={`Zoom to Drone Orthomosaic (${activeRaster.name})`}
+            >
+              <Layers className="w-4 h-4 text-emerald-400" />
+            </button>
+          )}
           <button
             id="map-btn-ruler"
             onClick={() => {
@@ -1186,49 +1234,15 @@ export const MapView: React.FC<MapViewProps> = ({
         </div>
       )}
 
-      {/* Map Legend Overlay in Bottom Left */}
-      <div className="absolute bottom-4 left-4 z-[500] bg-slate-900/90 border border-slate-800 text-slate-300 px-3 py-2.5 rounded-lg text-xs shadow-lg backdrop-blur-sm max-w-xs pointer-events-auto">
-        <div className="font-semibold text-slate-100 flex items-center gap-1.5 mb-1.5">
-          <Layers className="w-3.5 h-3.5 text-sky-400" />
-          <span>Cadastral Symbology</span>
-        </div>
-
-        {activeLayers.uncertaintyBands ? (
-          <div className="space-y-1 text-[11px]">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-sm bg-emerald-500" />
-              <span>Low Uncertainty (Calibrated Confidence &gt; 80%)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-sm bg-amber-500" />
-              <span>Moderate Ambiguity (Shadow/Vegetation)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-sm bg-rose-500" />
-              <span>High Uncertainty (Priority Surveyor Ground Check)</span>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
-              <span>Residential</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-amber-500" />
-              <span>Commercial</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
-              <span>Agricultural</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-purple-500" />
-              <span>Public Commons</span>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Dynamic Color-Coded Parcel Boundary Health Legend in Bottom Left */}
+      <ParcelBoundaryHealthLegend
+        parcels={parcels}
+        topologyReport={topologyReport}
+        activeLayers={activeLayers}
+        isSurveyorEditing={isSurveyorEditing}
+        effectiveValidation={effectiveValidation}
+        selectedParcel={selectedParcel}
+      />
     </div>
   );
 };

@@ -3,6 +3,52 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Runtime safeguard: Allows setting fetch on objects whose prototype has getter-only fetch (cross-fetch compatibility)
+      (function() {
+        try {
+          var origFetch = window.fetch;
+          function addFetchSetter(target) {
+            if (!target) return;
+            var desc = Object.getOwnPropertyDescriptor(target, 'fetch');
+            if (desc && !desc.set) {
+              Object.defineProperty(target, 'fetch', {
+                get: function() {
+                  return (this && this !== window && this !== target && this._fetch !== undefined)
+                    ? this._fetch
+                    : origFetch;
+                },
+                set: function(val) {
+                  if (this && this !== window && this !== target) {
+                    try {
+                      Object.defineProperty(this, 'fetch', {
+                        value: val,
+                        writable: true,
+                        configurable: true,
+                        enumerable: true
+                      });
+                    } catch (e) {
+                      this._fetch = val;
+                    }
+                  } else {
+                    origFetch = val || origFetch;
+                  }
+                },
+                configurable: true,
+                enumerable: true
+              });
+            }
+          }
+          addFetchSetter(window);
+          addFetchSetter(Object.getPrototypeOf(window));
+          if (typeof Window !== 'undefined' && Window.prototype) {
+            addFetchSetter(Window.prototype);
+          }
+        } catch (e) {
+          // Graceful fallback
+        }
+      })();
+    </script>
     <title>Urban Cadastral AI - Land Boundary & VLM Mapping System</title>
     <meta name="description" content="AI-powered urban cadastral mapping and land management system featuring Google Maps satellite house detection, Tamil Nadu official land & layout map repositories (FMB/TSLR, CMDA, DTCP 1974-2026), affine GCP georeferencing, comparative encroachment analysis (E = B_detected \ L_legal), and Gemini VLM statutory municipal notice generation." />
     <meta property="og:title" content="Urban Cadastral AI - Land Boundary & VLM Mapping System" />

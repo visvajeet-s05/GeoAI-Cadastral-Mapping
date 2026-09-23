@@ -34,6 +34,8 @@ import { HierarchicalSearch } from "./components/HierarchicalSearch";
 import { LayerControl } from "./components/LayerControl";
 import { DocumentUploadModal } from "./components/DocumentUploadModal";
 import { DocumentManager } from "./components/DocumentManager";
+import { IngestOrthoModal } from "./components/sidebar/IngestOrthoModal";
+import { ActiveRasterLayerConfig } from "./types/raster";
 import { Sparkles, X, FileText, CheckCircle2 } from "lucide-react";
 
 export default function App() {
@@ -240,6 +242,7 @@ export default function App() {
   const [showDocumentManager, setShowDocumentManager] = useState<boolean>(false);
   const [showLayerControl, setShowLayerControl] = useState<boolean>(false);
   const [showHierarchicalSearch, setShowHierarchicalSearch] = useState<boolean>(false);
+  const [activeRaster, setActiveRaster] = useState<ActiveRasterLayerConfig | null>(null);
 
   // Land Context Handlers
   const handleContextChange = (context: SelectedLandContext) => {
@@ -819,6 +822,7 @@ export default function App() {
             selectedDetection={selectedDetection}
             onSelectDetection={setSelectedDetection}
             targetLocation={targetLocation}
+            activeRaster={activeRaster}
           />
 
           {/* Optical HUD Reticle Overlay */}
@@ -923,6 +927,8 @@ export default function App() {
           telemetry={telemetry}
           selectedParcel={selectedParcel}
           onSelectParcel={selectParcel}
+          onAddPredictedParcels={handleIngestCompleted}
+          onRefreshTopology={fetchTopologyReport}
         />
       )}
 
@@ -934,11 +940,29 @@ export default function App() {
         />
       )}
 
-      {/* Ingest Drone Orthomosaic Modal */}
+      {/* Cloud-Optimized GeoTIFF (COG) & Raster Ingestion Engine Modal */}
       {showIngestionModal && (
-        <DroneIngestionModal
+        <IngestOrthoModal
+          isOpen={showIngestionModal}
           onClose={() => setShowIngestionModal(false)}
-          onIngestCompleted={handleIngestCompleted}
+          activeRaster={activeRaster}
+          onApplyRasterLayer={(newRasterConfig) => {
+            setActiveRaster(newRasterConfig);
+            setTargetLocation({
+              lat: newRasterConfig.center[0],
+              lng: newRasterConfig.center[1],
+              zoom: 18,
+            });
+          }}
+          onZoomToExtent={() => {
+            if (activeRaster) {
+              setTargetLocation({
+                lat: activeRaster.center[0],
+                lng: activeRaster.center[1],
+                zoom: 19,
+              });
+            }
+          }}
         />
       )}
 

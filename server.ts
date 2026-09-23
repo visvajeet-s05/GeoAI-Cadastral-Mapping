@@ -8,6 +8,8 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import fs from "fs";
 import multer from "multer";
+import rasterRouter from "./server/routes/rasterRoutes";
+import mlRouter from "./server/routes/mlRoutes";
 import { HIGH_PRECISION_PARCELS } from "./src/data/cadastralDataset";
 
 import { exec } from "child_process";
@@ -40,6 +42,18 @@ const PORT = 3000;
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Mount Day 1 Cloud-Optimized GeoTIFF (COG) & Raster Ingestion routes
+app.use("/api/raster", rasterRouter);
+app.use("/api", rasterRouter); // Mounts /api/tiles/:rasterId/:z/:x/:y.png
+
+// Mount Day 2 ML Cadastral Boundary Inference routes
+app.use("/api/ml", mlRouter);
+app.post("/predict_tile", (req, res, next) => {
+  req.url = "/predict_tile";
+  mlRouter(req, res, next);
+});
+
 
 // Initialize Google GenAI client
 const apiKey = process.env.GEMINI_API_KEY;
