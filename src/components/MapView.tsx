@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import L from "leaflet";
 import {
   Parcel,
@@ -18,6 +18,16 @@ import {
   calculateShoelaceArea,
 } from "../lib/geoUtils";
 import {
+  SnapConfig,
+  SnapResult,
+  computeTopologySnap,
+} from "../lib/topologySnapping";
+import {
+  validateTopologyConstraints,
+  TopologyValidationResult,
+  VertexViolation,
+} from "../lib/topologyValidation";
+import {
   ZoomIn,
   ZoomOut,
   Crosshair,
@@ -30,6 +40,11 @@ import {
   PlusCircle,
   Trash2,
   Globe,
+  Magnet,
+  Zap,
+  Home,
+  ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { GoogleCadastralMap } from "./GoogleCadastralMap";
 import { DriftHotspot } from "../types";
@@ -42,7 +57,7 @@ interface MapViewProps {
   activeLayers: ActiveLayers;
   topologyReport: TopologyReport | null;
   isSurveyorEditing: boolean;
-  onSaveSurveyorAdjustment: (updatedCoordinates: [number, number][]) => void;
+  onSaveSurveyorAdjustment: (updatedCoordinates: [number, number][], target?: "PARCEL" | "BUILDING") => void;
   onCancelSurveyorAdjustment: () => void;
   telemetry?: UAVTelemetry | null;
   ingestionMode?: IngestionMode;
@@ -113,15 +128,32 @@ export const MapView: React.FC<MapViewProps> = ({
   const polygonLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const footprintLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const editableMarkersGroupRef = useRef<L.LayerGroup | null>(null);
+  const topologyErrorLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const editablePolygonRef = useRef<L.Polygon | null>(null);
   const measureLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const uavLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const flightTrailRef = useRef<[number, number][]>([]);
 
   const [editableCoords, setEditableCoords] = useState<[number, number][]>([]);
+  const [liveDragValidation, setLiveDragValidation] = useState<TopologyValidationResult | null>(null);
   const [measuringMode, setMeasuringMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState<[number, number][]>([]);
   const [zoomLevel, setZoomLevel] = useState<number>(18);
+
+  // Topological Snapping & Grid Alignment Configuration
+  const [snapConfig, setSnapConfig] = useState<SnapConfig>({
+    mode: "ALL",
+    snapToleranceMeters: 2.5,
+    gridResolutionMeters: 1.0,
+    enableEdgeSnapping: true,
+    enableVertexSnapping: true,
+    enableGridSnapping: true,
+  });
+  const [activeSnapResult, setActiveSnapResult] = useState<SnapResult | null>(null);
+  const snapConfigRef = useRef<SnapConfig>(snapConfig);
+  useEffect(() => {
+    snapConfigRef.current = snapConfig;
+  }, [snapConfig]);
 
   // Initialize Map once
   useEffect(() => {
@@ -150,12 +182,14 @@ export const MapView: React.FC<MapViewProps> = ({
     const polyGroup = L.layerGroup().addTo(map);
     const footprintGroup = L.layerGroup().addTo(map);
     const editGroup = L.layerGroup().addTo(map);
+    const topologyErrorGroup = L.layerGroup().addTo(map);
     const measureGroup = L.layerGroup().addTo(map);
     const uavGroup = L.layerGroup().addTo(map);
 
     polygonLayerGroupRef.current = polyGroup;
     footprintLayerGroupRef.current = footprintGroup;
     editableMarkersGroupRef.current = editGroup;
+    topologyErrorLayerGroupRef.current = topologyErrorGroup;
     measureLayerGroupRef.current = measureGroup;
     uavLayerGroupRef.current = uavGroup;
 
@@ -287,14 +321,54 @@ export const MapView: React.FC<MapViewProps> = ({
     tileLayerRef.current = newTileLayer;
   }, [activeLayers.satelliteBasemap]);
 
-  // Sync Editable Coordinates when selectedParcel or isSurveyorEditing changes
+  // Survey Editing Target: Parcel Boundary Pegs vs. Building Rooftop Footprint
+  const [surveyTarget, setSurveyTarget] = useState<"PARCEL" | "BUILDING">("PARCEL");
+
+  // Helper to generate a clean, rectangular setback building footprint from parcel boundary
+  const generateSetbackFootprint = (coords: [number, number][]): [number, number][] => {
+    if (!coords || coords.length < 4) return [];
+    const pts = coords.slice(0, coords.length - 1);
+    const cLat = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+    const cLng = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+    const insetPts: [number, number][] = pts.map(([lng, lat]) => [
+      lng * 0.78 + cLng * 0.22,
+      lat * 0.78 + cLat * 0.22,
+    ]);
+    insetPts.push([insetPts[0][0], insetPts[0][1]]);
+    return insetPts;
+  };
+
+  // Sync Editable Coordinates when selectedParcel or isSurveyorEditing or surveyTarget changes
   useEffect(() => {
-    if (selectedParcel && isSurveyorEditing) {
-      setEditableCoords([...selectedParcel.coordinates]);
-    } else {
+    if (!selectedParcel || !isSurveyorEditing) {
       setEditableCoords([]);
+      return;
     }
-  }, [selectedParcel, isSurveyorEditing]);
+    if (surveyTarget === "BUILDING") {
+      if (selectedParcel.buildingFootprint && selectedParcel.buildingFootprint.length >= 3) {
+        setEditableCoords([...selectedParcel.buildingFootprint]);
+      } else {
+        setEditableCoords(generateSetbackFootprint(selectedParcel.coordinates));
+      }
+    } else {
+      setEditableCoords([...selectedParcel.coordinates]);
+    }
+  }, [selectedParcel, isSurveyorEditing, surveyTarget]);
+
+  // Real-time topological constraint verification for surveyor boundary editing in MapView
+  const liveTopologyValidation = useMemo<TopologyValidationResult | null>(() => {
+    if (!isSurveyorEditing || !selectedParcel || editableCoords.length < 3) {
+      return null;
+    }
+    return validateTopologyConstraints(
+      editableCoords,
+      selectedParcel,
+      parcels,
+      surveyTarget
+    );
+  }, [isSurveyorEditing, selectedParcel, editableCoords, parcels, surveyTarget]);
+
+  const effectiveValidation = liveDragValidation || liveTopologyValidation;
 
   // Render Polygons and Footprints
   useEffect(() => {
@@ -308,13 +382,14 @@ export const MapView: React.FC<MapViewProps> = ({
     polyGroup.clearLayers();
     footprintGroup.clearLayers();
     editGroup.clearLayers();
+    topologyErrorLayerGroupRef.current?.clearLayers();
 
     if (parcels.length === 0) return;
 
     parcels.forEach((parcel) => {
       const isSelected = selectedParcel?.id === parcel.id;
       const coords =
-        isSelected && isSurveyorEditing && editableCoords.length > 0
+        isSelected && isSurveyorEditing && surveyTarget === "PARCEL" && editableCoords.length > 0
           ? editableCoords
           : parcel.coordinates;
 
@@ -417,77 +492,206 @@ export const MapView: React.FC<MapViewProps> = ({
         polyGroup.addLayer(marker);
       }
 
-      // Building Footprints Layer (Architectural Building Footprint)
-      if (activeLayers.structuralFootprints && (parcel.buildingFootprint || parcel.structureCount > 0)) {
+      // Building Footprints Layer (Architectural Building Footprint - Respective Boundaries)
+      if (activeLayers.structuralFootprints && (parcel.buildingFootprint || (parcel.structureCount && parcel.structureCount > 0))) {
+        const isEditingThisBuilding = isSelected && isSurveyorEditing && surveyTarget === "BUILDING" && editableCoords.length > 0;
         let buildingLatLngs: L.LatLngExpression[] = [];
 
-        if (parcel.buildingFootprint && parcel.buildingFootprint.length >= 3) {
+        if (isEditingThisBuilding) {
+          buildingLatLngs = editableCoords.map(([lng, lat]) => [lat, lng] as [number, number]);
+        } else if (parcel.buildingFootprint && parcel.buildingFootprint.length >= 3) {
           buildingLatLngs = parcel.buildingFootprint.map(([lng, lat]) => [lat, lng] as [number, number]);
-        } else {
-          const centroidLat = parcel.centroid.latitude;
-          const centroidLon = parcel.centroid.longitude;
-          const buildingOffset = 0.00008;
-          buildingLatLngs = [
-            [centroidLat - buildingOffset, centroidLon - buildingOffset],
-            [centroidLat + buildingOffset, centroidLon - buildingOffset],
-            [centroidLat + buildingOffset, centroidLon + buildingOffset],
-            [centroidLat - buildingOffset, centroidLon + buildingOffset],
-          ];
+        } else if (parcel.structureCount > 0 && parcel.coordinates && parcel.coordinates.length >= 4) {
+          const setback = generateSetbackFootprint(parcel.coordinates);
+          buildingLatLngs = setback.map(([lng, lat]) => [lat, lng] as [number, number]);
         }
 
-        const isSelected = selectedParcel?.id === parcel.id;
-        const buildingPoly = L.polygon(buildingLatLngs, {
-          color: isSelected ? "#0284c7" : "#d97706",
-          weight: isSelected ? 2.5 : 1.6,
-          fillColor: isSelected ? "#38bdf8" : "#f59e0b",
-          fillOpacity: isSelected ? 0.45 : 0.28,
-        });
+        if (buildingLatLngs.length >= 3) {
+          const buildingPoly = L.polygon(buildingLatLngs, {
+            color: isEditingThisBuilding ? "#fbbf24" : isSelected ? "#0284c7" : "#d97706",
+            weight: isEditingThisBuilding ? 3.0 : isSelected ? 2.5 : 1.6,
+            fillColor: isEditingThisBuilding ? "#f59e0b" : isSelected ? "#38bdf8" : "#f59e0b",
+            fillOpacity: isEditingThisBuilding ? 0.60 : isSelected ? 0.45 : 0.28,
+          });
 
-        const tooltipText = parcel.buildingDetails
-          ? `${parcel.buildingDetails.buildingName} (${parcel.buildingDetails.builtUpAreaSqM || 0}m²)`
-          : `Building Footprint (${parcel.uprn})`;
-        buildingPoly.bindTooltip(tooltipText);
-        buildingPoly.on("click", () => onSelectParcel(parcel));
-        footprintGroup.addLayer(buildingPoly);
+          const tooltipText = parcel.buildingDetails
+            ? `${parcel.buildingDetails.buildingName} (${parcel.buildingDetails.builtUpAreaSqM || 0}m²)`
+            : `Building Footprint (${parcel.uprn})`;
+          buildingPoly.bindTooltip(tooltipText, { direction: "top", offset: [0, -5] });
+          buildingPoly.on("click", () => onSelectParcel(parcel));
+          footprintGroup.addLayer(buildingPoly);
+        }
       }
     });
 
     // Render Editable Vertex Handles if in Surveyor Mode
     if (isSurveyorEditing && selectedParcel && editableCoords.length > 0) {
-      editableCoords.forEach(([lng, lat], index) => {
-        const vertexIcon = L.divIcon({
+      const isBuilding = surveyTarget === "BUILDING";
+
+      const createVertexIcon = (
+        index: number,
+        isViolating: boolean,
+        primaryViolation?: VertexViolation
+      ) => {
+        return L.divIcon({
           className: "surveyor-vertex-handle",
           html: `
-            <div class="w-4 h-4 rounded-full bg-amber-400 border-2 border-slate-900 shadow-md cursor-grab active:cursor-grabbing flex items-center justify-center text-[8px] font-bold text-slate-900">
-              ${index + 1}
+            <div class="relative group -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing">
+              ${
+                isViolating
+                  ? `<div class="absolute -inset-2.5 rounded-full bg-rose-500/40 animate-ping pointer-events-none"></div>`
+                  : ""
+              }
+              <div class="rounded-full border-2 shadow-2xl flex items-center justify-center font-mono text-[9px] font-bold transition-all ${
+                isViolating
+                  ? "w-6 h-6 bg-rose-600 border-white text-white scale-125 ring-4 ring-rose-500/90 shadow-[0_0_18px_rgba(244,63,94,0.95)] animate-pulse"
+                  : isBuilding
+                  ? "w-5 h-5 bg-amber-400 border-amber-950 text-slate-950 shadow-md ring-2 ring-amber-400/40"
+                  : "w-5 h-5 bg-sky-400 border-slate-900 text-slate-950 shadow-md ring-2 ring-sky-400/40"
+              }">
+                ${isViolating ? "!" : index + 1}
+              </div>
+              ${
+                isViolating && primaryViolation
+                  ? `<div class="absolute left-7 top-0 pointer-events-none bg-slate-950/95 border border-rose-500 text-rose-200 text-[10px] px-2.5 py-1.5 rounded-xl shadow-2xl z-50 min-w-[210px] max-w-xs whitespace-normal leading-snug">
+                      <div class="font-bold text-rose-400 flex items-center gap-1">⚠️ ${primaryViolation.title}</div>
+                      <div class="text-[9px] text-slate-300 mt-0.5">${primaryViolation.description}</div>
+                      <div class="text-[8px] font-mono text-rose-300 bg-rose-950 px-1 py-0.5 rounded border border-rose-800 mt-1">QC Alert: Adjust peg to resolve overlap/crossing</div>
+                    </div>`
+                  : `<div class="absolute left-6 top-0 hidden group-hover:block bg-slate-900 border border-slate-700 text-amber-300 text-[9px] px-1.5 py-0.5 rounded shadow whitespace-nowrap z-50">
+                      ${isBuilding ? `Roof Corner #${index + 1}` : `Boundary Peg #${index + 1}`}
+                    </div>`
+              }
             </div>
           `,
-          iconSize: [16, 16],
-          iconAnchor: [8, 8],
+          iconSize: [20, 20],
+          iconAnchor: [10, 10],
         });
+      };
+
+      const syncErrorLayers = (qc: TopologyValidationResult) => {
+        const errGroup = topologyErrorLayerGroupRef.current;
+        if (!errGroup) return;
+        errGroup.clearLayers();
+
+        if (!qc.isValid) {
+          // Render glowing red polyline segments for crossing or penetrating edges
+          qc.violatingSegments.forEach((seg) => {
+            const line = L.polyline(
+              [
+                [seg.start[1], seg.start[0]],
+                [seg.end[1], seg.end[0]],
+              ],
+              {
+                color: "#f43f5e",
+                weight: 5,
+                opacity: 0.92,
+              }
+            );
+            errGroup.addLayer(line);
+          });
+
+          // Render self-intersection reticle alert markers
+          qc.intersectionPoints.forEach((pt) => {
+            const interIcon = L.divIcon({
+              className: "inter-alert-reticle",
+              html: `
+                <div class="relative -translate-x-1/2 -translate-y-1/2 pointer-events-none group">
+                  <div class="w-7 h-7 rounded-full bg-rose-600/40 border-2 border-rose-500 animate-ping absolute inset-0"></div>
+                  <div class="w-5 h-5 rounded-full bg-rose-600 border border-white text-white flex items-center justify-center text-[8px] font-black shadow-lg">✕</div>
+                  <div class="absolute left-6 -top-1 bg-slate-950/95 border border-rose-500 text-rose-200 text-[9px] px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap z-50">
+                    <span class="font-bold text-rose-300">Self-Intersection</span>
+                    <div class="text-[8px] font-mono text-slate-300">${pt.label}</div>
+                  </div>
+                </div>
+              `,
+              iconSize: [20, 20],
+              iconAnchor: [10, 10],
+            });
+            const m = L.marker([pt.point[1], pt.point[0]], { icon: interIcon });
+            errGroup.addLayer(m);
+          });
+        }
+      };
+
+      // Initial validation check on load
+      const initialValidation = validateTopologyConstraints(
+        editableCoords,
+        selectedParcel,
+        parcels,
+        surveyTarget
+      );
+      syncErrorLayers(initialValidation);
+
+      const markersList: L.Marker[] = [];
+
+      editableCoords.forEach(([lng, lat], index) => {
+        const isViolating = initialValidation.violatingVertexIndices.has(index);
+        const primV = initialValidation.violationsByVertex.get(index)?.[0];
 
         const vertexMarker = L.marker([lat, lng], {
-          icon: vertexIcon,
+          icon: createVertexIcon(index, isViolating, primV),
           draggable: true,
         });
 
+        markersList.push(vertexMarker);
+
         vertexMarker.on("drag", (e: any) => {
-          const newLatLng = e.target.getLatLng();
+          const rawLatLng = e.target.getLatLng();
+          const snap = computeTopologySnap(
+            [rawLatLng.lng, rawLatLng.lat],
+            selectedParcel?.id,
+            parcels,
+            snapConfigRef.current
+          );
+
+          const finalLng = snap.isSnapped ? snap.snappedPoint[0] : rawLatLng.lng;
+          const finalLat = snap.isSnapped ? snap.snappedPoint[1] : rawLatLng.lat;
+
+          if (snap.isSnapped) {
+            e.target.setLatLng([finalLat, finalLng]);
+            setActiveSnapResult(snap);
+          } else {
+            setActiveSnapResult(null);
+          }
+
           const current = [...coordsRef.current];
-          current[index] = [newLatLng.lng, newLatLng.lat];
+          current[index] = [finalLng, finalLat];
           if (index === 0 && current.length > 1) {
-            current[current.length - 1] = [newLatLng.lng, newLatLng.lat];
+            current[current.length - 1] = [finalLng, finalLat];
           } else if (index === current.length - 1 && current.length > 1) {
-            current[0] = [newLatLng.lng, newLatLng.lat];
+            current[0] = [finalLng, finalLat];
           }
           coordsRef.current = current;
           if (editablePolygonRef.current) {
             editablePolygonRef.current.setLatLngs(current.map(([cLng, cLat]) => [cLat, cLng]));
           }
+
+          // Compute real-time topological validation on each drag event
+          const liveQc = validateTopologyConstraints(
+            current,
+            selectedParcel,
+            parcels,
+            surveyTarget
+          );
+          setLiveDragValidation(liveQc);
+
+          // Update icons of all vertex markers instantaneously
+          markersList.forEach((m, mIdx) => {
+            const isV = liveQc.violatingVertexIndices.has(mIdx);
+            const pV = liveQc.violationsByVertex.get(mIdx)?.[0];
+            m.setIcon(createVertexIcon(mIdx, isV, pV));
+          });
+
+          syncErrorLayers(liveQc);
         });
 
         vertexMarker.on("dragend", () => {
           setEditableCoords([...coordsRef.current]);
+          setLiveDragValidation(null);
+          setTimeout(() => {
+            setActiveSnapResult(null);
+          }, 2500);
         });
 
         editGroup.addLayer(vertexMarker);
@@ -635,6 +839,23 @@ export const MapView: React.FC<MapViewProps> = ({
     const mid: [number, number] = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
     const updated: [number, number][] = [editableCoords[0], mid, ...editableCoords.slice(1)];
     setEditableCoords(updated);
+    coordsRef.current = updated;
+    if (editablePolygonRef.current) {
+      editablePolygonRef.current.setLatLngs(updated.map(([cLng, cLat]) => [cLat, cLng]));
+    }
+  };
+
+  const handleRevertBoundary = () => {
+    if (selectedParcel) {
+      setEditableCoords([...selectedParcel.coordinates]);
+      coordsRef.current = [...selectedParcel.coordinates];
+      if (editablePolygonRef.current) {
+        editablePolygonRef.current.setLatLngs(
+          selectedParcel.coordinates.map(([cLng, cLat]) => [cLat, cLng])
+        );
+      }
+      setActiveSnapResult(null);
+    }
   };
 
   // Default to Google Maps Real-Time Satellite View
@@ -775,37 +996,190 @@ export const MapView: React.FC<MapViewProps> = ({
 
       {/* Surveyor Active Editing Floating Banner */}
       {isSurveyorEditing && selectedParcel && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] bg-slate-900/95 border border-amber-500/80 text-amber-200 px-4 py-2 rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-3 animate-bounce-short">
-          <div className="flex items-center gap-2 text-xs font-semibold">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] bg-slate-900/95 border-2 border-amber-500/90 text-white px-4 py-2.5 rounded-2xl shadow-2xl backdrop-blur-md flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
-            <span>SURVEYOR FIELD EDIT MODE: Drag amber vertex pegs to adjust boundary</span>
+            <span className="text-xs font-bold text-amber-300">SURVEYOR EDIT</span>
+            <span className="text-[10px] font-mono bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">
+              {selectedParcel.uprn}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Target Switcher: Plot Boundary vs Building Footprint */}
+          <div className="flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-700/80 text-xs">
+            <button
+              onClick={() => setSurveyTarget("PARCEL")}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition ${
+                surveyTarget === "PARCEL"
+                  ? "bg-sky-500/20 text-sky-300 border border-sky-500/50 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Layers className="w-3 h-3" />
+              <span>Plot</span>
+            </button>
+            <button
+              onClick={() => setSurveyTarget("BUILDING")}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition ${
+                surveyTarget === "BUILDING"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Home className="w-3 h-3" />
+              <span>Building</span>
+            </button>
+          </div>
+
+          {/* Magnet Snap Toggle & Mode Selector */}
+          <div className="flex items-center gap-1.5 border-l border-r border-slate-700 px-2.5">
+            <button
+              onClick={() =>
+                setSnapConfig((prev) => ({
+                  ...prev,
+                  mode: prev.mode === "OFF" ? "ALL" : "OFF",
+                }))
+              }
+              className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 transition ${
+                snapConfig.mode !== "OFF"
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 ring-1 ring-emerald-400/30"
+                  : "bg-slate-800 text-slate-400 border border-slate-700"
+              }`}
+            >
+              <Magnet className={`w-3 h-3 ${snapConfig.mode !== "OFF" ? "text-emerald-400" : "text-slate-400"}`} />
+              <span>Snap: {snapConfig.mode !== "OFF" ? "ON" : "OFF"}</span>
+            </button>
+
+            {snapConfig.mode !== "OFF" && (
+              <div className="flex items-center bg-slate-950/80 p-0.5 rounded border border-slate-800 text-[9px] font-mono">
+                <button
+                  onClick={() =>
+                    setSnapConfig((prev) => ({
+                      ...prev,
+                      mode: "ALL",
+                      gridResolutionMeters: 1.0,
+                      enableEdgeSnapping: true,
+                      enableGridSnapping: true,
+                    }))
+                  }
+                  className={`px-1.5 py-0.5 rounded ${
+                    snapConfig.mode === "ALL" ? "bg-emerald-600 text-white font-bold" : "text-slate-400"
+                  }`}
+                >
+                  Edges + Grid
+                </button>
+                <button
+                  onClick={() =>
+                    setSnapConfig((prev) => ({
+                      ...prev,
+                      mode: "EDGES_AND_VERTICES",
+                      enableEdgeSnapping: true,
+                      enableVertexSnapping: true,
+                      enableGridSnapping: false,
+                    }))
+                  }
+                  className={`px-1.5 py-0.5 rounded ${
+                    snapConfig.mode === "EDGES_AND_VERTICES" ? "bg-cyan-600 text-white font-bold" : "text-slate-400"
+                  }`}
+                >
+                  Edges Only
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Active snap badge */}
+          {activeSnapResult?.isSnapped && (
+            <div className="text-[10px] font-mono text-emerald-300 flex items-center gap-1 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/50">
+              <Zap className="w-3 h-3 text-amber-400" />
+              <span>{activeSnapResult.description}</span>
+            </div>
+          )}
+
+          {/* Topological Quality Control Status Pill */}
+          {effectiveValidation && (
+            <div className="flex items-center gap-1.5 border-l border-slate-700 pl-2.5">
+              {!effectiveValidation.isValid ? (
+                <div
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-rose-950/80 border border-rose-500 text-rose-200 text-xs animate-pulse shadow-md"
+                  title={effectiveValidation.summaryMessage}
+                >
+                  <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                  <span className="font-bold text-[11px] text-rose-300">
+                    QC VIOLATION ({effectiveValidation.violatingVertexIndices.size})
+                  </span>
+                  <span className="hidden xl:inline text-[10px] text-rose-300/80 truncate max-w-[190px]">
+                    {effectiveValidation.summaryMessage}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-[11px]">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="font-semibold">Topology Valid</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex items-center gap-1.5">
             <button
               id="btn-add-vertex-peg"
               onClick={handleAddMidpointPeg}
-              className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs border border-slate-700 transition"
+              className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs border border-slate-700 transition"
               title="Insert Midpoint Vertex Peg"
             >
-              <PlusCircle className="w-3.5 h-3.5 text-amber-400" />
-              <span>+ Add Peg</span>
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>+ Peg</span>
+            </button>
+
+            <button
+              onClick={handleRevertBoundary}
+              className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs transition"
+              title="Revert to original coordinates"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
 
             <button
               id="btn-save-vertex-adj"
-              onClick={() => onSaveSurveyorAdjustment(editableCoords)}
-              className="flex items-center gap-1 px-3 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow transition"
+              onClick={() => {
+                if (effectiveValidation && !effectiveValidation.isValid) {
+                  const proceed = window.confirm(
+                    `⚠️ TOPOLOGICAL QUALITY CONTROL WARNING:\n\n${effectiveValidation.summaryMessage}\n\nCommitting will persist an invalid boundary that violates cadastral topology rules. Do you want to force commit this ground truth?`
+                  );
+                  if (!proceed) return;
+                }
+                onSaveSurveyorAdjustment(editableCoords, surveyTarget);
+              }}
+              className={`flex items-center gap-1 px-3 py-1 rounded text-white font-bold text-xs shadow transition ${
+                effectiveValidation && !effectiveValidation.isValid
+                  ? "bg-rose-700 hover:bg-rose-600 ring-2 ring-rose-500/60"
+                  : "bg-emerald-600 hover:bg-emerald-500"
+              }`}
+              title={
+                effectiveValidation && !effectiveValidation.isValid
+                  ? `Warning: ${effectiveValidation.summaryMessage}`
+                  : "Commit Ground Truth"
+              }
             >
-              <Check className="w-3.5 h-3.5" />
-              Save & Lock Hash
+              {effectiveValidation && !effectiveValidation.isValid ? (
+                <>
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
+                  <span>Commit ({effectiveValidation.violatingVertexIndices.size} QC Alert{effectiveValidation.violatingVertexIndices.size > 1 ? "s" : ""})</span>
+                </>
+              ) : (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Commit Ground Truth</span>
+                </>
+              )}
             </button>
+
             <button
               id="btn-cancel-vertex-adj"
               onClick={onCancelSurveyorAdjustment}
-              className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition"
+              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
               Cancel
             </button>
           </div>

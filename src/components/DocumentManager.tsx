@@ -18,6 +18,7 @@ import {
   Trash2,
   Copy,
   BarChart3,
+  UploadCloud,
 } from "lucide-react";
 import type {
   DocumentMetadata,
@@ -29,6 +30,7 @@ import type {
 interface DocumentManagerProps {
   isOpen: boolean;
   onClose: () => void;
+  onUploadNew?: () => void;
 }
 
 interface DocumentStoreResponse {
@@ -40,6 +42,7 @@ interface DocumentStoreResponse {
 export const DocumentManager: React.FC<DocumentManagerProps> = ({
   isOpen,
   onClose,
+  onUploadNew,
 }) => {
   const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
   const [filteredDocs, setFilteredDocs] = useState<DocumentMetadata[]>([]);
@@ -185,12 +188,23 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onUploadNew && (
+              <button
+                onClick={onUploadNew}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-md transition"
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Upload New</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Search & Filters */}

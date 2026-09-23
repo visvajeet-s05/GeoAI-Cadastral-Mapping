@@ -17,7 +17,8 @@ import {
   Globe,
   Compass,
   Loader2,
-  Navigation
+  Navigation,
+  Brain,
 } from "lucide-react";
 import { ActiveLayers, Parcel, UAVTelemetry } from "../types";
 

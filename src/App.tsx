@@ -445,19 +445,37 @@ export default function App() {
     }
   };
 
-  // Save surveyor adjusted boundary coordinates
-  const handleSaveSurveyorAdjustment = async (updatedCoordinates: [number, number][]) => {
+  // Save surveyor adjusted boundary coordinates or architectural building footprint
+  const handleSaveSurveyorAdjustment = async (
+    updatedCoordinates: [number, number][],
+    target: "PARCEL" | "BUILDING" = "PARCEL"
+  ) => {
     if (!selectedParcel) return;
     try {
-      const res = await fetch(`/api/parcels/${selectedParcel.id}/boundaries`, {
+      const endpoint =
+        target === "BUILDING"
+          ? `/api/parcels/${selectedParcel.id}/building-footprint`
+          : `/api/parcels/${selectedParcel.id}/boundaries`;
+
+      const bodyPayload =
+        target === "BUILDING"
+          ? {
+              buildingFootprint: updatedCoordinates,
+              surveyorId: "SURV-FIELD-01",
+              surveyorName: "Surveyor Field Rover",
+              justification: "Rooftop perimeter aligned with high-resolution satellite orthophoto ground truth.",
+            }
+          : {
+              coordinates: updatedCoordinates,
+              surveyorId: "SURV-FIELD-01",
+              surveyorName: "Surveyor Field Rover",
+              justification: "Boundary peg positions verified with millimeter DGPS rover and topological edge lock.",
+            };
+
+      const res = await fetch(endpoint, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          coordinates: updatedCoordinates,
-          surveyorId: "SURV-FIELD-01",
-          surveyorName: "Surveyor Field Rover",
-          justification: "Boundary peg positions verified with millimeter DGPS rover.",
-        }),
+        body: JSON.stringify(bodyPayload),
       });
       const data = await res.json();
       if (data.parcel) {
@@ -470,6 +488,7 @@ export default function App() {
         }
         setIsSurveyorEditing(false);
         setActiveTool("INSPECT");
+        fetchTopologyReport();
       }
     } catch (e) {
       console.error("Failed to save surveyor adjustment:", e);
@@ -957,6 +976,10 @@ export default function App() {
         <DocumentManager
           isOpen={showDocumentManager}
           onClose={() => setShowDocumentManager(false)}
+          onUploadNew={() => {
+            setShowDocumentManager(false);
+            setShowDocumentUploadModal(true);
+          }}
         />
       )}
 

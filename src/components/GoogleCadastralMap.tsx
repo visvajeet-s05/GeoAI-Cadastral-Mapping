@@ -28,6 +28,16 @@ import {
   calculateShoelaceArea,
   formatArea,
 } from "../lib/geoUtils";
+import {
+  SnapConfig,
+  SnapResult,
+  computeTopologySnap,
+} from "../lib/topologySnapping";
+import {
+  validateTopologyConstraints,
+  TopologyValidationResult,
+  VertexViolation,
+} from "../lib/topologyValidation";
 import { getParcelPaletteColor } from "../lib/cadastralSegmentationEngine";
 import {
   ZoomIn,
@@ -61,6 +71,11 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
+  Magnet,
+  Grid,
+  Plus,
+  Trash2,
+  Zap,
 } from "lucide-react";
 
 // ==========================================
@@ -344,7 +359,7 @@ export interface GoogleCadastralMapProps {
   activeLayers: ActiveLayers;
   topologyReport: TopologyReport | null;
   isSurveyorEditing: boolean;
-  onSaveSurveyorAdjustment: (updatedCoordinates: [number, number][]) => void;
+  onSaveSurveyorAdjustment: (updatedCoordinates: [number, number][], target?: "PARCEL" | "BUILDING") => void;
   onCancelSurveyorAdjustment: () => void;
   telemetry?: UAVTelemetry | null;
   ingestionMode?: IngestionMode;
@@ -442,32 +457,138 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
       .catch((err) => console.error("Failed to load detections for map:", err));
   }, []);
 
-  // Initialize editable coordinates when parcel editing begins
-  useEffect(() => {
-    if (selectedParcel && isSurveyorEditing) {
-      setEditableCoords([...selectedParcel.coordinates]);
-    } else {
-      setEditableCoords([]);
-    }
-  }, [selectedParcel, isSurveyorEditing]);
+  // Survey Editing Target: Parcel Boundary Pegs vs. Building Rooftop Footprint
+  const [surveyTarget, setSurveyTarget] = useState<"PARCEL" | "BUILDING">("PARCEL");
 
-  // Handle vertex peg drag during surveyor boundary adjustment
+  // Helper to generate a clean, rectangular setback building footprint from parcel boundary
+  const generateSetbackFootprint = (coords: [number, number][]): [number, number][] => {
+    if (!coords || coords.length < 4) return [];
+    const pts = coords.slice(0, coords.length - 1);
+    const cLat = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+    const cLng = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+    const insetPts: [number, number][] = pts.map(([lng, lat]) => [
+      lng * 0.78 + cLng * 0.22,
+      lat * 0.78 + cLat * 0.22,
+    ]);
+    insetPts.push([insetPts[0][0], insetPts[0][1]]);
+    return insetPts;
+  };
+
+  // Initialize editable coordinates when parcel or building editing begins
+  useEffect(() => {
+    if (!selectedParcel || !isSurveyorEditing) {
+      setEditableCoords([]);
+      return;
+    }
+    if (surveyTarget === "BUILDING") {
+      if (selectedParcel.buildingFootprint && selectedParcel.buildingFootprint.length >= 3) {
+        setEditableCoords([...selectedParcel.buildingFootprint]);
+      } else {
+        const generated = generateSetbackFootprint(selectedParcel.coordinates);
+        setEditableCoords(generated);
+      }
+    } else {
+      setEditableCoords([...selectedParcel.coordinates]);
+    }
+  }, [selectedParcel, isSurveyorEditing, surveyTarget]);
+
+  // Topological Snapping & Survey Grid Alignment Configuration
+  const [snapConfig, setSnapConfig] = useState<SnapConfig>({
+    mode: "ALL",
+    snapToleranceMeters: 2.5,
+    gridResolutionMeters: 1.0,
+    enableEdgeSnapping: true,
+    enableVertexSnapping: true,
+    enableGridSnapping: true,
+  });
+  const [activeSnapResult, setActiveSnapResult] = useState<SnapResult | null>(null);
+  const [activeSnappedEdge, setActiveSnappedEdge] = useState<{ start: [number, number]; end: [number, number] } | null>(null);
+  const [draggingVertexIndex, setDraggingVertexIndex] = useState<number | null>(null);
+
+  // Handle vertex peg drag during surveyor boundary adjustment with auto-alignment
   const handleVertexDrag = (index: number, e: google.maps.MapMouseEvent) => {
     if (!e.latLng) return;
-    const newLat = e.latLng.lat();
-    const newLng = e.latLng.lng();
+    const rawLat = e.latLng.lat();
+    const rawLng = e.latLng.lng();
+
+    // Compute topological snap against adjacent parcel boundaries, vertices and survey grid
+    const snap = computeTopologySnap(
+      [rawLng, rawLat],
+      selectedParcel?.id,
+      parcels,
+      snapConfig
+    );
+
+    const [finalLng, finalLat] = snap.isSnapped ? snap.snappedPoint : [rawLng, rawLat];
+
+    setDraggingVertexIndex(index);
+    if (snap.isSnapped) {
+      setActiveSnapResult(snap);
+      if (snap.snapType === "EDGE" && snap.edgeStart && snap.edgeEnd) {
+        setActiveSnappedEdge({ start: snap.edgeStart, end: snap.edgeEnd });
+      } else {
+        setActiveSnappedEdge(null);
+      }
+    } else {
+      setActiveSnapResult(null);
+      setActiveSnappedEdge(null);
+    }
 
     setEditableCoords((prev) => {
       const updated = [...prev];
-      updated[index] = [newLng, newLat];
+      updated[index] = [finalLng, finalLat];
       // If closing ring (first === last), keep both in sync
       if (index === 0 && updated.length > 1) {
-        updated[updated.length - 1] = [newLng, newLat];
+        updated[updated.length - 1] = [finalLng, finalLat];
       } else if (index === updated.length - 1 && updated.length > 1) {
-        updated[0] = [newLng, newLat];
+        updated[0] = [finalLng, finalLat];
       }
       return updated;
     });
+  };
+
+  const handleVertexDragEnd = () => {
+    setDraggingVertexIndex(null);
+    setTimeout(() => {
+      setActiveSnappedEdge(null);
+    }, 2500);
+  };
+
+  // Add Midpoint Peg between peg 1 and peg 2 for boundary or roof refinement
+  const handleAddMidpointPeg = () => {
+    if (editableCoords.length < 2) return;
+    const p1 = editableCoords[0];
+    const p2 = editableCoords[1];
+    const mid: [number, number] = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
+    const updated: [number, number][] = [editableCoords[0], mid, ...editableCoords.slice(1)];
+    setEditableCoords(updated);
+  };
+
+  // Delete last active vertex handle (must maintain closed polygon >= 3 edges)
+  const handleDeleteLastVertex = () => {
+    if (editableCoords.length <= 4) return;
+    setEditableCoords((prev) => {
+      const next = prev.slice(0, prev.length - 2);
+      next.push(next[0]); // Maintain closed ring
+      return next;
+    });
+  };
+
+  // Revert boundary to original parcel or building coordinates
+  const handleRevertBoundary = () => {
+    if (selectedParcel) {
+      if (surveyTarget === "BUILDING") {
+        if (selectedParcel.buildingFootprint && selectedParcel.buildingFootprint.length >= 3) {
+          setEditableCoords([...selectedParcel.buildingFootprint]);
+        } else {
+          setEditableCoords(generateSetbackFootprint(selectedParcel.coordinates));
+        }
+      } else {
+        setEditableCoords([...selectedParcel.coordinates]);
+      }
+      setActiveSnapResult(null);
+      setActiveSnappedEdge(null);
+    }
   };
 
   // Calculate live area during surveyor editing
@@ -475,6 +596,19 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
     if (editableCoords.length < 3) return 0;
     return calculateShoelaceArea(editableCoords);
   }, [editableCoords]);
+
+  // Real-time topological constraint verification for surveyor boundary editing
+  const liveTopologyValidation = useMemo<TopologyValidationResult | null>(() => {
+    if (!isSurveyorEditing || !selectedParcel || editableCoords.length < 3) {
+      return null;
+    }
+    return validateTopologyConstraints(
+      editableCoords,
+      selectedParcel,
+      parcels,
+      surveyTarget
+    );
+  }, [isSurveyorEditing, selectedParcel, editableCoords, parcels, surveyTarget]);
 
   // Filtered parcels based on House / Vacant Land perception filter
   const displayedParcels = useMemo(() => {
@@ -587,7 +721,7 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
           {/* Render All Cadastral Parcels */}
           {displayedParcels.map((parcel, pIdx) => {
             const isSelected = selectedParcel?.id === parcel.id;
-            const isEditingThis = isSelected && isSurveyorEditing && editableCoords.length > 0;
+            const isEditingThis = isSelected && isSurveyorEditing && surveyTarget === "PARCEL" && editableCoords.length > 0;
 
             const coordsToRender = isEditingThis ? editableCoords : parcel.coordinates;
             const latLngPaths = coordsToRender.map(([lng, lat]) => ({ lat, lng }));
@@ -673,50 +807,97 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
                   }}
                 />
 
-                {/* High-Precision Architectural Building Footprint (Survey-Grade Setback & Roofline) */}
-                {activeLayers.structuralFootprints && (parcel.buildingFootprint || (parcel.structureCount > 0 && parcel.coordinates.length >= 4)) && (() => {
-                  let footprintCoords = parcel.buildingFootprint;
+                {/* High-Precision Architectural Building Footprint (Survey-Grade Respective Boundaries) */}
+                {activeLayers.structuralFootprints && (parcel.buildingFootprint || parcel.structureCount > 0) && (() => {
+                  const isEditingThisBuilding = isSelected && isSurveyorEditing && surveyTarget === "BUILDING" && editableCoords.length > 0;
+                  let footprintCoords = isEditingThisBuilding ? editableCoords : parcel.buildingFootprint;
+                  
+                  // Only render if valid building footprint exists or if parcel is confirmed to have structures
                   if (!footprintCoords || footprintCoords.length < 3) {
-                    const cLat = pCentroidLat;
-                    const cLng = pCentroidLng;
-                    footprintCoords = parcel.coordinates.map(([lng, lat]) => [
-                      lng * 0.76 + cLng * 0.24,
-                      lat * 0.76 + cLat * 0.24,
-                    ]);
+                    if (!parcel.structureCount || parcel.structureCount <= 0) return null;
+                    footprintCoords = generateSetbackFootprint(parcel.coordinates);
+                    if (!footprintCoords || footprintCoords.length < 3) return null;
                   }
+
                   const bLatLngPaths = footprintCoords.map(([lng, lat]) => ({ lat, lng }));
                   const bCentroidLat = footprintCoords.reduce((sum, c) => sum + c[1], 0) / footprintCoords.length;
                   const bCentroidLng = footprintCoords.reduce((sum, c) => sum + c[0], 0) / footprintCoords.length;
+                  const isHovered = hoveredParcel?.id === parcel.id;
 
                   return (
                     <React.Fragment key={`bld-footprint-${parcel.id}`}>
                       <GoogleMapPolygon
                         paths={bLatLngPaths}
-                        fillColor={isSelected ? "#38bdf8" : "#f59e0b"}
-                        fillOpacity={isSelected ? 0.45 : isAnySelected ? 0.15 : 0.28}
-                        strokeColor={isSelected ? "#0284c7" : "#d97706"}
-                        strokeWeight={isSelected ? 2.5 : 1.6}
-                        zIndex={isSelected ? 28 : 8}
+                        fillColor={isEditingThisBuilding ? "#f59e0b" : isSelected ? "#38bdf8" : isHovered ? "#fbbf24" : "#f59e0b"}
+                        fillOpacity={isEditingThisBuilding ? 0.60 : isSelected ? 0.45 : isHovered ? 0.35 : isAnySelected ? 0.16 : 0.28}
+                        strokeColor={isEditingThisBuilding ? "#fbbf24" : isSelected ? "#0284c7" : isHovered ? "#d97706" : "#d97706"}
+                        strokeWeight={isEditingThisBuilding ? 3.0 : isSelected ? 2.5 : isHovered ? 2.0 : 1.6}
+                        zIndex={isEditingThisBuilding ? 40 : isSelected ? 28 : isHovered ? 20 : 8}
                         onClick={() => onSelectParcel(parcel)}
+                        onMouseOver={(e) => {
+                          setHoveredParcel(parcel);
+                          if (e.latLng) {
+                            setHoverPosition({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+                          }
+                        }}
+                        onMouseOut={() => {
+                          setHoveredParcel(null);
+                          setHoverPosition(null);
+                        }}
                       />
 
-                      {/* Building Name Tag for High Zoom or Selected Parcel */}
-                      {(isSelected || currentZoom >= 19.0) && parcel.buildingDetails && (
+                      {/* Respective Building Tag: Decluttered and perfectly sized to avoid label collisions */}
+                      {parcel.buildingDetails && (isSelected || isHovered || currentZoom >= 19.2) && (
                         <AdvancedMarker
                           position={{ lat: bCentroidLat, lng: bCentroidLng }}
-                          zIndex={isSelected ? 32 : 10}
+                          zIndex={isSelected ? 38 : isHovered ? 36 : 10}
                         >
-                          <div
-                            onClick={() => onSelectParcel(parcel)}
-                            className={`cursor-pointer px-1.5 py-0.5 rounded text-[8px] font-mono font-medium shadow-lg border transition-all whitespace-nowrap backdrop-blur-md ${
-                              isSelected
-                                ? "bg-amber-500 text-slate-950 border-amber-300 font-bold scale-105"
-                                : "bg-slate-950/85 text-amber-300 border-amber-500/40"
-                            }`}
-                            title={`${parcel.buildingDetails.buildingName} (${parcel.buildingDetails.builtUpAreaSqM || 0}m²)`}
-                          >
-                            {parcel.buildingDetails.buildingName.split("(")[0].trim()}
-                          </div>
+                          {isSelected ? (
+                            /* Selected Full Prominent Architectural Badge */
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSelectParcel(parcel);
+                              }}
+                              className="cursor-pointer px-2 py-0.5 rounded text-[9px] font-mono font-bold shadow-xl border transition-all whitespace-nowrap backdrop-blur-md bg-amber-500 text-slate-950 border-amber-300 ring-2 ring-amber-400/60 scale-105 flex items-center gap-1.5"
+                              title={`${parcel.buildingDetails.buildingName} • ${parcel.buildingDetails.builtUpAreaSqM || 0}m² (${parcel.buildingDetails.roofType || "RCC Slab"})`}
+                            >
+                              <Home className="w-2.5 h-2.5 text-slate-950 shrink-0" />
+                              <span>{parcel.buildingDetails.buildingName.split("(")[0].trim()}</span>
+                              <span className="text-[8px] opacity-80 border-l border-slate-950/40 pl-1 font-semibold">
+                                {parcel.buildingDetails.builtUpAreaSqM || 0}m²
+                              </span>
+                            </div>
+                          ) : isHovered ? (
+                            /* Hover Expanded Preview Badge */
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSelectParcel(parcel);
+                              }}
+                              className="cursor-pointer px-2 py-0.5 rounded text-[8px] font-mono font-medium shadow-2xl border transition-all whitespace-nowrap backdrop-blur-md bg-slate-950/95 text-amber-300 border-amber-400 ring-1 ring-amber-400/50 flex items-center gap-1 scale-105 z-30"
+                              title={`${parcel.buildingDetails.buildingName} (${parcel.buildingDetails.builtUpAreaSqM || 0}m²)`}
+                            >
+                              <Home className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                              <span>{parcel.buildingDetails.buildingName.split("(")[0].trim()}</span>
+                              <span className="text-slate-400 border-l border-slate-700 pl-1">
+                                {parcel.buildingDetails.builtUpAreaSqM || 0}m²
+                              </span>
+                            </div>
+                          ) : (
+                            /* Compact Micro-Tag: Fits strictly inside the respective building boundary without colliding with neighboring plots */
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSelectParcel(parcel);
+                              }}
+                              className="cursor-pointer px-1.5 py-0.5 rounded text-[8px] font-mono font-semibold shadow-md border transition-all whitespace-nowrap backdrop-blur-md bg-slate-950/85 text-amber-300/90 border-amber-500/35 hover:border-amber-400 hover:text-amber-200 max-w-[82px] truncate flex items-center gap-1"
+                              title={`${parcel.buildingDetails.buildingName} (${parcel.buildingDetails.builtUpAreaSqM || 0}m²)`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                              <span className="truncate">{parcel.buildingDetails.builtUpAreaSqM || 0}m²</span>
+                            </div>
+                          )}
                         </AdvancedMarker>
                       )}
                     </React.Fragment>
@@ -899,32 +1080,182 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
             />
           )}
 
-          {/* Surveyor Interactive Vertex Editing Draggable Markers */}
+          {/* Surveyor Interactive Vertex Editing Draggable Markers with Topological QC Feedback */}
           {isSurveyorEditing &&
             selectedParcel &&
             editableCoords.map(([lng, lat], idx) => {
               if (idx === editableCoords.length - 1 && editableCoords.length > 1) {
                 return null; // Skip redundant closing node
               }
+              const isBeingDragged = draggingVertexIndex === idx;
+              const isViolating = liveTopologyValidation?.violatingVertexIndices.has(idx) ?? false;
+              const vertexViolations = liveTopologyValidation?.violationsByVertex.get(idx) || [];
+              const primaryViolation = vertexViolations[0];
+
               return (
                 <AdvancedMarker
                   key={`edit-peg-${idx}`}
                   position={{ lat, lng }}
                   draggable={true}
                   onDrag={(e) => handleVertexDrag(idx, e)}
-                  zIndex={100}
+                  onDragEnd={handleVertexDragEnd}
+                  zIndex={isBeingDragged ? 160 : isViolating ? 150 : 100}
                 >
                   <div className="group relative -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing">
-                    <div className="w-5 h-5 rounded-full bg-amber-400 border-2 border-slate-950 shadow-2xl flex items-center justify-center font-mono text-[9px] font-bold text-slate-950 ring-4 ring-amber-400/40">
-                      {idx + 1}
+                    {/* Pulsing Alert Halo for Violating Vertex */}
+                    {isViolating && (
+                      <div className="absolute -inset-2.5 rounded-full bg-rose-500/40 animate-ping pointer-events-none" />
+                    )}
+
+                    <div
+                      className={`rounded-full border-2 shadow-2xl flex items-center justify-center font-mono text-[9px] font-bold transition-all ${
+                        isViolating
+                          ? "w-6 h-6 bg-rose-600 border-white text-white scale-125 ring-4 ring-rose-500/90 shadow-[0_0_20px_rgba(244,63,94,0.95)] animate-pulse"
+                          : isBeingDragged && activeSnapResult?.isSnapped
+                          ? "w-5 h-5 bg-emerald-400 scale-125 ring-4 ring-emerald-400/60 border-slate-950 text-slate-950"
+                          : surveyTarget === "BUILDING"
+                          ? "w-5 h-5 bg-amber-400 ring-4 ring-amber-500/50 hover:scale-110 border-slate-950 text-slate-950"
+                          : "w-5 h-5 bg-sky-400 ring-4 ring-sky-400/40 hover:scale-110 border-slate-950 text-slate-950"
+                      }`}
+                    >
+                      {isViolating ? (
+                        <span className="font-black text-xs text-white">!</span>
+                      ) : (
+                        idx + 1
+                      )}
                     </div>
-                    <div className="absolute left-6 top-0 hidden group-hover:block bg-slate-900 border border-slate-700 text-amber-300 text-[9px] px-1.5 py-0.5 rounded shadow whitespace-nowrap">
-                      Drag to realign with satellite roof/fence
+
+                    {/* Hover & Immediate Violation Tooltip */}
+                    <div
+                      className={`absolute left-7 top-0 pointer-events-none rounded-xl px-2.5 py-1.5 shadow-2xl z-50 text-[10px] backdrop-blur-md border transition-all ${
+                        isViolating
+                          ? "block bg-slate-950/95 border-rose-500 text-rose-200 min-w-[210px] max-w-xs whitespace-normal shadow-[0_4px_20px_rgba(225,29,72,0.35)]"
+                          : "hidden group-hover:block bg-slate-900 border-slate-700 text-amber-300 whitespace-nowrap"
+                      }`}
+                    >
+                      {isViolating && primaryViolation ? (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5 font-bold text-rose-400">
+                            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0" />
+                            <span>⚠️ {primaryViolation.title}</span>
+                          </div>
+                          <p className="text-[10px] text-slate-200 leading-snug">
+                            {primaryViolation.description}
+                          </p>
+                          <div className="text-[9px] font-mono text-rose-300 bg-rose-950/80 px-1.5 py-0.5 rounded border border-rose-700/50 mt-0.5">
+                            QC Rule: {primaryViolation.violationType === "SELF_INTERSECTION" ? "Eliminate bowtie / crossing segment" : "Prevent legal overlap"}
+                          </div>
+                        </div>
+                      ) : (
+                        <span>
+                          {surveyTarget === "BUILDING" ? `Roof Corner #${idx + 1}` : `Boundary Peg #${idx + 1}`} • Drag to snap to edges &amp; grid
+                        </span>
+                      )}
                     </div>
                   </div>
                 </AdvancedMarker>
               );
             })}
+
+          {/* Real-Time Topological Violation Segment Highlights (Glowing Red Lines) */}
+          {isSurveyorEditing &&
+            liveTopologyValidation &&
+            !liveTopologyValidation.isValid &&
+            liveTopologyValidation.violatingSegments.map((seg, sIdx) => (
+              <GoogleMapPolyline
+                key={`topo-violating-seg-${sIdx}`}
+                paths={[
+                  { lat: seg.start[1], lng: seg.start[0] },
+                  { lat: seg.end[1], lng: seg.end[0] },
+                ]}
+                strokeColor="#f43f5e"
+                strokeWeight={5}
+                strokeOpacity={0.92}
+                zIndex={125}
+              />
+            ))}
+
+          {/* Self-Intersection Point Reticle Alerts */}
+          {isSurveyorEditing &&
+            liveTopologyValidation &&
+            liveTopologyValidation.intersectionPoints.map((pt, pIdx) => (
+              <AdvancedMarker
+                key={`inter-pt-${pIdx}`}
+                position={{ lat: pt.point[1], lng: pt.point[0] }}
+                zIndex={170}
+              >
+                <div className="relative -translate-x-1/2 -translate-y-1/2 pointer-events-none group">
+                  <div className="w-7 h-7 rounded-full bg-rose-600/40 border-2 border-rose-500 flex items-center justify-center animate-ping absolute inset-0" />
+                  <div className="w-5 h-5 rounded-full bg-rose-600 border-2 border-white shadow-[0_0_12px_rgba(244,63,94,1)] flex items-center justify-center text-white text-[10px] font-black">
+                    ✕
+                  </div>
+                  <div className="absolute left-6 -top-1 bg-slate-950/95 border border-rose-500 text-rose-200 text-[9px] px-2 py-1 rounded-md shadow-xl whitespace-nowrap z-50">
+                    <span className="font-bold text-rose-300">Self-Intersection Point</span>
+                    <div className="text-slate-300 font-mono text-[8px]">{pt.label}</div>
+                  </div>
+                </div>
+              </AdvancedMarker>
+            ))}
+
+          {/* Active Topological Snap Feedback Overlays */}
+          {isSurveyorEditing && activeSnapResult?.isSnapped && (
+            <>
+              {/* Highlighted Adjacent Boundary Edge being magnetically snapped to */}
+              {activeSnappedEdge && (
+                <GoogleMapPolyline
+                  paths={[
+                    { lat: activeSnappedEdge.start[1], lng: activeSnappedEdge.start[0] },
+                    { lat: activeSnappedEdge.end[1], lng: activeSnappedEdge.end[0] },
+                  ]}
+                  strokeColor="#10b981"
+                  strokeWeight={4.5}
+                  strokeOpacity={0.95}
+                  zIndex={120}
+                />
+              )}
+
+              {/* Glowing Snap Reticle Marker at Snapped Coordinate */}
+              <AdvancedMarker
+                position={{
+                  lat: activeSnapResult.snappedPoint[1],
+                  lng: activeSnapResult.snappedPoint[0],
+                }}
+                zIndex={140}
+              >
+                <div className="relative -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                  <div
+                    className={`absolute -inset-3 rounded-full animate-ping opacity-60 ${
+                      activeSnapResult.snapType === "VERTEX"
+                        ? "bg-emerald-400"
+                        : activeSnapResult.snapType === "EDGE"
+                        ? "bg-cyan-400"
+                        : "bg-amber-400"
+                    }`}
+                  />
+                  <div
+                    className={`w-6 h-6 rounded-full border-2 border-white shadow-2xl flex items-center justify-center font-bold text-[9px] text-white ${
+                      activeSnapResult.snapType === "VERTEX"
+                        ? "bg-emerald-500 ring-2 ring-emerald-400"
+                        : activeSnapResult.snapType === "EDGE"
+                        ? "bg-cyan-500 ring-2 ring-cyan-400"
+                        : "bg-amber-500 ring-2 ring-amber-400"
+                    }`}
+                  >
+                    <Magnet className="w-3.5 h-3.5" />
+                  </div>
+
+                  {/* High-visibility Cadastral Snap Pill */}
+                  <div className="absolute left-8 top-1/2 -translate-y-1/2 bg-slate-950/95 border border-emerald-400/80 text-emerald-300 text-[10px] font-mono font-bold px-2 py-1 rounded-lg shadow-2xl whitespace-nowrap flex items-center gap-1.5 backdrop-blur-md">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>{activeSnapResult.description}</span>
+                    <span className="text-[9px] text-slate-400 font-normal border-l border-slate-700 pl-1.5">
+                      {activeSnapResult.topologicalBenefit}
+                    </span>
+                  </div>
+                </div>
+              </AdvancedMarker>
+            </>
+          )}
 
           {/* Tape Measure Pegs & Lines */}
           {measuringMode && (
@@ -1506,36 +1837,251 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
 
       {/* Floating Surveyor Adjustment Bar (When Boundary Editing is Active) */}
       {isSurveyorEditing && selectedParcel && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-900/95 border-2 border-amber-500 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 pointer-events-auto">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400">
-              <Edit3 className="w-4 h-4" />
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-900/95 border-2 border-amber-500/90 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md flex flex-col md:flex-row items-center gap-4 animate-in fade-in slide-in-from-bottom-4 pointer-events-auto max-w-5xl">
+          {/* Left: Parcel & Area Metrics */}
+          <div className="flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${
+              surveyTarget === "BUILDING"
+                ? "bg-amber-500/20 border-amber-400/50 text-amber-400"
+                : "bg-sky-500/20 border-sky-400/50 text-sky-400"
+            }`}>
+              {surveyTarget === "BUILDING" ? <Home className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
             </div>
             <div>
               <div className="font-bold text-xs flex items-center gap-2">
-                <span>Aligning Pegs over Satellite Imagery</span>
-                <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">
+                <span>{surveyTarget === "BUILDING" ? "Building Rooftop Alignment" : "Field Vertex Alignment Mode"}</span>
+                <span className="text-[10px] font-mono text-amber-300 bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/40">
                   {selectedParcel.uprn}
+                </span>
+                <span className="text-[10px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
+                  {Math.max(0, editableCoords.length - 1)} {surveyTarget === "BUILDING" ? "Corners" : "Pegs"}
                 </span>
               </div>
               <div className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                <span>
-                  Adjusted Area: <strong className="text-white font-mono">{liveEditedArea.toFixed(1)} m²</strong>
-                </span>
-                <span className="text-slate-500">•</span>
-                <span>
-                  Original: <span className="font-mono">{selectedParcel.calculatedAreaSqMeters.toFixed(1)} m²</span>
-                </span>
-                <span className="text-slate-500">•</span>
-                <span className={liveEditedArea >= selectedParcel.calculatedAreaSqMeters ? "text-emerald-400" : "text-rose-400"}>
-                  {liveEditedArea >= selectedParcel.calculatedAreaSqMeters ? "+" : ""}
-                  {(liveEditedArea - selectedParcel.calculatedAreaSqMeters).toFixed(1)} m²
-                </span>
+                {surveyTarget === "BUILDING" ? (
+                  <>
+                    <span>
+                      Roof Area: <strong className="text-amber-300 font-mono">{liveEditedArea.toFixed(1)} m²</strong>
+                    </span>
+                    <span className="text-slate-600">•</span>
+                    <span>
+                      Record Built-up: <span className="font-mono">{(selectedParcel.buildingDetails?.builtUpAreaSqM || 0).toFixed(1)} m²</span>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span>
+                      Live Area: <strong className="text-white font-mono">{liveEditedArea.toFixed(1)} m²</strong>
+                    </span>
+                    <span className="text-slate-600">•</span>
+                    <span>
+                      Original: <span className="font-mono">{selectedParcel.calculatedAreaSqMeters.toFixed(1)} m²</span>
+                    </span>
+                    <span className="text-slate-600">•</span>
+                    <span className={liveEditedArea >= selectedParcel.calculatedAreaSqMeters ? "text-emerald-400" : "text-rose-400"}>
+                      {liveEditedArea >= selectedParcel.calculatedAreaSqMeters ? "+" : ""}
+                      {(liveEditedArea - selectedParcel.calculatedAreaSqMeters).toFixed(1)} m²
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 ml-4">
+          {/* Mode Switcher: Plot Boundary vs Building Footprint */}
+          <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs shrink-0">
+            <button
+              onClick={() => setSurveyTarget("PARCEL")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition font-medium ${
+                surveyTarget === "PARCEL"
+                  ? "bg-sky-500/20 text-sky-300 border border-sky-500/50 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Plot Boundary</span>
+            </button>
+            <button
+              onClick={() => setSurveyTarget("BUILDING")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition font-medium ${
+                surveyTarget === "BUILDING"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span>Building Footprint</span>
+            </button>
+          </div>
+
+          <div className="hidden md:block w-[1px] h-8 bg-slate-800" />
+
+          {/* Center: Snap-to-Grid & Adjacent Edge Snapping Controls */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1.5">
+              {/* Primary Magnet Snap Toggle */}
+              <button
+                onClick={() =>
+                  setSnapConfig((prev) => ({
+                    ...prev,
+                    mode: prev.mode === "OFF" ? "ALL" : "OFF",
+                  }))
+                }
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
+                  snapConfig.mode !== "OFF"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-sm ring-1 ring-emerald-400/30"
+                    : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-slate-200"
+                }`}
+                title="Toggle Topological Edge & Grid Magnetic Snapping"
+              >
+                <Magnet className={`w-3.5 h-3.5 ${snapConfig.mode !== "OFF" ? "text-emerald-400 animate-pulse" : "text-slate-400"}`} />
+                <span>Snap: {snapConfig.mode !== "OFF" ? "ON" : "OFF"}</span>
+              </button>
+
+              {/* Snap Mode Selector */}
+              {snapConfig.mode !== "OFF" && (
+                <div className="flex items-center bg-slate-950/80 p-0.5 rounded-lg border border-slate-800 text-[10px] font-mono">
+                  <button
+                    onClick={() =>
+                      setSnapConfig((prev) => ({
+                        ...prev,
+                        mode: "ALL",
+                        gridResolutionMeters: 1.0,
+                        enableEdgeSnapping: true,
+                        enableGridSnapping: true,
+                      }))
+                    }
+                    className={`px-2 py-1 rounded transition ${
+                      snapConfig.mode === "ALL" && snapConfig.gridResolutionMeters === 1.0
+                        ? "bg-emerald-600 text-white font-bold"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                    title="Snap to adjacent parcel edges, vertices, and 1m survey grid"
+                  >
+                    Edges + 1m Grid
+                  </button>
+                  <button
+                    onClick={() =>
+                      setSnapConfig((prev) => ({
+                        ...prev,
+                        mode: "EDGES_AND_VERTICES",
+                        enableEdgeSnapping: true,
+                        enableVertexSnapping: true,
+                        enableGridSnapping: false,
+                      }))
+                    }
+                    className={`px-2 py-1 rounded transition ${
+                      snapConfig.mode === "EDGES_AND_VERTICES"
+                        ? "bg-cyan-600 text-white font-bold"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                    title="Snap strictly to adjacent parcel boundaries (Zero Gap / Zero Overlap)"
+                  >
+                    Parcel Edges Only
+                  </button>
+                  <button
+                    onClick={() =>
+                      setSnapConfig((prev) => ({
+                        ...prev,
+                        mode: "ALL",
+                        gridResolutionMeters: 0.5,
+                        enableEdgeSnapping: true,
+                        enableGridSnapping: true,
+                      }))
+                    }
+                    className={`px-2 py-1 rounded transition ${
+                      snapConfig.mode === "ALL" && snapConfig.gridResolutionMeters === 0.5
+                        ? "bg-amber-600 text-white font-bold"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                    title="High-precision 0.5m survey grid alignment"
+                  >
+                    0.5m Grid
+                  </button>
+                </div>
+              )}
+
+              {/* Add Midpoint Peg Button */}
+              <button
+                onClick={handleAddMidpointPeg}
+                className="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-medium flex items-center gap-1 transition"
+                title="Insert a midpoint vertex peg between Peg 1 and Peg 2"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Peg</span>
+              </button>
+
+              {/* Revert Changes */}
+              <button
+                onClick={handleRevertBoundary}
+                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs transition"
+                title="Reset pegs to original survey boundaries"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Live Snap Status Readout */}
+            <div className="text-[10px] flex items-center gap-1.5 font-mono">
+              {activeSnapResult?.isSnapped ? (
+                <span className="text-emerald-300 font-bold flex items-center gap-1 animate-pulse">
+                  <Zap className="w-3 h-3 text-amber-400" />
+                  <span>{activeSnapResult.description}</span>
+                  <span className="text-slate-400 font-normal border-l border-slate-700 pl-1">
+                    {activeSnapResult.topologicalBenefit}
+                  </span>
+                </span>
+              ) : snapConfig.mode !== "OFF" ? (
+                <span className="text-slate-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>Magnetic Snapping Active: Boundaries automatically lock to adjacent parcel edges</span>
+                </span>
+              ) : (
+                <span className="text-amber-400/80">Snapping disabled (Free drag mode)</span>
+              )}
+            </div>
+          </div>
+
+          {/* Topological QC Integrity Status Indicator */}
+          {liveTopologyValidation && (
+            <>
+              <div className="hidden lg:block w-[1px] h-8 bg-slate-800" />
+              <div className="flex items-center gap-2">
+                {!liveTopologyValidation.isValid ? (
+                  <div
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-950/80 border border-rose-500 text-rose-200 text-xs shadow-lg animate-pulse"
+                    title={liveTopologyValidation.summaryMessage}
+                  >
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5 font-bold text-rose-300 text-[11px]">
+                        <span>QC VIOLATION</span>
+                        <span className="text-[10px] font-mono bg-rose-500/30 text-rose-200 px-1 rounded border border-rose-500/40">
+                          {liveTopologyValidation.violatingVertexIndices.size} peg{liveTopologyValidation.violatingVertexIndices.size > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-rose-300/90 leading-tight truncate max-w-[210px]">
+                        {liveTopologyValidation.summaryMessage}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-xs font-medium">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-bold text-emerald-300">Topology Valid</span>
+                      <span className="text-[9px] text-emerald-400/80 font-mono">0 Bowties • 0 Overlaps</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          <div className="hidden md:block w-[1px] h-8 bg-slate-800" />
+
+          {/* Right: Commit and Cancel Actions */}
+          <div className="flex items-center gap-2">
             <button
               onClick={onCancelSurveyorAdjustment}
               className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
@@ -1543,11 +2089,37 @@ export const GoogleCadastralMap: React.FC<GoogleCadastralMapProps> = ({
               Cancel
             </button>
             <button
-              onClick={() => onSaveSurveyorAdjustment(editableCoords)}
-              className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg flex items-center gap-1.5 transition"
+              onClick={() => {
+                if (liveTopologyValidation && !liveTopologyValidation.isValid) {
+                  const proceed = window.confirm(
+                    `⚠️ TOPOLOGICAL QUALITY CONTROL WARNING:\n\n${liveTopologyValidation.summaryMessage}\n\nCommitting will store a self-intersecting or overlapping boundary in the cadastral ledger. Do you still wish to force commit this ground truth?`
+                  );
+                  if (!proceed) return;
+                }
+                onSaveSurveyorAdjustment(editableCoords, surveyTarget);
+              }}
+              className={`px-4 py-1.5 rounded-lg text-white text-xs font-bold shadow-lg flex items-center gap-1.5 transition ${
+                liveTopologyValidation && !liveTopologyValidation.isValid
+                  ? "bg-rose-700 hover:bg-rose-600 ring-2 ring-rose-500/60"
+                  : "bg-emerald-600 hover:bg-emerald-500"
+              }`}
+              title={
+                liveTopologyValidation && !liveTopologyValidation.isValid
+                  ? `Warning: ${liveTopologyValidation.summaryMessage}`
+                  : "Commit validated boundary to surveyor ledger"
+              }
             >
-              <Check className="w-3.5 h-3.5" />
-              <span>Commit Ground Truth</span>
+              {liveTopologyValidation && !liveTopologyValidation.isValid ? (
+                <>
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
+                  <span>Commit ({liveTopologyValidation.violatingVertexIndices.size} QC Alert{liveTopologyValidation.violatingVertexIndices.size > 1 ? "s" : ""})</span>
+                </>
+              ) : (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Commit Ground Truth</span>
+                </>
+              )}
             </button>
           </div>
         </div>

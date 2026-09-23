@@ -1857,6 +1857,148 @@ function generateParcelsForLocation(
   const colWidthM = 28;
   const startXM = -(numCols * colWidthM) / 2.0;
 
+  // Helper to generate survey-grade architectural building footprints with realistic articulation:
+  // porches, wing offsets, setback clearances, and staircase projections (NOT plain boxes)
+  const generateArchitecturalFootprint = (
+    xLeftM: number,
+    xRightM: number,
+    yBottomM: number,
+    yTopM: number,
+    isNorthRow: boolean,
+    styleIdx: number
+  ): [number, number][] => {
+    const width = xRightM - xLeftM;
+    const depth = yTopM - yBottomM;
+    const sbLeft = 2.4 + (styleIdx % 3) * 0.4;
+    const sbRight = 2.4 + ((styleIdx + 1) % 3) * 0.4;
+    const sbFront = 2.2;
+    const sbRear = 4.2 + (styleIdx % 2) * 1.4;
+
+    const bLeft = xLeftM + sbLeft;
+    const bRight = xRightM - sbRight;
+    const bBottom = yBottomM + (isNorthRow ? sbFront : sbRear);
+    const bTop = yTopM - (isNorthRow ? sbRear : sbFront);
+
+    const bW = bRight - bLeft;
+    const bH = bTop - bBottom;
+    const typology = styleIdx % 4;
+    let localPts: [number, number][] = [];
+
+    if (isNorthRow) {
+      if (typology === 0) {
+        // Portico entrance extending south toward road + offset residential wing
+        const porticoW = bW * 0.45;
+        localPts = [
+          [bLeft + bW * 0.1, bBottom],
+          [bLeft + bW * 0.1 + porticoW, bBottom],
+          [bLeft + bW * 0.1 + porticoW, bBottom + bH * 0.16],
+          [bRight, bBottom + bH * 0.16],
+          [bRight, bTop],
+          [bLeft + bW * 0.35, bTop],
+          [bLeft + bW * 0.35, bTop - bH * 0.14],
+          [bLeft, bTop - bH * 0.14],
+          [bLeft, bBottom + bH * 0.16],
+          [bLeft + bW * 0.1, bBottom + bH * 0.16],
+          [bLeft + bW * 0.1, bBottom],
+        ];
+      } else if (typology === 1) {
+        // L-shaped residence with courtyard terrace
+        localPts = [
+          [bLeft, bBottom],
+          [bRight, bBottom],
+          [bRight, bBottom + bH * 0.55],
+          [bLeft + bW * 0.45, bBottom + bH * 0.55],
+          [bLeft + bW * 0.45, bTop],
+          [bLeft, bTop],
+          [bLeft, bBottom],
+        ];
+      } else if (typology === 2) {
+        // Stepped modern villa with stair mumty
+        localPts = [
+          [bLeft, bBottom],
+          [bLeft + bW * 0.72, bBottom],
+          [bLeft + bW * 0.72, bBottom + bH * 0.2],
+          [bRight, bBottom + bH * 0.2],
+          [bRight, bTop - bH * 0.15],
+          [bRight - bW * 0.25, bTop - bH * 0.15],
+          [bRight - bW * 0.25, bTop],
+          [bLeft, bTop],
+          [bLeft, bBottom],
+        ];
+      } else {
+        // Staggered facade with corner recess
+        localPts = [
+          [bLeft + bW * 0.15, bBottom],
+          [bRight, bBottom],
+          [bRight, bTop - bH * 0.22],
+          [bRight - bW * 0.15, bTop - bH * 0.22],
+          [bRight - bW * 0.15, bTop],
+          [bLeft, bTop],
+          [bLeft, bBottom + bH * 0.18],
+          [bLeft + bW * 0.15, bBottom + bH * 0.18],
+          [bLeft + bW * 0.15, bBottom],
+        ];
+      }
+    } else {
+      // South Row (Road is at yTop)
+      if (typology === 0) {
+        const porticoW = bW * 0.45;
+        localPts = [
+          [bLeft + bW * 0.1, bTop],
+          [bLeft + bW * 0.1 + porticoW, bTop],
+          [bLeft + bW * 0.1 + porticoW, bTop - bH * 0.16],
+          [bRight, bTop - bH * 0.16],
+          [bRight, bBottom],
+          [bLeft + bW * 0.35, bBottom],
+          [bLeft + bW * 0.35, bBottom + bH * 0.14],
+          [bLeft, bBottom + bH * 0.14],
+          [bLeft, bTop - bH * 0.16],
+          [bLeft + bW * 0.1, bTop - bH * 0.16],
+          [bLeft + bW * 0.1, bTop],
+        ];
+      } else if (typology === 1) {
+        localPts = [
+          [bLeft, bTop],
+          [bRight, bTop],
+          [bRight, bBottom],
+          [bLeft + bW * 0.45, bBottom],
+          [bLeft + bW * 0.45, bTop - bH * 0.45],
+          [bLeft, bTop - bH * 0.45],
+          [bLeft, bTop],
+        ];
+      } else if (typology === 2) {
+        localPts = [
+          [bLeft, bTop],
+          [bLeft + bW * 0.72, bTop],
+          [bLeft + bW * 0.72, bTop - bH * 0.2],
+          [bRight, bTop - bH * 0.2],
+          [bRight, bBottom + bH * 0.15],
+          [bRight - bW * 0.25, bBottom + bH * 0.15],
+          [bRight - bW * 0.25, bBottom],
+          [bLeft, bBottom],
+          [bLeft, bTop],
+        ];
+      } else {
+        localPts = [
+          [bLeft + bW * 0.15, bTop],
+          [bRight, bTop],
+          [bRight, bBottom + bH * 0.22],
+          [bRight - bW * 0.15, bBottom + bH * 0.22],
+          [bRight - bW * 0.15, bBottom],
+          [bLeft, bBottom],
+          [bLeft, bTop - bH * 0.18],
+          [bLeft + bW * 0.15, bTop - bH * 0.18],
+          [bLeft + bW * 0.15, bTop],
+        ];
+      }
+    }
+
+    return localPts.map(([x, y]) => [
+      baseLon + x * degLonPerM,
+      baseLat + y * degLatPerM,
+    ]);
+  };
+
   let plotIndex = 0;
 
   // North Row (y from +roadHalfWidthM to +roadHalfWidthM + 30m)
@@ -1874,15 +2016,7 @@ function generateParcelsForLocation(
       [baseLon + xLeftM * degLonPerM, baseLat + yBottomM * degLatPerM],
     ];
 
-    const sbXM = 3.5;
-    const sbYM = 3.5;
-    const bCoords: [number, number][] = [
-      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
-      [baseLon + (xRightM - sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
-      [baseLon + (xRightM - sbXM) * degLonPerM, baseLat + (yTopM - sbYM) * degLatPerM],
-      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yTopM - sbYM) * degLatPerM],
-      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
-    ];
+    const bCoords = generateArchitecturalFootprint(xLeftM, xRightM, yBottomM, yTopM, true, plotIndex);
 
     const sNum = 101 + plotIndex;
     const pId = `PRCL-${cleanCode}-${sNum}`;
@@ -1967,15 +2101,7 @@ function generateParcelsForLocation(
       [baseLon + xLeftM * degLonPerM, baseLat + yBottomM * degLatPerM],
     ];
 
-    const sbXM = 3.5;
-    const sbYM = 3.5;
-    const bCoords: [number, number][] = [
-      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
-      [baseLon + (xRightM - sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
-      [baseLon + (xRightM - sbXM) * degLonPerM, baseLat + (yTopM - sbYM) * degLatPerM],
-      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yTopM - sbYM) * degLatPerM],
-      [baseLon + (xLeftM + sbXM) * degLonPerM, baseLat + (yBottomM + sbYM) * degLatPerM],
-    ];
+    const bCoords = generateArchitecturalFootprint(xLeftM, xRightM, yBottomM, yTopM, false, plotIndex);
 
     const sNum = 101 + plotIndex;
     const pId = `PRCL-${cleanCode}-${sNum}`;
@@ -2542,6 +2668,12 @@ app.put("/api/parcels/:id/boundaries", (req, res) => {
   );
 
   parcel.coordinates = coordsList;
+  if (req.body.buildingFootprint && Array.isArray(req.body.buildingFootprint)) {
+    parcel.buildingFootprint = req.body.buildingFootprint;
+    const bMetrics = computeMetrics(req.body.buildingFootprint);
+    if (!parcel.buildingDetails) parcel.buildingDetails = {};
+    parcel.buildingDetails.builtUpAreaSqM = bMetrics.areaSqMeters;
+  }
   parcel.calculatedAreaSqMeters = metrics.areaSqMeters;
   parcel.perimeterMeters = metrics.perimeterMeters;
   parcel.centroid = metrics.centroid;
@@ -2557,6 +2689,46 @@ app.put("/api/parcels/:id/boundaries", (req, res) => {
   AUDIT_LEDGER_STORE.set(parcel.id, chain);
 
   res.json({ parcel, newAuditBlock: nextBlock });
+});
+
+// Update Building Footprint specifically (Surveyor Roof Vertex Adjustment)
+app.put("/api/parcels/:id/building-footprint", (req, res) => {
+  const parcel = PARCEL_STORE.get(req.params.id);
+  if (!parcel) {
+    res.status(404).json({ error: "Parcel not found" });
+    return;
+  }
+
+  const { buildingFootprint, buildingDetails } = req.body;
+  if (!buildingFootprint || !Array.isArray(buildingFootprint) || buildingFootprint.length < 3) {
+    res.status(400).json({ error: "Invalid building footprint coordinates." });
+    return;
+  }
+
+  const coordsList: [number, number][] = buildingFootprint.map((c: any) => [c[0], c[1]]);
+  if (
+    coordsList[0][0] !== coordsList[coordsList.length - 1][0] ||
+    coordsList[0][1] !== coordsList[coordsList.length - 1][1]
+  ) {
+    coordsList.push([coordsList[0][0], coordsList[0][1]]);
+  }
+
+  const metrics = computeMetrics(coordsList);
+  parcel.buildingFootprint = coordsList;
+  if (!parcel.buildingDetails) {
+    parcel.buildingDetails = {
+      buildingName: `Structure on ${parcel.uprn || parcel.id}`,
+      roofType: "RCC Flat Terrace",
+      floors: 2,
+    };
+  }
+  parcel.buildingDetails.builtUpAreaSqM = metrics.areaSqMeters;
+  if (buildingDetails) {
+    Object.assign(parcel.buildingDetails, buildingDetails);
+  }
+  parcel.updatedAt = Date.now();
+
+  res.json({ parcel, message: "Building footprint updated successfully", builtUpAreaSqM: metrics.areaSqMeters });
 });
 
 // Issue Verifiable Digital Spatial Title (VDST) Certificate
