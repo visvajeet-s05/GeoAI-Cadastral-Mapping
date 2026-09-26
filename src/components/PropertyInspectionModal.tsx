@@ -17,10 +17,13 @@ import {
   Building,
   Home,
   Check,
-  Info
+  Info,
+  FileCheck,
+  FileCode,
 } from "lucide-react";
 import { Parcel, ParcelStatus } from "../types";
 import { getLandTypeColor } from "../lib/geoUtils";
+import { generateLandDiscrepancyPDF, downloadDXF } from "../lib/exporters";
 
 interface PropertyInspectionModalProps {
   parcel: Parcel;
@@ -45,6 +48,7 @@ export const PropertyInspectionModal: React.FC<PropertyInspectionModalProps> = (
   });
   const [activeTab, setActiveTab] = useState<"ANALYSIS" | "EVIDENCE" | "ADJACENCY">("ANALYSIS");
   const [isSplitting, setIsSplitting] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const confidencePct = Math.round((1.0 - (parcel.overallUncertainty || 0.13)) * 100);
   const evidenceLevel = confidencePct >= 85 ? "HIGH" : confidencePct >= 70 ? "MEDIUM" : "LOW";
@@ -472,6 +476,37 @@ export const PropertyInspectionModal: React.FC<PropertyInspectionModalProps> = (
                 >
                   <Scissors className="w-3.5 h-3.5" />
                   <span>{isSplitting ? "Splitting..." : "Split Parcel Polygon"}</span>
+                </button>
+              </div>
+
+              {/* Official Export Buttons: PDF Audit Certificate & CAD DXF */}
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  onClick={async () => {
+                    try {
+                      setIsGeneratingPDF(true);
+                      await generateLandDiscrepancyPDF(parcel, "cadastral-leaflet-map");
+                    } catch (e) {
+                      console.error("PDF certificate error:", e);
+                    } finally {
+                      setIsGeneratingPDF(false);
+                    }
+                  }}
+                  disabled={isGeneratingPDF}
+                  className="py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition disabled:opacity-50"
+                  title="Generate Official Print-Ready A4 PDF Certificate"
+                >
+                  <FileCheck className="w-3.5 h-3.5 text-emerald-200" />
+                  <span>{isGeneratingPDF ? "Generating PDF..." : "Official PDF Audit Cert"}</span>
+                </button>
+
+                <button
+                  onClick={() => downloadDXF([parcel])}
+                  className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition"
+                  title="Export AutoCAD DXF file for this parcel"
+                >
+                  <FileCode className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Export CAD (DXF)</span>
                 </button>
               </div>
             </div>

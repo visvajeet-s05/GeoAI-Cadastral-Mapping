@@ -18,10 +18,12 @@ import {
   XCircle,
   Eye,
   Home,
+  FileCheck,
 } from "lucide-react";
 import { Parcel, VlmAuditResult } from "../types";
 import { getLandTypeColor, getUncertaintyColor } from "../lib/geoUtils";
 import { calculateAreaDiscrepancy, formatDiscrepancyForDisplay } from "../lib/discrepancyAnalysis";
+import { generateLandDiscrepancyPDF } from "../lib/exporters";
 
 interface FloatingParcelInspectorProps {
   parcel: Parcel | null;
@@ -58,6 +60,7 @@ export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = (
 }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isSplitting, setIsSplitting] = useState<boolean>(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState<boolean>(false);
 
   // Keyboard shortcut (Ctrl+B / Cmd+B) to toggle inspector drawer
   useEffect(() => {
@@ -410,6 +413,28 @@ export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = (
             >
               <Award className="w-3.5 h-3.5 text-amber-300" />
               <span>Issue Title Certificate</span>
+            </button>
+
+            {/* Generate Official PDF Land Discrepancy & Health Audit Certificate */}
+            <button
+              id="btn-generate-pdf-certificate"
+              onClick={async () => {
+                if (!parcel) return;
+                try {
+                  setIsGeneratingPDF(true);
+                  await generateLandDiscrepancyPDF(parcel, "cadastral-leaflet-map");
+                } catch (e) {
+                  console.error("PDF certificate generation error:", e);
+                } finally {
+                  setIsGeneratingPDF(false);
+                }
+              }}
+              disabled={isGeneratingPDF}
+              className="w-full py-2 px-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/25 transition disabled:opacity-50 active:scale-98"
+              title="Generate Official Print-Ready A4 Land Discrepancy & Health Audit Certificate PDF"
+            >
+              <FileCheck className="w-3.5 h-3.5 text-emerald-200" />
+              <span>{isGeneratingPDF ? "Generating PDF Certificate..." : "Generate Official PDF Audit Certificate"}</span>
             </button>
 
             <button

@@ -17,6 +17,8 @@ import {
   Layers,
   Search,
   Terminal,
+  FileCode,
+  Compass,
 } from "lucide-react";
 
 interface UnifiedDashboardSidebarProps {
@@ -34,6 +36,8 @@ interface UnifiedDashboardSidebarProps {
   onOpenDocumentManager?: () => void;
   onOpenIngestModal: () => void;
   onExportGeoJSON: () => void;
+  onExportLandXML?: () => void;
+  onExportDXF?: () => void;
   isSimulatingFlight: boolean;
   onToggleFlightSimulation: () => void;
 }
@@ -53,6 +57,8 @@ export const UnifiedDashboardSidebar: React.FC<UnifiedDashboardSidebarProps> = (
   onOpenDocumentManager,
   onOpenIngestModal,
   onExportGeoJSON,
+  onExportLandXML,
+  onExportDXF,
   isSimulatingFlight,
   onToggleFlightSimulation,
 }) => {
@@ -233,6 +239,46 @@ export const UnifiedDashboardSidebar: React.FC<UnifiedDashboardSidebarProps> = (
               <Download className="w-4 h-4 text-emerald-400 shrink-0" />
               {!isCollapsed && <span className="hidden sm:inline truncate">Export GeoJSON</span>}
             </button>
+
+            {/* Export LandXML v1.2 */}
+            {onExportLandXML && (
+              <button
+                id="sidebar-btn-export-landxml"
+                onClick={onExportLandXML}
+                className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition border border-transparent group"
+                title="Export LandXML — Download schema-compliant LandXML v1.2 survey vectors & CgPoints"
+              >
+                <FileCode className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition shrink-0" />
+                {!isCollapsed && (
+                  <div className="hidden sm:flex items-center justify-between w-full min-w-0">
+                    <span className="truncate">Export LandXML</span>
+                    <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1 rounded border border-cyan-500/20">
+                      v1.2
+                    </span>
+                  </div>
+                )}
+              </button>
+            )}
+
+            {/* Export AutoCAD DXF */}
+            {onExportDXF && (
+              <button
+                id="sidebar-btn-export-dxf"
+                onClick={onExportDXF}
+                className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition border border-transparent group"
+                title="Export AutoCAD DXF — Download AutoCAD-ready DXF with classified layers & vertex pegs"
+              >
+                <Compass className="w-4 h-4 text-amber-400 group-hover:scale-110 transition shrink-0" />
+                {!isCollapsed && (
+                  <div className="hidden sm:flex items-center justify-between w-full min-w-0">
+                    <span className="truncate">Export DXF</span>
+                    <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1 rounded border border-amber-500/20">
+                      CAD
+                    </span>
+                  </div>
+                )}
+              </button>
+            )}
           </div>
         </section>
 

@@ -19,6 +19,8 @@ import {
   Copy,
   BarChart3,
   UploadCloud,
+  FileCode,
+  Compass,
 } from "lucide-react";
 import type {
   DocumentMetadata,
@@ -26,11 +28,14 @@ import type {
   DocumentStatus,
   GovernmentSource,
 } from "../types/documents";
+import { downloadLandXML, downloadDXF } from "../lib/exporters";
+import type { ParcelFeature } from "../types/exportTypes";
 
 interface DocumentManagerProps {
   isOpen: boolean;
   onClose: () => void;
   onUploadNew?: () => void;
+  parcels?: ParcelFeature[];
 }
 
 interface DocumentStoreResponse {
@@ -43,6 +48,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   isOpen,
   onClose,
   onUploadNew,
+  parcels = [],
 }) => {
   const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
   const [filteredDocs, setFilteredDocs] = useState<DocumentMetadata[]>([]);
@@ -52,6 +58,42 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   const [filterStatus, setFilterStatus] = useState<DocumentStatus | "ALL">("ALL");
   const [filterSource, setFilterSource] = useState<GovernmentSource | "ALL">("ALL");
   const [expandedDoc, setExpandedDoc] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const getEffectiveParcels = async (): Promise<ParcelFeature[]> => {
+    if (parcels && parcels.length > 0) return parcels;
+    try {
+      const res = await fetch("/api/parcels");
+      const data = await res.json();
+      return data.parcels || [];
+    } catch {
+      return [];
+    }
+  };
+
+  const handleExportLandXML = async () => {
+    setIsExporting(true);
+    try {
+      const list = await getEffectiveParcels();
+      downloadLandXML(list);
+    } catch (e) {
+      console.error("LandXML Export failed:", e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportDXF = async () => {
+    setIsExporting(true);
+    try {
+      const list = await getEffectiveParcels();
+      downloadDXF(list);
+    } catch (e) {
+      console.error("AutoCAD DXF Export failed:", e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   useEffect(() => {
     fetchDocuments();
@@ -189,6 +231,24 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportLandXML}
+              disabled={isExporting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 text-xs font-semibold shadow-sm transition disabled:opacity-50"
+              title="Export LandXML v1.2 file"
+            >
+              <FileCode className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Export LandXML</span>
+            </button>
+            <button
+              onClick={handleExportDXF}
+              disabled={isExporting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 text-xs font-semibold shadow-sm transition disabled:opacity-50"
+              title="Export AutoCAD DXF CAD file"
+            >
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Export DXF</span>
+            </button>
             {onUploadNew && (
               <button
                 onClick={onUploadNew}

@@ -10,6 +10,7 @@ import fs from "fs";
 import multer from "multer";
 import rasterRouter from "./server/routes/rasterRoutes";
 import mlRouter from "./server/routes/mlRoutes";
+import exportRouter from "./server/routes/exportRoutes";
 import { HIGH_PRECISION_PARCELS } from "./src/data/cadastralDataset";
 
 import { exec } from "child_process";
@@ -53,6 +54,9 @@ app.post("/predict_tile", (req, res, next) => {
   req.url = "/predict_tile";
   mlRouter(req, res, next);
 });
+
+// Mount Day 3 Official Survey & CAD Exporters (LandXML v1.2 & AutoCAD DXF)
+app.use("/api/export", exportRouter);
 
 
 // Initialize Google GenAI client

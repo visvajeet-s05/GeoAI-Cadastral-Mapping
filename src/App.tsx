@@ -36,6 +36,7 @@ import { DocumentUploadModal } from "./components/DocumentUploadModal";
 import { DocumentManager } from "./components/DocumentManager";
 import { IngestOrthoModal } from "./components/sidebar/IngestOrthoModal";
 import { ActiveRasterLayerConfig } from "./types/raster";
+import { downloadLandXML, downloadDXF } from "./lib/exporters";
 import { Sparkles, X, FileText, CheckCircle2 } from "lucide-react";
 
 export default function App() {
@@ -646,6 +647,21 @@ export default function App() {
     window.location.href = "/api/export/geojson";
   };
 
+  // Export LandXML v1.2
+  const handleExportLandXML = () => {
+    downloadLandXML(parcels, {
+      district: selectedLandContext?.district?.name || parcels[0]?.district || "Chennai",
+      taluk: selectedLandContext?.taluk?.name || parcels[0]?.taluk || "Velachery",
+      village: selectedLandContext?.village?.name || parcels[0]?.village || "Thiruvanmiyur",
+      surveyNumber: parcels[0]?.surveyNumber || "142",
+    });
+  };
+
+  // Export AutoCAD DXF
+  const handleExportDXF = () => {
+    downloadDXF(parcels);
+  };
+
   // Ingest completed callback
   const handleIngestCompleted = (newParcels: Parcel[]) => {
     setParcels((prev) => [...newParcels, ...prev]);
@@ -799,6 +815,8 @@ export default function App() {
           onOpenDocumentManager={() => setShowDocumentManager(true)}
           onOpenIngestModal={() => setShowIngestionModal(true)}
           onExportGeoJSON={handleExportGeoJSON}
+          onExportLandXML={handleExportLandXML}
+          onExportDXF={handleExportDXF}
           isSimulatingFlight={isSimulatingFlight}
           onToggleFlightSimulation={handleToggleFlightPlay}
         />
@@ -1004,6 +1022,7 @@ export default function App() {
             setShowDocumentManager(false);
             setShowDocumentUploadModal(true);
           }}
+          parcels={parcels}
         />
       )}
 
