@@ -1,0 +1,167 @@
+{
+  "villages": [
+    {
+      "id": "TN-03-01-01",
+      "code": "01",
+      "name": "Villivakkam",
+      "nameTamil": "வில்லிவாக்கம்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-01",
+      "villageType": "MUNICIPALITY",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-01-02",
+      "code": "02",
+      "name": "Kolathur",
+      "nameTamil": "கொளத்தூர்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-01",
+      "villageType": "MUNICIPALITY",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-01-03",
+      "code": "03",
+      "name": "Padi",
+      "nameTamil": "பாடி",
+      "districtId": "TN-03",
+      "talukId": "TN-03-01",
+      "villageType": "TOWN_PANCHAYAT",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-01-04",
+      "code": "04",
+      "name": "Sembium",
+      "nameTamil": "செம்பியம்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-01",
+      "villageType": "TOWN_PANCHAYAT",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-05-01",
+      "code": "01",
+      "name": "Velachery",
+      "nameTamil": "வேலாச்சேரி",
+      "districtId": "TN-03",
+      "talukId": "TN-03-05",
+      "villageType": "MUNICIPALITY",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-05-02",
+      "code": "02",
+      "name": "Adyar",
+      "nameTamil": "அடையார்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-05",
+      "villageType": "MUNICIPALITY",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-05-03",
+      "code": "03",
+      "name": "Besant Nagar",
+      "nameTamil": "பெசன்ட் நகர்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-05",
+      "villageType": "MUNICIPALITY",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-11-01",
+      "code": "01",
+      "name": "Perambur",
+      "nameTamil": "பெரம்பூர்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-11",
+      "villageType": "MUNICIPALITY",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-11-02",
+      "code": "02",
+      "name": "Vepery",
+      "nameTamil": "வேப்பேரி",
+      "districtId": "TN-03",
+      "talukId": "TN-03-11",
+      "villageType": "MUNICIPALITY",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-11-03",
+      "code": "03",
+      "name": "Sembium",
+      "nameTamil": "செம்பியம்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-11",
+      "villageType": "TOWN_PANCHAYAT",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-18-01",
+      "code": "01",
+      "name": "Tambaram",
+      "nameTamil": "தாம்பரம்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-18",
+      "villageType": "MUNICIPALITY",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-18-02",
+      "code": "02",
+      "name": "Medavakkam",
+      "nameTamil": "மேடவாக்கம்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-18",
+      "villageType": "TOWN_PANCHAYAT",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    },
+    {
+      "id": "TN-03-18-03",
+      "code": "03",
+      "name": "Perungalathur",
+      "nameTamil": "பெருங்களத்தூர்",
+      "districtId": "TN-03",
+      "talukId": "TN-03-18",
+      "villageType": "TOWN_PANCHAYAT",
+      "source": "Government of Tamil Nadu",
+      "sourceVersion": "2024",
+      "effectiveFrom": "2024-01-01"
+    }
+  ],
+  "metadata": {
+    "totalVillages": 12,
+    "source": "Government of Tamil Nadu",
+    "lastUpdated": "2024-01-01",
+    "version": "1.0",
+    "isSimulated": true
+  }
+}

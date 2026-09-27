@@ -1,0 +1,16 @@
+<Scan className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-sm text-white">
+                      SegFormer-B3 DualHead Live Cadastral Extraction (Day 2)
+                    </h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      ONNX RUNTIME
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Extracts building footprints (head 1) & vegetation (head 2) from orthomosaic. Parcel boundaries from FMB records; roads from OpenStreetMap; land-use derived 3-class (built-up/vegetation/open).
+                  </p>
+                </div>
+              </div>

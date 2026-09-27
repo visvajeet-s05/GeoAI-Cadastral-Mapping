@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* Leaflet Custom Cadastral Styling */
+.leaflet-container {
+  font-family: inherit;
+  background-color: #020617 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.cadastral-tooltip {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(12px);
+  padding: 6px 10px !important;
+}
+
+.cadastral-tooltip::before {
+  border-top-color: rgba(15, 23, 42, 0.95) !important;
+}
+
+.custom-parcel-label {
+  background: transparent !important;
+  border: none !important;
+}
+
+.surveyor-vertex-handle {
+  transition: transform 0.15s ease-out;
+}
+
+.surveyor-vertex-handle:hover {
+  transform: scale(1.35);
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.8);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 1);
+}
+
+/* Print Optimization for Land Title Certificates */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* Hide scrollbar for clean navigation bars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

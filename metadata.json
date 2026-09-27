@@ -1,0 +1,7 @@
+{
+  "name": "Urban Cadastral AI - Land Boundary & VLM Mapping System",
+  "description": "AI-powered urban cadastral mapping and land management system featuring Google Maps satellite house detection, Tamil Nadu official land & layout map repositories (FMB/TSLR, CMDA, DTCP 1974-2026), affine GCP georeferencing, comparative encroachment analysis (E = B_detected \\ L_legal), and Gemini VLM statutory municipal notice generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
