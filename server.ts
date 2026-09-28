@@ -32,7 +32,7 @@ interface MLServiceState {
   port: number;
 }
 
-const ML_INFERENCE_PORT = parseInt(process.env.ML_PORT || "8000", 10);
+const ML_INFERENCE_PORT = parseInt(process.env.ML_PORT || "8001", 10);
 const ML_INFERENCE_HOST = process.env.ML_HOST || "127.0.0.1";
 const ML_SERVICE_URL = `http://${ML_INFERENCE_HOST}:${ML_INFERENCE_PORT}`;
 
