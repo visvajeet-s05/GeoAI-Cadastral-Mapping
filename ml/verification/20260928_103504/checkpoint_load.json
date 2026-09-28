@@ -1,0 +1,5 @@
+{
+  "strict_loading": false,
+  "pytorch_available": true,
+  "status": "SKIPPED \u2014 checkpoint not present"
+}

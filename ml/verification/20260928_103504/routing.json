@@ -1,0 +1,1002 @@
+{
+  "status": "PASS",
+  "responses": [
+    {
+      "detection_confidence": 0.3,
+      "status_code": 200,
+      "response": {
+        "status": "success",
+        "discrepancy": {
+          "parcelId": "PRCL-ROAD-142",
+          "uprn": "GT-VEL-142/ROAD",
+          "ownerName": "Greater Chennai Corporation (Public Road Reserve)",
+          "legalReference": "Velachery Residential Scheme Layout (CMDA Approved) (CMDA/PPA/2018/102)",
+          "approvalPlanNo": "CMDA/PPA/2018/102",
+          "tier": "CMDA_LAYOUT",
+          "encroachmentType": "NEIGHBOR_BOUNDARY_DRIFT",
+          "encroachmentAreaSqM": 30.6,
+          "maxDeviationMeters": 5136.43,
+          "legalBoundary": [
+            [
+              80.2091,
+              12.9841
+            ],
+            [
+              80.2097,
+              12.9841
+            ],
+            [
+              80.2097,
+              12.9846
+            ],
+            [
+              80.2091,
+              12.9846
+            ],
+            [
+              80.2091,
+              12.9841
+            ]
+          ],
+          "detectedPhysicalBoundary": [
+            [
+              80.256909,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9821006
+            ]
+          ],
+          "encroachmentPolygon": [
+            [
+              80.256909,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9821006
+            ]
+          ],
+          "vlmViolationNotice": "GOVERNMENT OF TAMIL NADU\nCHENNAI METROPOLITAN DEVELOPMENT AUTHORITY\nSTATUTORY NOTICE UNDER SECTION 56 OF TAMIL NADU TOWN & COUNTRY PLANNING ACT, 1971\n\nNotice Ref: TN/ENCR/CMDA-PPA-2018-102/2026\nTo: Greater Chennai Corporation (Public Road Reserve) (UPRN: GT-VEL-142/ROAD)\nSubject: Encroachment onto 12m Public Scheme Road Reserve - Approved Layout CMDA/PPA/2018/102\n\nWHEREAS by virtue of comparative spatial overlay between detected physical boundary (from ML BUILDING HEAD) and Government Approved Layout Plan (CMDA/PPA/2018/102, archived at cmdachennai.gov.in), it is established that:\n1. Your constructed physical footprint (B_detected) deviates from the legal boundary (L_legal) by 5136.43 meters at maximum.\n2. An encroachment zone (E = B_detected \\ L_legal) measuring 30.6 sq.m encroaches into the RESIDENTIAL.\n3. Detection confidence: 0.3 (LOW).\n4. This contravenes Rule 35 of the Tamil Nadu Combined Development and Building Rules (TNCDBR) 2019.\n\nYOU ARE HEREBY DIRECTED within 15 days of receipt of this notice to realign the boundary and address the unauthorized 30.6 sq.m protrusion, failing which action under Section 56(2) will be initiated by the Municipal Corporation.",
+          "complianceStatus": "NEEDS_HUMAN_REVIEW",
+          "timestamp": 1790571959968,
+          "detectionConfidence": 0.3,
+          "confidenceLevel": "LOW",
+          "dataSources": {
+            "legalBoundary": "TN_LAYOUT_STORE (FMB/TSLR digitized records)",
+            "detectedBoundary": "ML_BUILDING_HEAD (EfficientNet-B3_U-Net_DualHead_ONNX) \u2014 building footprint polygon",
+            "roadNetwork": "OpenStreetMap via Overpass API (highway=*)",
+            "landuse": "DERIVED_3CLASS (built-up from building head, vegetation from vegetation head, open = neither)"
+          }
+        },
+        "layout": {
+          "id": "CMDA-LP-2018-102",
+          "tier": "CMDA_LAYOUT",
+          "title": "Velachery Residential Scheme Layout (CMDA Approved)",
+          "approvalNo": "CMDA/PPA/2018/102",
+          "year": 2018,
+          "district": "Chennai",
+          "taluk": "Velachery",
+          "village": "Velachery Town",
+          "surveyNumber": "142",
+          "subDivision": "1A & 1B",
+          "portalSource": "cmdachennai.gov.in",
+          "portalUrl": "http://cmdachennai.gov.in/planning_permission_search.html",
+          "status": "APPROVED",
+          "roadWidthMeters": 12,
+          "mandatoryFrontSetbackM": 2.5,
+          "osrAreaSqM": 450,
+          "approvedPlotsCount": 6,
+          "centerCoordinates": {
+            "lat": 12.9843,
+            "lng": 80.2095
+          },
+          "legalBoundaries": [
+            {
+              "plotNumber": "Plot 1 (UPRN-1001)",
+              "uprnMatch": "UPRN-2026-IND-0001",
+              "coordinates": [
+                [
+                  80.2091,
+                  12.9841
+                ],
+                [
+                  80.2097,
+                  12.9841
+                ],
+                [
+                  80.2097,
+                  12.9846
+                ],
+                [
+                  80.2091,
+                  12.9846
+                ],
+                [
+                  80.2091,
+                  12.9841
+                ]
+              ],
+              "legalAreaSqM": 3080,
+              "intendedUse": "RESIDENTIAL"
+            },
+            {
+              "plotNumber": "Plot 2 (UPRN-1002)",
+              "uprnMatch": "UPRN-2026-IND-0002",
+              "coordinates": [
+                [
+                  80.2098,
+                  12.9841
+                ],
+                [
+                  80.2104,
+                  12.9841
+                ],
+                [
+                  80.2104,
+                  12.9846
+                ],
+                [
+                  80.2098,
+                  12.9846
+                ],
+                [
+                  80.2098,
+                  12.9841
+                ]
+              ],
+              "legalAreaSqM": 3080,
+              "intendedUse": "RESIDENTIAL"
+            },
+            {
+              "plotNumber": "Public Road Reserve (12m width)",
+              "coordinates": [
+                [
+                  80.2089,
+                  12.9839
+                ],
+                [
+                  80.2106,
+                  12.9839
+                ],
+                [
+                  80.2106,
+                  12.9841
+                ],
+                [
+                  80.2089,
+                  12.9841
+                ],
+                [
+                  80.2089,
+                  12.9839
+                ]
+              ],
+              "legalAreaSqM": 1850,
+              "intendedUse": "ROAD_RESERVE"
+            },
+            {
+              "plotNumber": "Mandatory OSR Park Buffer",
+              "coordinates": [
+                [
+                  80.2105,
+                  12.9841
+                ],
+                [
+                  80.211,
+                  12.9841
+                ],
+                [
+                  80.211,
+                  12.9846
+                ],
+                [
+                  80.2105,
+                  12.9846
+                ],
+                [
+                  80.2105,
+                  12.9841
+                ]
+              ],
+              "legalAreaSqM": 2560,
+              "intendedUse": "PARK_OSR"
+            }
+          ],
+          "gcpList": [
+            {
+              "id": "GCP-1",
+              "name": "Survey Stone A (NW Corner)",
+              "pixelX": 120,
+              "pixelY": 85,
+              "targetLat": 12.9846,
+              "targetLng": 80.2091,
+              "residualMeters": 0.08
+            },
+            {
+              "id": "GCP-2",
+              "name": "Survey Stone B (NE Corner)",
+              "pixelX": 840,
+              "pixelY": 90,
+              "targetLat": 12.9846,
+              "targetLng": 80.2104,
+              "residualMeters": 0.11
+            },
+            {
+              "id": "GCP-3",
+              "name": "Road Intersection Centerline",
+              "pixelX": 835,
+              "pixelY": 720,
+              "targetLat": 12.9839,
+              "targetLng": 80.2104,
+              "residualMeters": 0.06
+            },
+            {
+              "id": "GCP-4",
+              "name": "SW Boundary Peg (Public R.O.W)",
+              "pixelX": 115,
+              "pixelY": 715,
+              "targetLat": 12.9839,
+              "targetLng": 80.2089,
+              "residualMeters": 0.09
+            }
+          ],
+          "georeferencingRmsErrorM": 0.085,
+          "scannedSheetUrl": "https://raw.githubusercontent.com/visva/geotrace/main/cmda_sample_102.png"
+        },
+        "parcel": {
+          "id": "PRCL-ROAD-142",
+          "uprn": "GT-VEL-142/ROAD",
+          "geoTraceCardNumber": "GT-ROAD-2026-142",
+          "svamitvaCardNumber": "GT-ROAD-2026-142",
+          "ownerName": "Greater Chennai Corporation (Public Road Reserve)",
+          "ownerNationalId": "GOV-GCC-ROAD-DIV178",
+          "landType": "PUBLIC_INFRASTRUCTURE",
+          "status": "TITLE_ISSUED",
+          "coordinates": [
+            [
+              80.2085,
+              12.98402
+            ],
+            [
+              80.2105,
+              12.98402
+            ],
+            [
+              80.2105,
+              12.98409
+            ],
+            [
+              80.2085,
+              12.98409
+            ],
+            [
+              80.2085,
+              12.98402
+            ]
+          ],
+          "calculatedAreaSqMeters": 1680.35,
+          "perimeterMeters": 449.45,
+          "centroid": {
+            "latitude": 12.984055,
+            "longitude": 80.2095
+          },
+          "vertexCount": 4,
+          "epistemicUncertainty": 0.04,
+          "aleatoricUncertainty": 0.05,
+          "overallUncertainty": 0.045,
+          "structureCount": 0,
+          "complianceScore": 70,
+          "encroachmentDetected": true,
+          "encroachmentRemarks": "Violates CMDA/PPA/2018/102 by 5136.43m into RESIDENTIAL",
+          "state": "Tamil Nadu",
+          "district": "Chennai",
+          "taluk": "Velachery",
+          "village": "Velachery Town",
+          "surveyNumber": "142",
+          "subDivision": "ROAD",
+          "historicalYear": 1967,
+          "historicalSource": "Tamil Nadu Survey & Land Records - FMB Sheet S.No. 142 (1967)",
+          "historicalAreaSqM": 1625,
+          "currentHash": "0ba175b0c34ade320b56be933d900dc4ebd6253be4dea48963da47e0528a2bf9",
+          "createdAt": 1790312718055,
+          "updatedAt": 1790568318055
+        },
+        "modelUsed": "gemini-2.5-flash"
+      }
+    },
+    {
+      "detection_confidence": 0.55,
+      "status_code": 200,
+      "response": {
+        "status": "success",
+        "discrepancy": {
+          "parcelId": "PRCL-ROAD-142",
+          "uprn": "GT-VEL-142/ROAD",
+          "ownerName": "Greater Chennai Corporation (Public Road Reserve)",
+          "legalReference": "Velachery Residential Scheme Layout (CMDA Approved) (CMDA/PPA/2018/102)",
+          "approvalPlanNo": "CMDA/PPA/2018/102",
+          "tier": "CMDA_LAYOUT",
+          "encroachmentType": "NEIGHBOR_BOUNDARY_DRIFT",
+          "encroachmentAreaSqM": 30.6,
+          "maxDeviationMeters": 5136.43,
+          "legalBoundary": [
+            [
+              80.2091,
+              12.9841
+            ],
+            [
+              80.2097,
+              12.9841
+            ],
+            [
+              80.2097,
+              12.9846
+            ],
+            [
+              80.2091,
+              12.9846
+            ],
+            [
+              80.2091,
+              12.9841
+            ]
+          ],
+          "detectedPhysicalBoundary": [
+            [
+              80.256909,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9821006
+            ]
+          ],
+          "encroachmentPolygon": [
+            [
+              80.256909,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9821006
+            ]
+          ],
+          "vlmViolationNotice": "GOVERNMENT OF TAMIL NADU\nCHENNAI METROPOLITAN DEVELOPMENT AUTHORITY\nSTATUTORY NOTICE UNDER SECTION 56 OF TAMIL NADU TOWN & COUNTRY PLANNING ACT, 1971\n\nNotice Ref: TN/ENCR/CMDA-PPA-2018-102/2026\nTo: Greater Chennai Corporation (Public Road Reserve) (UPRN: GT-VEL-142/ROAD)\nSubject: Encroachment onto 12m Public Scheme Road Reserve - Approved Layout CMDA/PPA/2018/102\n\nWHEREAS by virtue of comparative spatial overlay between detected physical boundary (from ML BUILDING HEAD) and Government Approved Layout Plan (CMDA/PPA/2018/102, archived at cmdachennai.gov.in), it is established that:\n1. Your constructed physical footprint (B_detected) deviates from the legal boundary (L_legal) by 5136.43 meters at maximum.\n2. An encroachment zone (E = B_detected \\ L_legal) measuring 30.6 sq.m encroaches into the RESIDENTIAL.\n3. Detection confidence: 0.55 (LOW).\n4. This contravenes Rule 35 of the Tamil Nadu Combined Development and Building Rules (TNCDBR) 2019.\n\nYOU ARE HEREBY DIRECTED within 15 days of receipt of this notice to realign the boundary and address the unauthorized 30.6 sq.m protrusion, failing which action under Section 56(2) will be initiated by the Municipal Corporation.",
+          "complianceStatus": "NEEDS_HUMAN_REVIEW",
+          "timestamp": 1790571962010,
+          "detectionConfidence": 0.55,
+          "confidenceLevel": "LOW",
+          "dataSources": {
+            "legalBoundary": "TN_LAYOUT_STORE (FMB/TSLR digitized records)",
+            "detectedBoundary": "ML_BUILDING_HEAD (EfficientNet-B3_U-Net_DualHead_ONNX) \u2014 building footprint polygon",
+            "roadNetwork": "OpenStreetMap via Overpass API (highway=*)",
+            "landuse": "DERIVED_3CLASS (built-up from building head, vegetation from vegetation head, open = neither)"
+          }
+        },
+        "layout": {
+          "id": "CMDA-LP-2018-102",
+          "tier": "CMDA_LAYOUT",
+          "title": "Velachery Residential Scheme Layout (CMDA Approved)",
+          "approvalNo": "CMDA/PPA/2018/102",
+          "year": 2018,
+          "district": "Chennai",
+          "taluk": "Velachery",
+          "village": "Velachery Town",
+          "surveyNumber": "142",
+          "subDivision": "1A & 1B",
+          "portalSource": "cmdachennai.gov.in",
+          "portalUrl": "http://cmdachennai.gov.in/planning_permission_search.html",
+          "status": "APPROVED",
+          "roadWidthMeters": 12,
+          "mandatoryFrontSetbackM": 2.5,
+          "osrAreaSqM": 450,
+          "approvedPlotsCount": 6,
+          "centerCoordinates": {
+            "lat": 12.9843,
+            "lng": 80.2095
+          },
+          "legalBoundaries": [
+            {
+              "plotNumber": "Plot 1 (UPRN-1001)",
+              "uprnMatch": "UPRN-2026-IND-0001",
+              "coordinates": [
+                [
+                  80.2091,
+                  12.9841
+                ],
+                [
+                  80.2097,
+                  12.9841
+                ],
+                [
+                  80.2097,
+                  12.9846
+                ],
+                [
+                  80.2091,
+                  12.9846
+                ],
+                [
+                  80.2091,
+                  12.9841
+                ]
+              ],
+              "legalAreaSqM": 3080,
+              "intendedUse": "RESIDENTIAL"
+            },
+            {
+              "plotNumber": "Plot 2 (UPRN-1002)",
+              "uprnMatch": "UPRN-2026-IND-0002",
+              "coordinates": [
+                [
+                  80.2098,
+                  12.9841
+                ],
+                [
+                  80.2104,
+                  12.9841
+                ],
+                [
+                  80.2104,
+                  12.9846
+                ],
+                [
+                  80.2098,
+                  12.9846
+                ],
+                [
+                  80.2098,
+                  12.9841
+                ]
+              ],
+              "legalAreaSqM": 3080,
+              "intendedUse": "RESIDENTIAL"
+            },
+            {
+              "plotNumber": "Public Road Reserve (12m width)",
+              "coordinates": [
+                [
+                  80.2089,
+                  12.9839
+                ],
+                [
+                  80.2106,
+                  12.9839
+                ],
+                [
+                  80.2106,
+                  12.9841
+                ],
+                [
+                  80.2089,
+                  12.9841
+                ],
+                [
+                  80.2089,
+                  12.9839
+                ]
+              ],
+              "legalAreaSqM": 1850,
+              "intendedUse": "ROAD_RESERVE"
+            },
+            {
+              "plotNumber": "Mandatory OSR Park Buffer",
+              "coordinates": [
+                [
+                  80.2105,
+                  12.9841
+                ],
+                [
+                  80.211,
+                  12.9841
+                ],
+                [
+                  80.211,
+                  12.9846
+                ],
+                [
+                  80.2105,
+                  12.9846
+                ],
+                [
+                  80.2105,
+                  12.9841
+                ]
+              ],
+              "legalAreaSqM": 2560,
+              "intendedUse": "PARK_OSR"
+            }
+          ],
+          "gcpList": [
+            {
+              "id": "GCP-1",
+              "name": "Survey Stone A (NW Corner)",
+              "pixelX": 120,
+              "pixelY": 85,
+              "targetLat": 12.9846,
+              "targetLng": 80.2091,
+              "residualMeters": 0.08
+            },
+            {
+              "id": "GCP-2",
+              "name": "Survey Stone B (NE Corner)",
+              "pixelX": 840,
+              "pixelY": 90,
+              "targetLat": 12.9846,
+              "targetLng": 80.2104,
+              "residualMeters": 0.11
+            },
+            {
+              "id": "GCP-3",
+              "name": "Road Intersection Centerline",
+              "pixelX": 835,
+              "pixelY": 720,
+              "targetLat": 12.9839,
+              "targetLng": 80.2104,
+              "residualMeters": 0.06
+            },
+            {
+              "id": "GCP-4",
+              "name": "SW Boundary Peg (Public R.O.W)",
+              "pixelX": 115,
+              "pixelY": 715,
+              "targetLat": 12.9839,
+              "targetLng": 80.2089,
+              "residualMeters": 0.09
+            }
+          ],
+          "georeferencingRmsErrorM": 0.085,
+          "scannedSheetUrl": "https://raw.githubusercontent.com/visva/geotrace/main/cmda_sample_102.png"
+        },
+        "parcel": {
+          "id": "PRCL-ROAD-142",
+          "uprn": "GT-VEL-142/ROAD",
+          "geoTraceCardNumber": "GT-ROAD-2026-142",
+          "svamitvaCardNumber": "GT-ROAD-2026-142",
+          "ownerName": "Greater Chennai Corporation (Public Road Reserve)",
+          "ownerNationalId": "GOV-GCC-ROAD-DIV178",
+          "landType": "PUBLIC_INFRASTRUCTURE",
+          "status": "TITLE_ISSUED",
+          "coordinates": [
+            [
+              80.2085,
+              12.98402
+            ],
+            [
+              80.2105,
+              12.98402
+            ],
+            [
+              80.2105,
+              12.98409
+            ],
+            [
+              80.2085,
+              12.98409
+            ],
+            [
+              80.2085,
+              12.98402
+            ]
+          ],
+          "calculatedAreaSqMeters": 1680.35,
+          "perimeterMeters": 449.45,
+          "centroid": {
+            "latitude": 12.984055,
+            "longitude": 80.2095
+          },
+          "vertexCount": 4,
+          "epistemicUncertainty": 0.04,
+          "aleatoricUncertainty": 0.05,
+          "overallUncertainty": 0.045,
+          "structureCount": 0,
+          "complianceScore": 40,
+          "encroachmentDetected": true,
+          "encroachmentRemarks": "Violates CMDA/PPA/2018/102 by 5136.43m into RESIDENTIAL",
+          "state": "Tamil Nadu",
+          "district": "Chennai",
+          "taluk": "Velachery",
+          "village": "Velachery Town",
+          "surveyNumber": "142",
+          "subDivision": "ROAD",
+          "historicalYear": 1967,
+          "historicalSource": "Tamil Nadu Survey & Land Records - FMB Sheet S.No. 142 (1967)",
+          "historicalAreaSqM": 1625,
+          "currentHash": "0ba175b0c34ade320b56be933d900dc4ebd6253be4dea48963da47e0528a2bf9",
+          "createdAt": 1790312718055,
+          "updatedAt": 1790568318055
+        },
+        "modelUsed": "gemini-2.5-flash"
+      }
+    },
+    {
+      "detection_confidence": 0.9,
+      "status_code": 200,
+      "response": {
+        "status": "success",
+        "discrepancy": {
+          "parcelId": "PRCL-ROAD-142",
+          "uprn": "GT-VEL-142/ROAD",
+          "ownerName": "Greater Chennai Corporation (Public Road Reserve)",
+          "legalReference": "Velachery Residential Scheme Layout (CMDA Approved) (CMDA/PPA/2018/102)",
+          "approvalPlanNo": "CMDA/PPA/2018/102",
+          "tier": "CMDA_LAYOUT",
+          "encroachmentType": "NEIGHBOR_BOUNDARY_DRIFT",
+          "encroachmentAreaSqM": 30.6,
+          "maxDeviationMeters": 5136.43,
+          "legalBoundary": [
+            [
+              80.2091,
+              12.9841
+            ],
+            [
+              80.2097,
+              12.9841
+            ],
+            [
+              80.2097,
+              12.9846
+            ],
+            [
+              80.2091,
+              12.9846
+            ],
+            [
+              80.2091,
+              12.9841
+            ]
+          ],
+          "detectedPhysicalBoundary": [
+            [
+              80.256909,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9821006
+            ]
+          ],
+          "encroachmentPolygon": [
+            [
+              80.256909,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9820561
+            ],
+            [
+              80.256966,
+              12.9821006
+            ],
+            [
+              80.256909,
+              12.9821006
+            ]
+          ],
+          "vlmViolationNotice": "GOVERNMENT OF TAMIL NADU\nCHENNAI METROPOLITAN DEVELOPMENT AUTHORITY\nSTATUTORY NOTICE UNDER SECTION 56 OF TAMIL NADU TOWN & COUNTRY PLANNING ACT, 1971\n\nNotice Ref: TN/ENCR/CMDA-PPA-2018-102/2026\nTo: Greater Chennai Corporation (Public Road Reserve) (UPRN: GT-VEL-142/ROAD)\nSubject: Encroachment onto 12m Public Scheme Road Reserve - Approved Layout CMDA/PPA/2018/102\n\nWHEREAS by virtue of comparative spatial overlay between detected physical boundary (from ML BUILDING HEAD) and Government Approved Layout Plan (CMDA/PPA/2018/102, archived at cmdachennai.gov.in), it is established that:\n1. Your constructed physical footprint (B_detected) deviates from the legal boundary (L_legal) by 5136.43 meters at maximum.\n2. An encroachment zone (E = B_detected \\ L_legal) measuring 30.6 sq.m encroaches into the RESIDENTIAL.\n3. Detection confidence: 0.9 (HIGH).\n4. This contravenes Rule 35 of the Tamil Nadu Combined Development and Building Rules (TNCDBR) 2019.\n\nYOU ARE HEREBY DIRECTED within 15 days of receipt of this notice to realign the boundary and address the unauthorized 30.6 sq.m protrusion, failing which action under Section 56(2) will be initiated by the Municipal Corporation.",
+          "complianceStatus": "VIOLATION_FLAGGED",
+          "timestamp": 1790571964060,
+          "detectionConfidence": 0.9,
+          "confidenceLevel": "HIGH",
+          "dataSources": {
+            "legalBoundary": "TN_LAYOUT_STORE (FMB/TSLR digitized records)",
+            "detectedBoundary": "ML_BUILDING_HEAD (EfficientNet-B3_U-Net_DualHead_ONNX) \u2014 building footprint polygon",
+            "roadNetwork": "OpenStreetMap via Overpass API (highway=*)",
+            "landuse": "DERIVED_3CLASS (built-up from building head, vegetation from vegetation head, open = neither)"
+          }
+        },
+        "layout": {
+          "id": "CMDA-LP-2018-102",
+          "tier": "CMDA_LAYOUT",
+          "title": "Velachery Residential Scheme Layout (CMDA Approved)",
+          "approvalNo": "CMDA/PPA/2018/102",
+          "year": 2018,
+          "district": "Chennai",
+          "taluk": "Velachery",
+          "village": "Velachery Town",
+          "surveyNumber": "142",
+          "subDivision": "1A & 1B",
+          "portalSource": "cmdachennai.gov.in",
+          "portalUrl": "http://cmdachennai.gov.in/planning_permission_search.html",
+          "status": "APPROVED",
+          "roadWidthMeters": 12,
+          "mandatoryFrontSetbackM": 2.5,
+          "osrAreaSqM": 450,
+          "approvedPlotsCount": 6,
+          "centerCoordinates": {
+            "lat": 12.9843,
+            "lng": 80.2095
+          },
+          "legalBoundaries": [
+            {
+              "plotNumber": "Plot 1 (UPRN-1001)",
+              "uprnMatch": "UPRN-2026-IND-0001",
+              "coordinates": [
+                [
+                  80.2091,
+                  12.9841
+                ],
+                [
+                  80.2097,
+                  12.9841
+                ],
+                [
+                  80.2097,
+                  12.9846
+                ],
+                [
+                  80.2091,
+                  12.9846
+                ],
+                [
+                  80.2091,
+                  12.9841
+                ]
+              ],
+              "legalAreaSqM": 3080,
+              "intendedUse": "RESIDENTIAL"
+            },
+            {
+              "plotNumber": "Plot 2 (UPRN-1002)",
+              "uprnMatch": "UPRN-2026-IND-0002",
+              "coordinates": [
+                [
+                  80.2098,
+                  12.9841
+                ],
+                [
+                  80.2104,
+                  12.9841
+                ],
+                [
+                  80.2104,
+                  12.9846
+                ],
+                [
+                  80.2098,
+                  12.9846
+                ],
+                [
+                  80.2098,
+                  12.9841
+                ]
+              ],
+              "legalAreaSqM": 3080,
+              "intendedUse": "RESIDENTIAL"
+            },
+            {
+              "plotNumber": "Public Road Reserve (12m width)",
+              "coordinates": [
+                [
+                  80.2089,
+                  12.9839
+                ],
+                [
+                  80.2106,
+                  12.9839
+                ],
+                [
+                  80.2106,
+                  12.9841
+                ],
+                [
+                  80.2089,
+                  12.9841
+                ],
+                [
+                  80.2089,
+                  12.9839
+                ]
+              ],
+              "legalAreaSqM": 1850,
+              "intendedUse": "ROAD_RESERVE"
+            },
+            {
+              "plotNumber": "Mandatory OSR Park Buffer",
+              "coordinates": [
+                [
+                  80.2105,
+                  12.9841
+                ],
+                [
+                  80.211,
+                  12.9841
+                ],
+                [
+                  80.211,
+                  12.9846
+                ],
+                [
+                  80.2105,
+                  12.9846
+                ],
+                [
+                  80.2105,
+                  12.9841
+                ]
+              ],
+              "legalAreaSqM": 2560,
+              "intendedUse": "PARK_OSR"
+            }
+          ],
+          "gcpList": [
+            {
+              "id": "GCP-1",
+              "name": "Survey Stone A (NW Corner)",
+              "pixelX": 120,
+              "pixelY": 85,
+              "targetLat": 12.9846,
+              "targetLng": 80.2091,
+              "residualMeters": 0.08
+            },
+            {
+              "id": "GCP-2",
+              "name": "Survey Stone B (NE Corner)",
+              "pixelX": 840,
+              "pixelY": 90,
+              "targetLat": 12.9846,
+              "targetLng": 80.2104,
+              "residualMeters": 0.11
+            },
+            {
+              "id": "GCP-3",
+              "name": "Road Intersection Centerline",
+              "pixelX": 835,
+              "pixelY": 720,
+              "targetLat": 12.9839,
+              "targetLng": 80.2104,
+              "residualMeters": 0.06
+            },
+            {
+              "id": "GCP-4",
+              "name": "SW Boundary Peg (Public R.O.W)",
+              "pixelX": 115,
+              "pixelY": 715,
+              "targetLat": 12.9839,
+              "targetLng": 80.2089,
+              "residualMeters": 0.09
+            }
+          ],
+          "georeferencingRmsErrorM": 0.085,
+          "scannedSheetUrl": "https://raw.githubusercontent.com/visva/geotrace/main/cmda_sample_102.png"
+        },
+        "parcel": {
+          "id": "PRCL-ROAD-142",
+          "uprn": "GT-VEL-142/ROAD",
+          "geoTraceCardNumber": "GT-ROAD-2026-142",
+          "svamitvaCardNumber": "GT-ROAD-2026-142",
+          "ownerName": "Greater Chennai Corporation (Public Road Reserve)",
+          "ownerNationalId": "GOV-GCC-ROAD-DIV178",
+          "landType": "PUBLIC_INFRASTRUCTURE",
+          "status": "TITLE_ISSUED",
+          "coordinates": [
+            [
+              80.2085,
+              12.98402
+            ],
+            [
+              80.2105,
+              12.98402
+            ],
+            [
+              80.2105,
+              12.98409
+            ],
+            [
+              80.2085,
+              12.98409
+            ],
+            [
+              80.2085,
+              12.98402
+            ]
+          ],
+          "calculatedAreaSqMeters": 1680.35,
+          "perimeterMeters": 449.45,
+          "centroid": {
+            "latitude": 12.984055,
+            "longitude": 80.2095
+          },
+          "vertexCount": 4,
+          "epistemicUncertainty": 0.04,
+          "aleatoricUncertainty": 0.05,
+          "overallUncertainty": 0.045,
+          "structureCount": 0,
+          "complianceScore": 35,
+          "encroachmentDetected": true,
+          "encroachmentRemarks": "Violates CMDA/PPA/2018/102 by 5136.43m into RESIDENTIAL",
+          "state": "Tamil Nadu",
+          "district": "Chennai",
+          "taluk": "Velachery",
+          "village": "Velachery Town",
+          "surveyNumber": "142",
+          "subDivision": "ROAD",
+          "historicalYear": 1967,
+          "historicalSource": "Tamil Nadu Survey & Land Records - FMB Sheet S.No. 142 (1967)",
+          "historicalAreaSqM": 1625,
+          "currentHash": "0ba175b0c34ade320b56be933d900dc4ebd6253be4dea48963da47e0528a2bf9",
+          "createdAt": 1790312718055,
+          "updatedAt": 1790568318055
+        },
+        "modelUsed": "gemini-2.5-flash"
+      }
+    }
+  ],
+  "expected_statuses": [
+    "NEEDS_HUMAN_REVIEW",
+    "NEEDS_HUMAN_REVIEW",
+    "VIOLATION_FLAGGED"
+  ],
+  "actual_statuses": [
+    "NEEDS_HUMAN_REVIEW",
+    "NEEDS_HUMAN_REVIEW",
+    "VIOLATION_FLAGGED"
+  ]
+}

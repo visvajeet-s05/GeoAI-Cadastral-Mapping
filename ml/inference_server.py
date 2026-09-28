@@ -59,6 +59,13 @@ try:
 except ImportError:
     ORT_AVAILABLE = False
 
+try:
+    import torch
+    import torch.nn.functional as F
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+
 
 # ==============================================================================
 # Pydantic Request / Response Models
@@ -210,6 +217,59 @@ class CadastralInferenceEngine:
                     logger.info(f"Loaded config from checkpoint: in_channels={self.in_channels}")
             except Exception as e:
                 logger.warning(f"Failed to load checkpoint config: {e}")
+        
+        # Try to load PyTorch model for true MC dropout
+        self._load_pytorch_model(checkpoint_path)
+    
+    def _load_pytorch_model(self, checkpoint_path: Path):
+        """Load PyTorch model for true MC dropout inference."""
+        self.pytorch_model = None
+        self.pytorch_device = "cpu"
+        
+        if not TORCH_AVAILABLE or not checkpoint_path.exists():
+            logger.info("PyTorch or checkpoint not available. MC dropout will use noise simulation.")
+            return
+        
+        try:
+            import torch
+            from train_cadastral import DualHeadCadastralModel, TrainConfig
+            
+            checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+            if "config" not in checkpoint or "model_state_dict" not in checkpoint:
+                logger.warning("Checkpoint missing config or state_dict")
+                return
+            
+            # Reconstruct config — filter to known TrainConfig fields
+            import dataclasses
+            from train_cadastral import TrainConfig
+            valid_fields = {f.name for f in dataclasses.fields(TrainConfig)}
+            cfg_dict = {k: v for k, v in checkpoint["config"].items() if k in valid_fields}
+            cfg = TrainConfig(**cfg_dict)
+            
+            # Create model and load weights (strict=False: checkpoint is 4-head, model is 2-head)
+            model = DualHeadCadastralModel(cfg)
+            state_dict = checkpoint["model_state_dict"]
+            matched_keys, unexpected_keys, missing_keys = [], [], []
+            for k in model.state_dict():
+                if k in state_dict:
+                    matched_keys.append(k)
+                else:
+                    missing_keys.append(k)
+            for k in state_dict:
+                if k not in model.state_dict():
+                    unexpected_keys.append(k)
+            model.load_state_dict(state_dict, strict=False)
+            logger.info(f"MC dropout checkpoint: matched={len(matched_keys)}, missing={len(missing_keys)}, unexpected={len(unexpected_keys)} (head_vegetation will be random)")
+            model.eval()  # We'll use train() mode for MC dropout forward passes
+            
+            self.pytorch_model = model
+            self.pytorch_device = "cuda" if torch.cuda.is_available() else "cpu"
+            self.pytorch_model.to(self.pytorch_device)
+            
+            logger.info(f"Loaded PyTorch model for true MC dropout on {self.pytorch_device}")
+        except Exception as e:
+            logger.warning(f"Failed to load PyTorch model for MC dropout: {e}")
+            self.pytorch_model = None
 
     def _init_session(self):
         """Initializes ONNX Runtime session with CUDA or CPU fallback."""
@@ -484,11 +544,21 @@ class CadastralInferenceEngine:
     def run_onnx_inference_mc(self, img_bgr: Any, num_samples: int = 5, dsm: Optional[np.ndarray] = None, dtm: Optional[np.ndarray] = None) -> List[Any]:
         """
         Runs Monte Carlo dropout inference by running the model multiple times.
-        Note: ONNX Runtime doesn't support dropout at inference by default.
-        This simulates MC dropout by adding noise to input or using CV fallback variations.
-        Returns list of 4-channel mask arrays [interior, edge, vertex, sdf] for each sample.
+        
+        Uses TRUE MC dropout with PyTorch when available (activates dropout layers
+        during forward passes in train() mode under no_grad()), which samples from
+        the model's learned weight-space uncertainty. Falls back to input-noise
+        simulation when PyTorch model is not available.
+        
+        Returns list of 4-channel mask arrays [building_logits, vegetation_logits, vertex, sdf] for each sample.
         """
         samples = []
+        
+        # Try true MC dropout with PyTorch first
+        if self.pytorch_model is not None and TORCH_AVAILABLE:
+            return self._run_pytorch_mc_dropout(img_bgr, num_samples, dsm, dtm)
+        
+        # Fallback: input noise simulation (original behavior)
         for i in range(num_samples):
             # Add small noise to input for variation (simulates dropout)
             if NUMPY_AVAILABLE and CV2_AVAILABLE and img_bgr is not None:
@@ -501,6 +571,74 @@ class CadastralInferenceEngine:
             if masks is not None:
                 samples.append(masks)
         
+        return samples
+    
+    def _run_pytorch_mc_dropout(self, img_bgr: Any, num_samples: int = 5, dsm: Optional[np.ndarray] = None, dtm: Optional[np.ndarray] = None) -> List[Any]:
+        """Run true MC dropout using PyTorch model with dropout layers active."""
+        if not TORCH_AVAILABLE or self.pytorch_model is None:
+            return []
+        
+        import torch
+        import torch.nn.functional as F
+        
+        # Preprocess image: BGR -> RGB, resize to 512x512, normalize
+        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+        img_resized = cv2.resize(img_rgb, (512, 512))
+        img_tensor = torch.from_numpy(img_resized.transpose(2, 0, 1)).float() / 255.0
+        
+        # Normalize with ImageNet stats (matching training)
+        mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+        std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+        img_normalized = (img_tensor - mean) / std
+        
+        # Add DSM/DTM if provided
+        if self.in_channels == 5:
+            if dsm is not None:
+                dsm_resized = cv2.resize(dsm, (512, 512))
+                dsm_norm = np.clip(dsm_resized / 100.0, 0, 1)
+                dsm_tensor = torch.from_numpy(dsm_norm).float().unsqueeze(0)
+            else:
+                dsm_tensor = torch.zeros(1, 512, 512)
+            
+            if dtm is not None:
+                dtm_resized = cv2.resize(dtm, (512, 512))
+                dtm_norm = np.clip((dtm_resized - 50.0) / 100.0, 0, 1)
+                dtm_tensor = torch.from_numpy(dtm_norm).float().unsqueeze(0)
+            else:
+                dtm_tensor = torch.zeros(1, 512, 512)
+            
+            input_tensor = torch.cat([img_normalized, dsm_tensor, dtm_tensor], dim=0)
+        else:
+            input_tensor = img_normalized
+        
+        input_tensor = input_tensor.unsqueeze(0).to(self.pytorch_device)
+        
+        # Set model to train mode to activate dropout, but no_grad for inference
+        self.pytorch_model.train()
+        samples = []
+        
+        with torch.no_grad():
+            for _ in range(num_samples):
+                # Forward pass with dropout active (model in train mode)
+                outputs = self.pytorch_model(input_tensor, mc_dropout=True)
+                
+                # outputs: dict with keys 'building', 'vegetation' (logits)
+                building_logits = outputs['building'].cpu().numpy()[0, 0]  # (512, 512)
+                vegetation_logits = outputs['vegetation'].cpu().numpy()[0, 0]  # (512, 512)
+                
+                # Apply sigmoid to get probabilities
+                building_prob = 1.0 / (1.0 + np.exp(-np.clip(building_logits, -60.0, 60.0)))
+                vegetation_prob = 1.0 / (1.0 + np.exp(-np.clip(vegetation_logits, -60.0, 60.0)))
+                
+                # Create 4-channel format: [building, vegetation, vertex, sdf]
+                # vertex and sdf are placeholder zeros for now
+                vertex_map = np.zeros_like(building_prob)
+                sdf_map = np.zeros_like(building_prob)
+                
+                combined = np.stack([building_prob, vegetation_prob, vertex_map, sdf_map], axis=0)
+                samples.append(combined)
+        
+        self.pytorch_model.eval()  # Restore eval mode
         return samples
 
     def compute_mc_uncertainty(self, mc_masks: List[Any]) -> Tuple[float, float, float]:

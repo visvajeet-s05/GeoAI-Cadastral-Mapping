@@ -1,0 +1,23 @@
+{
+  "onnx_model": {
+    "path": "D:\\Projects\\Cadastral-Mapping\\ml\\checkpoints\\cadastral_dualhead_best.onnx",
+    "size_bytes": 1074471,
+    "md5": "a46810005041b355e62422a1584c21c4",
+    "expected_md5": "a46810005041b355e62422a1584c21c4",
+    "match": true,
+    "status": "PASS"
+  },
+  "onnx_data": {
+    "path": "D:\\Projects\\Cadastral-Mapping\\ml\\checkpoints\\cadastral_dualhead_best.onnx.data",
+    "size_bytes": 50470912,
+    "md5": "51b5e117618f2050204958d9a10c29f1",
+    "expected_md5": "51b5e117618f2050204958d9a10c29f1",
+    "match": true,
+    "status": "PASS"
+  },
+  "best_model": {
+    "path": "D:\\Projects\\Cadastral-Mapping\\ml\\checkpoints\\best_model.pth",
+    "exists": false,
+    "status": "MISSING"
+  }
+}

@@ -1,0 +1,12 @@
+Cadastral Pipeline Verification
+Timestamp: 20260928_103504
+============================================================
+
+identity: NOT RUN
+checkpoint_load: SKIPPED — checkpoint not present
+parity: SKIPPED
+uncertainty: SKIPPED
+color_matching: PASS
+routing: PASS
+
+Raw results saved in: verification/20260928_103504/

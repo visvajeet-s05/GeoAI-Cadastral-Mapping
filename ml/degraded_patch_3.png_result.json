@@ -1,0 +1,1161 @@
+{
+  "success": true,
+  "model_version": "EfficientNet-B3-U-Net-DualHead-ONNX-v1.0",
+  "execution_provider": "CPUExecutionProvider",
+  "inference_time_ms": 2402.5,
+  "parcels_detected": 10,
+  "geojson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "autodetect_p_1",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2096889,
+                12.9843003
+              ],
+              [
+                80.2096568,
+                12.9842794
+              ],
+              [
+                80.2096822,
+                12.984269
+              ],
+              [
+                80.2096889,
+                12.9843003
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-101",
+          "survey_number": "140/1",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.592,
+          "area_sqm": 5.19,
+          "perimeter_m": 10.7,
+          "vertex_count": 3,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.053,
+            "aleatoric": 1,
+            "overall": 0.484,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "autodetect_p_2",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.209461,
+                12.9843827
+              ],
+              [
+                80.2094476,
+                12.9843644
+              ],
+              [
+                80.2094167,
+                12.984367
+              ],
+              [
+                80.2094342,
+                12.9843905
+              ],
+              [
+                80.209461,
+                12.9843827
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-102",
+          "survey_number": "141/2",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.603,
+          "area_sqm": 8.2,
+          "perimeter_m": 12.11,
+          "vertex_count": 4,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.077,
+            "aleatoric": 1,
+            "overall": 0.491,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "autodetect_p_3",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2095991,
+                12.9844153
+              ],
+              [
+                80.2096031,
+                12.9843944
+              ],
+              [
+                80.2096367,
+                12.984367
+              ],
+              [
+                80.209642,
+                12.9843879
+              ],
+              [
+                80.2095991,
+                12.9844153
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-103",
+          "survey_number": "142/3",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.588,
+          "area_sqm": 9.81,
+          "perimeter_m": 15.03,
+          "vertex_count": 4,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.083,
+            "aleatoric": 1,
+            "overall": 0.491,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "autodetect_p_4",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2095508,
+                12.9844166
+              ],
+              [
+                80.2095575,
+                12.9843957
+              ],
+              [
+                80.209583,
+                12.9844023
+              ],
+              [
+                80.209579,
+                12.9844127
+              ],
+              [
+                80.2095508,
+                12.9844166
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-104",
+          "survey_number": "143/4",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.621,
+          "area_sqm": 5.13,
+          "perimeter_m": 9.6,
+          "vertex_count": 4,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.063,
+            "aleatoric": 1,
+            "overall": 0.486,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "autodetect_p_5",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2095736,
+                12.9844624
+              ],
+              [
+                80.2096273,
+                12.9844467
+              ],
+              [
+                80.2096608,
+                12.9844571
+              ],
+              [
+                80.2096259,
+                12.9844219
+              ],
+              [
+                80.2095683,
+                12.9844219
+              ],
+              [
+                80.2095736,
+                12.9844624
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-105",
+          "survey_number": "144/5",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.593,
+          "area_sqm": 27.02,
+          "perimeter_m": 26.09,
+          "vertex_count": 5,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.081,
+            "aleatoric": 1,
+            "overall": 0.483,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "autodetect_p_6",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2093108,
+                12.9844336
+              ],
+              [
+                80.2093081,
+                12.9844741
+              ],
+              [
+                80.2093269,
+                12.9844768
+              ],
+              [
+                80.2093282,
+                12.9844545
+              ],
+              [
+                80.2093108,
+                12.9844336
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-106",
+          "survey_number": "145/6",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.597,
+          "area_sqm": 7.11,
+          "perimeter_m": 12.01,
+          "vertex_count": 4,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.058,
+            "aleatoric": 1,
+            "overall": 0.486,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "autodetect_p_7",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2092598,
+                12.9841683
+              ],
+              [
+                80.2092384,
+                12.9840899
+              ],
+              [
+                80.2092813,
+                12.9840612
+              ],
+              [
+                80.2092974,
+                12.9841566
+              ],
+              [
+                80.2093349,
+                12.9841357
+              ],
+              [
+                80.2093591,
+                12.9841644
+              ],
+              [
+                80.2093953,
+                12.984086
+              ],
+              [
+                80.2094342,
+                12.9840978
+              ],
+              [
+                80.2094194,
+                12.984069
+              ],
+              [
+                80.2094596,
+                12.9840886
+              ],
+              [
+                80.2094543,
+                12.9841461
+              ],
+              [
+                80.2095321,
+                12.984218
+              ],
+              [
+                80.2094422,
+                12.9842572
+              ],
+              [
+                80.2094328,
+                12.9842324
+              ],
+              [
+                80.2093939,
+                12.9842128
+              ],
+              [
+                80.2094154,
+                12.9842677
+              ],
+              [
+                80.2094771,
+                12.9842546
+              ],
+              [
+                80.2094556,
+                12.9842886
+              ],
+              [
+                80.2094221,
+                12.9842755
+              ],
+              [
+                80.2094248,
+                12.9843435
+              ],
+              [
+                80.2095039,
+                12.9843356
+              ],
+              [
+                80.2094972,
+                12.9844362
+              ],
+              [
+                80.20952,
+                12.9843578
+              ],
+              [
+                80.2096018,
+                12.984384
+              ],
+              [
+                80.2095991,
+                12.9843487
+              ],
+              [
+                80.209638,
+                12.984333
+              ],
+              [
+                80.2096179,
+                12.9842964
+              ],
+              [
+                80.2096554,
+                12.9842428
+              ],
+              [
+                80.2096447,
+                12.984201
+              ],
+              [
+                80.2097117,
+                12.9842964
+              ],
+              [
+                80.2097761,
+                12.9842755
+              ],
+              [
+                80.2097493,
+                12.9842311
+              ],
+              [
+                80.209807,
+                12.9842311
+              ],
+              [
+                80.2097788,
+                12.9841618
+              ],
+              [
+                80.209807,
+                12.9841723
+              ],
+              [
+                80.209807,
+                12.9841213
+              ],
+              [
+                80.2097761,
+                12.9841396
+              ],
+              [
+                80.209756,
+                12.9841148
+              ],
+              [
+                80.209807,
+                12.9841108
+              ],
+              [
+                80.209807,
+                12.9839292
+              ],
+              [
+                80.2097761,
+                12.9838821
+              ],
+              [
+                80.209807,
+                12.9838795
+              ],
+              [
+                80.209807,
+                12.9838299
+              ],
+              [
+                80.209579,
+                12.9838181
+              ],
+              [
+                80.2095227,
+                12.9838612
+              ],
+              [
+                80.209528,
+                12.9838246
+              ],
+              [
+                80.2094958,
+                12.9838259
+              ],
+              [
+                80.2094838,
+                12.9838704
+              ],
+              [
+                80.2094583,
+                12.9838181
+              ],
+              [
+                80.2093376,
+                12.9838181
+              ],
+              [
+                80.2093336,
+                12.9838416
+              ],
+              [
+                80.209288,
+                12.983822
+              ],
+              [
+                80.209288,
+                12.9838652
+              ],
+              [
+                80.209406,
+                12.9838534
+              ],
+              [
+                80.2093832,
+                12.9838887
+              ],
+              [
+                80.2094328,
+                12.9839083
+              ],
+              [
+                80.209347,
+                12.9838926
+              ],
+              [
+                80.2093108,
+                12.9839671
+              ],
+              [
+                80.209296,
+                12.9839383
+              ],
+              [
+                80.2093269,
+                12.9839122
+              ],
+              [
+                80.2092732,
+                12.9839044
+              ],
+              [
+                80.2093014,
+                12.9838887
+              ],
+              [
+                80.2092142,
+                12.9838665
+              ],
+              [
+                80.20917,
+                12.9838952
+              ],
+              [
+                80.2091861,
+                12.9838808
+              ],
+              [
+                80.2091834,
+                12.9838652
+              ],
+              [
+                80.2091351,
+                12.9838952
+              ],
+              [
+                80.2091271,
+                12.9838743
+              ],
+              [
+                80.2091217,
+                12.9840625
+              ],
+              [
+                80.2091485,
+                12.9840912
+              ],
+              [
+                80.2091217,
+                12.9840965
+              ],
+              [
+                80.2091217,
+                12.9841383
+              ],
+              [
+                80.2091592,
+                12.9841696
+              ],
+              [
+                80.2091284,
+                12.9841814
+              ],
+              [
+                80.2091324,
+                12.9843565
+              ],
+              [
+                80.2091713,
+                12.9843644
+              ],
+              [
+                80.2091351,
+                12.98435
+              ],
+              [
+                80.2091713,
+                12.9843291
+              ],
+              [
+                80.2091405,
+                12.984282
+              ],
+              [
+                80.2092062,
+                12.9843003
+              ],
+              [
+                80.2092075,
+                12.9842624
+              ],
+              [
+                80.2092625,
+                12.9842768
+              ],
+              [
+                80.2091968,
+                12.9842023
+              ],
+              [
+                80.2091512,
+                12.9841958
+              ],
+              [
+                80.2091981,
+                12.9841879
+              ],
+              [
+                80.2091928,
+                12.9841409
+              ],
+              [
+                80.2092598,
+                12.9841683
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-107",
+          "survey_number": "146/7",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.549,
+          "area_sqm": 3157.95,
+          "perimeter_m": 580.04,
+          "vertex_count": 86,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.044,
+            "aleatoric": 1,
+            "overall": 0.472,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "autodetect_p_8",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2097721,
+                12.9842925
+              ],
+              [
+                80.2097372,
+                12.9843827
+              ],
+              [
+                80.209756,
+                12.9844754
+              ],
+              [
+                80.209807,
+                12.9844859
+              ],
+              [
+                80.209807,
+                12.9843565
+              ],
+              [
+                80.2097788,
+                12.9843539
+              ],
+              [
+                80.2097882,
+                12.9844101
+              ],
+              [
+                80.2097761,
+                12.9843657
+              ],
+              [
+                80.209756,
+                12.9843827
+              ],
+              [
+                80.2097654,
+                12.984333
+              ],
+              [
+                80.209807,
+                12.9843461
+              ],
+              [
+                80.209807,
+                12.9842964
+              ],
+              [
+                80.2097721,
+                12.9842925
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-108",
+          "survey_number": "147/8",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.593,
+          "area_sqm": 112.45,
+          "perimeter_m": 78.08,
+          "vertex_count": 12,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.032,
+            "aleatoric": 1,
+            "overall": 0.468,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "autodetect_p_9",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091284,
+                12.9844859
+              ],
+              [
+                80.2091297,
+                12.9843944
+              ],
+              [
+                80.2092022,
+                12.9844506
+              ],
+              [
+                80.2092196,
+                12.9844271
+              ],
+              [
+                80.2091874,
+                12.9844323
+              ],
+              [
+                80.2091552,
+                12.9843892
+              ],
+              [
+                80.2091834,
+                12.9844062
+              ],
+              [
+                80.2092075,
+                12.9843787
+              ],
+              [
+                80.2092317,
+                12.9844206
+              ],
+              [
+                80.2092598,
+                12.9844127
+              ],
+              [
+                80.2092679,
+                12.9844754
+              ],
+              [
+                80.2091284,
+                12.9844859
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-109",
+          "survey_number": "148/9",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.587,
+          "area_sqm": 115.51,
+          "perimeter_m": 71.09,
+          "vertex_count": 11,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.054,
+            "aleatoric": 1,
+            "overall": 0.48,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_10",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091217,
+                12.9844859
+              ],
+              [
+                80.2098016,
+                12.9844859
+              ],
+              [
+                80.2098029,
+                12.9843591
+              ],
+              [
+                80.2097681,
+                12.9843657
+              ],
+              [
+                80.2097627,
+                12.9843343
+              ],
+              [
+                80.2098016,
+                12.9843448
+              ],
+              [
+                80.2098029,
+                12.9842938
+              ],
+              [
+                80.2097788,
+                12.9842912
+              ],
+              [
+                80.209807,
+                12.9842664
+              ],
+              [
+                80.2098029,
+                12.9842089
+              ],
+              [
+                80.2097775,
+                12.984218
+              ],
+              [
+                80.2097909,
+                12.9841919
+              ],
+              [
+                80.2097801,
+                12.984171
+              ],
+              [
+                80.2097547,
+                12.9842677
+              ],
+              [
+                80.2097238,
+                12.9841919
+              ],
+              [
+                80.2097654,
+                12.9841696
+              ],
+              [
+                80.2097144,
+                12.9841879
+              ],
+              [
+                80.2097104,
+                12.9841605
+              ],
+              [
+                80.2097252,
+                12.9841344
+              ],
+              [
+                80.209807,
+                12.9841723
+              ],
+              [
+                80.2098016,
+                12.9841082
+              ],
+              [
+                80.2097667,
+                12.9840808
+              ],
+              [
+                80.2097909,
+                12.9840651
+              ],
+              [
+                80.2098016,
+                12.9841004
+              ],
+              [
+                80.2097801,
+                12.9839057
+              ],
+              [
+                80.2098029,
+                12.9839096
+              ],
+              [
+                80.2098029,
+                12.9838691
+              ],
+              [
+                80.2097962,
+                12.9838978
+              ],
+              [
+                80.2097734,
+                12.9838821
+              ],
+              [
+                80.2097855,
+                12.9838246
+              ],
+              [
+                80.2096943,
+                12.9838181
+              ],
+              [
+                80.2096501,
+                12.9838469
+              ],
+              [
+                80.2096179,
+                12.9838181
+              ],
+              [
+                80.2095616,
+                12.9838534
+              ],
+              [
+                80.2094637,
+                12.9838259
+              ],
+              [
+                80.2094462,
+                12.983856
+              ],
+              [
+                80.2094355,
+                12.983822
+              ],
+              [
+                80.2093899,
+                12.9838429
+              ],
+              [
+                80.2093309,
+                12.9838181
+              ],
+              [
+                80.209347,
+                12.9838456
+              ],
+              [
+                80.2091217,
+                12.9838299
+              ],
+              [
+                80.2091217,
+                12.9839527
+              ],
+              [
+                80.2091351,
+                12.9839279
+              ],
+              [
+                80.2091485,
+                12.9839775
+              ],
+              [
+                80.2091512,
+                12.9839305
+              ],
+              [
+                80.2091888,
+                12.98392
+              ],
+              [
+                80.2091968,
+                12.9839815
+              ],
+              [
+                80.2091941,
+                12.9840207
+              ],
+              [
+                80.2091525,
+                12.9840037
+              ],
+              [
+                80.2091767,
+                12.9839815
+              ],
+              [
+                80.2091271,
+                12.9839945
+              ],
+              [
+                80.2091472,
+                12.984052
+              ],
+              [
+                80.2091217,
+                12.9840429
+              ],
+              [
+                80.2091217,
+                12.9840716
+              ],
+              [
+                80.2091633,
+                12.9841017
+              ],
+              [
+                80.2091217,
+                12.9840991
+              ],
+              [
+                80.2091472,
+                12.98412
+              ],
+              [
+                80.2091271,
+                12.9841514
+              ],
+              [
+                80.2091217,
+                12.9841187
+              ],
+              [
+                80.2091217,
+                12.9842167
+              ],
+              [
+                80.2091432,
+                12.9842115
+              ],
+              [
+                80.2091217,
+                12.9842271
+              ],
+              [
+                80.2091217,
+                12.9844859
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-209",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.705,
+          "area_sqm": 5113.3,
+          "perimeter_m": 458.08,
+          "vertex_count": 62,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      }
+    ]
+  },
+  "topological_health": {
+    "self_intersections": 0,
+    "overlap_detected": false,
+    "valid_count": 9,
+    "flagged_count": 0,
+    "status": "PASSED_CADASTRAL_QC"
+  },
+  "metrics": {
+    "avg_confidence": 0.591,
+    "total_area_sqm": 3448.37,
+    "avg_perimeter_m": 81.47,
+    "vertex_count_total": 133,
+    "avg_epistemic_uncertainty": 0.057,
+    "avg_aleatoric_uncertainty": 1,
+    "avg_overall_uncertainty": 0.484,
+    "high_confidence_count": 0,
+    "medium_confidence_count": 49,
+    "low_confidence_count": 0
+  }
+}

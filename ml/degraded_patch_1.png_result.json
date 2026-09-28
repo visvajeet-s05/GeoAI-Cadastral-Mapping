@@ -1,0 +1,2877 @@
+{
+  "success": true,
+  "model_version": "EfficientNet-B3-U-Net-DualHead-ONNX-v1.0",
+  "execution_provider": "CPUExecutionProvider",
+  "inference_time_ms": 2466.48,
+  "parcels_detected": 42,
+  "geojson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "autodetect_p_1",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091633,
+                12.9841487
+              ],
+              [
+                80.2091807,
+                12.9842128
+              ],
+              [
+                80.2091525,
+                12.9842154
+              ],
+              [
+                80.209178,
+                12.9842389
+              ],
+              [
+                80.2091405,
+                12.9842298
+              ],
+              [
+                80.2091365,
+                12.984184
+              ],
+              [
+                80.2091217,
+                12.9842049
+              ],
+              [
+                80.2091405,
+                12.9844715
+              ],
+              [
+                80.2093322,
+                12.9844859
+              ],
+              [
+                80.209343,
+                12.9844545
+              ],
+              [
+                80.2093483,
+                12.9844859
+              ],
+              [
+                80.2094409,
+                12.9844859
+              ],
+              [
+                80.2094409,
+                12.9843814
+              ],
+              [
+                80.2094717,
+                12.9843879
+              ],
+              [
+                80.209457,
+                12.9844768
+              ],
+              [
+                80.2096206,
+                12.9844794
+              ],
+              [
+                80.2096554,
+                12.9844389
+              ],
+              [
+                80.2096648,
+                12.9844859
+              ],
+              [
+                80.2097748,
+                12.9844807
+              ],
+              [
+                80.209807,
+                12.9841317
+              ],
+              [
+                80.209756,
+                12.9841265
+              ],
+              [
+                80.2097466,
+                12.9840795
+              ],
+              [
+                80.2097721,
+                12.9840756
+              ],
+              [
+                80.2097654,
+                12.9840063
+              ],
+              [
+                80.209807,
+                12.9839932
+              ],
+              [
+                80.209807,
+                12.9839318
+              ],
+              [
+                80.2097748,
+                12.9839122
+              ],
+              [
+                80.2097962,
+                12.9839083
+              ],
+              [
+                80.209807,
+                12.983822
+              ],
+              [
+                80.2097627,
+                12.9838181
+              ],
+              [
+                80.2097882,
+                12.983822
+              ],
+              [
+                80.2097855,
+                12.9838586
+              ],
+              [
+                80.2097493,
+                12.9838495
+              ],
+              [
+                80.2097506,
+                12.9838181
+              ],
+              [
+                80.2097319,
+                12.983839
+              ],
+              [
+                80.2096514,
+                12.9838181
+              ],
+              [
+                80.2096299,
+                12.9838469
+              ],
+              [
+                80.2095803,
+                12.9838181
+              ],
+              [
+                80.2095294,
+                12.9838416
+              ],
+              [
+                80.2094167,
+                12.9838233
+              ],
+              [
+                80.2094275,
+                12.9838573
+              ],
+              [
+                80.2094047,
+                12.9838181
+              ],
+              [
+                80.2091552,
+                12.9838246
+              ],
+              [
+                80.2091217,
+                12.9838913
+              ],
+              [
+                80.2091901,
+                12.9838821
+              ],
+              [
+                80.2091284,
+                12.9839227
+              ],
+              [
+                80.2091217,
+                12.984005
+              ],
+              [
+                80.2091512,
+                12.9840167
+              ],
+              [
+                80.2091217,
+                12.9840416
+              ],
+              [
+                80.2091217,
+                12.9841605
+              ],
+              [
+                80.2091633,
+                12.9841487
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "AUTO-TN-101",
+          "survey_number": "140/1",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.57,
+          "area_sqm": 5070.83,
+          "perimeter_m": 401.99,
+          "vertex_count": 50,
+          "classification": "BUILTUP",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.083,
+            "aleatoric": 1,
+            "overall": 0.478,
+            "confidence_level": "MEDIUM"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_2",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091512,
+                12.9838456
+              ],
+              [
+                80.2091472,
+                12.983822
+              ],
+              [
+                80.2091673,
+                12.9838181
+              ],
+              [
+                80.2091727,
+                12.9838325
+              ],
+              [
+                80.2091512,
+                12.9838456
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-201",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.634,
+          "area_sqm": 5.22,
+          "perimeter_m": 9.31,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_3",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091901,
+                12.9838808
+              ],
+              [
+                80.2092129,
+                12.9838612
+              ],
+              [
+                80.2091874,
+                12.9838482
+              ],
+              [
+                80.2091794,
+                12.9838181
+              ],
+              [
+                80.2092169,
+                12.9838469
+              ],
+              [
+                80.2092196,
+                12.9838704
+              ],
+              [
+                80.2091901,
+                12.9838808
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-202",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.692,
+          "area_sqm": 10.73,
+          "perimeter_m": 21.03,
+          "vertex_count": 6,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_4",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.209174,
+                12.9839279
+              ],
+              [
+                80.2091794,
+                12.9839579
+              ],
+              [
+                80.209225,
+                12.9839514
+              ],
+              [
+                80.2092089,
+                12.98389
+              ],
+              [
+                80.2091888,
+                12.983924
+              ],
+              [
+                80.2092115,
+                12.9839357
+              ],
+              [
+                80.209174,
+                12.9839279
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-203",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.674,
+          "area_sqm": 20.82,
+          "perimeter_m": 26.67,
+          "vertex_count": 6,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_5",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2093068,
+                12.9839684
+              ],
+              [
+                80.2092934,
+                12.9839409
+              ],
+              [
+                80.2092974,
+                12.9839292
+              ],
+              [
+                80.2093242,
+                12.9839423
+              ],
+              [
+                80.2093068,
+                12.9839684
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-204",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.664,
+          "area_sqm": 7.17,
+          "perimeter_m": 11.44,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_6",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2094422,
+                12.9840194
+              ],
+              [
+                80.2094033,
+                12.9840194
+              ],
+              [
+                80.2094127,
+                12.9839958
+              ],
+              [
+                80.2094422,
+                12.9840194
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-205",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.688,
+          "area_sqm": 5.51,
+          "perimeter_m": 11.15,
+          "vertex_count": 3,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_7",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091539,
+                12.9840468
+              ],
+              [
+                80.2091592,
+                12.9840076
+              ],
+              [
+                80.2092048,
+                12.9839632
+              ],
+              [
+                80.2091874,
+                12.9840063
+              ],
+              [
+                80.2092102,
+                12.984035
+              ],
+              [
+                80.2091767,
+                12.9840115
+              ],
+              [
+                80.2091539,
+                12.9840468
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-206",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.693,
+          "area_sqm": 14.75,
+          "perimeter_m": 29.59,
+          "vertex_count": 6,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_8",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091418,
+                12.9840573
+              ],
+              [
+                80.2091217,
+                12.9839828
+              ],
+              [
+                80.2091458,
+                12.9839815
+              ],
+              [
+                80.2091418,
+                12.9840573
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-207",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.653,
+          "area_sqm": 10.93,
+          "perimeter_m": 19.54,
+          "vertex_count": 3,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_9",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.209528,
+                12.9841592
+              ],
+              [
+                80.20952,
+                12.9841213
+              ],
+              [
+                80.2094851,
+                12.9841422
+              ],
+              [
+                80.2094891,
+                12.9841239
+              ],
+              [
+                80.2095388,
+                12.9841121
+              ],
+              [
+                80.209528,
+                12.9841592
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-208",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.684,
+          "area_sqm": 9.46,
+          "perimeter_m": 21.68,
+          "vertex_count": 5,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_10",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091271,
+                12.984167
+              ],
+              [
+                80.2091284,
+                12.9840664
+              ],
+              [
+                80.2091686,
+                12.9840599
+              ],
+              [
+                80.2091311,
+                12.9840808
+              ],
+              [
+                80.2091606,
+                12.9841291
+              ],
+              [
+                80.2091271,
+                12.984167
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-209",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.674,
+          "area_sqm": 21.74,
+          "perimeter_m": 32.01,
+          "vertex_count": 5,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_11",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2095508,
+                12.9842023
+              ],
+              [
+                80.2094891,
+                12.9841945
+              ],
+              [
+                80.2094891,
+                12.9841853
+              ],
+              [
+                80.2095227,
+                12.9841644
+              ],
+              [
+                80.2095508,
+                12.9841958
+              ],
+              [
+                80.2095522,
+                12.9841605
+              ],
+              [
+                80.2095508,
+                12.9842023
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-210",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.686,
+          "area_sqm": 15.72,
+          "perimeter_m": 25.24,
+          "vertex_count": 6,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_12",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2093027,
+                12.9842115
+              ],
+              [
+                80.2092317,
+                12.9842023
+              ],
+              [
+                80.209229,
+                12.9841814
+              ],
+              [
+                80.2092478,
+                12.9841553
+              ],
+              [
+                80.2092638,
+                12.9841906
+              ],
+              [
+                80.2093269,
+                12.9841749
+              ],
+              [
+                80.2093027,
+                12.9842115
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-211",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.692,
+          "area_sqm": 29.04,
+          "perimeter_m": 29.8,
+          "vertex_count": 6,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_13",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091592,
+                12.9841592
+              ],
+              [
+                80.2091874,
+                12.9841331
+              ],
+              [
+                80.2092437,
+                12.9841357
+              ],
+              [
+                80.2092451,
+                12.9841069
+              ],
+              [
+                80.2092571,
+                12.9841291
+              ],
+              [
+                80.2093282,
+                12.9841265
+              ],
+              [
+                80.2093671,
+                12.9841631
+              ],
+              [
+                80.2093389,
+                12.9841932
+              ],
+              [
+                80.2093993,
+                12.9842219
+              ],
+              [
+                80.2093778,
+                12.9841148
+              ],
+              [
+                80.2093282,
+                12.9840912
+              ],
+              [
+                80.2093255,
+                12.9841174
+              ],
+              [
+                80.2092759,
+                12.9841108
+              ],
+              [
+                80.2093202,
+                12.9840651
+              ],
+              [
+                80.2092974,
+                12.9839998
+              ],
+              [
+                80.2092585,
+                12.9840285
+              ],
+              [
+                80.2092746,
+                12.9840821
+              ],
+              [
+                80.2092612,
+                12.9840808
+              ],
+              [
+                80.209233,
+                12.9841213
+              ],
+              [
+                80.2091968,
+                12.9841239
+              ],
+              [
+                80.2092196,
+                12.9840742
+              ],
+              [
+                80.2091512,
+                12.984086
+              ],
+              [
+                80.2091874,
+                12.9841082
+              ],
+              [
+                80.2091592,
+                12.9841592
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-212",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.669,
+          "area_sqm": 149.76,
+          "perimeter_m": 129.58,
+          "vertex_count": 23,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_14",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.209351,
+                12.984269
+              ],
+              [
+                80.2093161,
+                12.9842376
+              ],
+              [
+                80.2093242,
+                12.9842102
+              ],
+              [
+                80.2093671,
+                12.9842258
+              ],
+              [
+                80.209351,
+                12.984269
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-213",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.662,
+          "area_sqm": 19.89,
+          "perimeter_m": 18.35,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_15",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2093269,
+                12.9842624
+              ],
+              [
+                80.2092893,
+                12.9842703
+              ],
+              [
+                80.2092759,
+                12.9842285
+              ],
+              [
+                80.2093269,
+                12.9842624
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-214",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.672,
+          "area_sqm": 10.07,
+          "perimeter_m": 15.7,
+          "vertex_count": 3,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_16",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2092545,
+                12.9842873
+              ],
+              [
+                80.209237,
+                12.9842664
+              ],
+              [
+                80.2092504,
+                12.984235
+              ],
+              [
+                80.2092746,
+                12.9842598
+              ],
+              [
+                80.2092545,
+                12.9842873
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-215",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.693,
+          "area_sqm": 11.96,
+          "perimeter_m": 14.3,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_17",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2094704,
+                12.9842951
+              ],
+              [
+                80.2094489,
+                12.984252
+              ],
+              [
+                80.2094757,
+                12.984269
+              ],
+              [
+                80.2095146,
+                12.9842167
+              ],
+              [
+                80.2095321,
+                12.9842611
+              ],
+              [
+                80.2094704,
+                12.9842951
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-216",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.676,
+          "area_sqm": 29.18,
+          "perimeter_m": 28.88,
+          "vertex_count": 5,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_18",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091888,
+                12.9843003
+              ],
+              [
+                80.2092236,
+                12.9842023
+              ],
+              [
+                80.2091619,
+                12.9841801
+              ],
+              [
+                80.2092142,
+                12.9842245
+              ],
+              [
+                80.2091888,
+                12.9843003
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-217",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.671,
+          "area_sqm": 10.37,
+          "perimeter_m": 34.94,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_19",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.209288,
+                12.9838848
+              ],
+              [
+                80.2093322,
+                12.9838939
+              ],
+              [
+                80.2093309,
+                12.9839213
+              ],
+              [
+                80.2093577,
+                12.98389
+              ],
+              [
+                80.2093912,
+                12.9839096
+              ],
+              [
+                80.2093591,
+                12.9840076
+              ],
+              [
+                80.2094033,
+                12.9840063
+              ],
+              [
+                80.2093832,
+                12.9839775
+              ],
+              [
+                80.2094047,
+                12.9839514
+              ],
+              [
+                80.209516,
+                12.984069
+              ],
+              [
+                80.2094502,
+                12.9840324
+              ],
+              [
+                80.2094744,
+                12.9841056
+              ],
+              [
+                80.2094368,
+                12.9841304
+              ],
+              [
+                80.2094422,
+                12.9840403
+              ],
+              [
+                80.2093792,
+                12.9840638
+              ],
+              [
+                80.2093296,
+                12.9840102
+              ],
+              [
+                80.2093738,
+                12.9840873
+              ],
+              [
+                80.2094315,
+                12.9840664
+              ],
+              [
+                80.2093979,
+                12.9841108
+              ],
+              [
+                80.2094234,
+                12.9841357
+              ],
+              [
+                80.2093899,
+                12.984137
+              ],
+              [
+                80.2094342,
+                12.9841527
+              ],
+              [
+                80.2094221,
+                12.9841906
+              ],
+              [
+                80.2094529,
+                12.9842089
+              ],
+              [
+                80.2094409,
+                12.984235
+              ],
+              [
+                80.2094677,
+                12.9842494
+              ],
+              [
+                80.2095039,
+                12.9842141
+              ],
+              [
+                80.2094502,
+                12.9841997
+              ],
+              [
+                80.2094328,
+                12.9841683
+              ],
+              [
+                80.2094489,
+                12.9841527
+              ],
+              [
+                80.2094529,
+                12.9841892
+              ],
+              [
+                80.2094811,
+                12.9841879
+              ],
+              [
+                80.2095079,
+                12.9841487
+              ],
+              [
+                80.2094637,
+                12.9841592
+              ],
+              [
+                80.2094757,
+                12.9841095
+              ],
+              [
+                80.2095361,
+                12.9840782
+              ],
+              [
+                80.2095803,
+                12.9840952
+              ],
+              [
+                80.2095508,
+                12.9840938
+              ],
+              [
+                80.209587,
+                12.98412
+              ],
+              [
+                80.2095508,
+                12.9841435
+              ],
+              [
+                80.2095696,
+                12.9841892
+              ],
+              [
+                80.209587,
+                12.9841683
+              ],
+              [
+                80.2095951,
+                12.9841997
+              ],
+              [
+                80.2096608,
+                12.9841945
+              ],
+              [
+                80.2096809,
+                12.9842664
+              ],
+              [
+                80.2096487,
+                12.984282
+              ],
+              [
+                80.2097439,
+                12.984299
+              ],
+              [
+                80.2097654,
+                12.9842729
+              ],
+              [
+                80.2097573,
+                12.9843042
+              ],
+              [
+                80.2097909,
+                12.9843029
+              ],
+              [
+                80.2098029,
+                12.9838233
+              ],
+              [
+                80.2095548,
+                12.9838181
+              ],
+              [
+                80.2095388,
+                12.9838508
+              ],
+              [
+                80.2095857,
+                12.9839122
+              ],
+              [
+                80.2095414,
+                12.9838965
+              ],
+              [
+                80.2095213,
+                12.9839488
+              ],
+              [
+                80.2095334,
+                12.983856
+              ],
+              [
+                80.2094865,
+                12.9838547
+              ],
+              [
+                80.2095039,
+                12.9838181
+              ],
+              [
+                80.2094663,
+                12.9838547
+              ],
+              [
+                80.2094462,
+                12.9838181
+              ],
+              [
+                80.2094328,
+                12.9838233
+              ],
+              [
+                80.2094529,
+                12.9838456
+              ],
+              [
+                80.2094261,
+                12.9838691
+              ],
+              [
+                80.2094583,
+                12.9838756
+              ],
+              [
+                80.2094275,
+                12.9839344
+              ],
+              [
+                80.2093966,
+                12.9838181
+              ],
+              [
+                80.2093698,
+                12.983822
+              ],
+              [
+                80.2093886,
+                12.9838586
+              ],
+              [
+                80.2093456,
+                12.9838246
+              ],
+              [
+                80.2093591,
+                12.9838612
+              ],
+              [
+                80.2093269,
+                12.983873
+              ],
+              [
+                80.2093497,
+                12.9838939
+              ],
+              [
+                80.209288,
+                12.9838848
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-218",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.658,
+          "area_sqm": 1728.62,
+          "perimeter_m": 472.8,
+          "vertex_count": 73,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_20",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2094422,
+                12.9842611
+              ],
+              [
+                80.2094422,
+                12.9843095
+              ],
+              [
+                80.2094181,
+                12.9842585
+              ],
+              [
+                80.2094422,
+                12.9842611
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-219",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.688,
+          "area_sqm": 7,
+          "perimeter_m": 14.2,
+          "vertex_count": 3,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_21",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2092893,
+                12.9842925
+              ],
+              [
+                80.2092773,
+                12.9842781
+              ],
+              [
+                80.209343,
+                12.9842846
+              ],
+              [
+                80.2092893,
+                12.9842925
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-220",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.701,
+          "area_sqm": 5.21,
+          "perimeter_m": 15.11,
+          "vertex_count": 3,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_22",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2095548,
+                12.9843121
+              ],
+              [
+                80.2095522,
+                12.9842546
+              ],
+              [
+                80.2095951,
+                12.9842546
+              ],
+              [
+                80.2095629,
+                12.9842154
+              ],
+              [
+                80.2095441,
+                12.9842794
+              ],
+              [
+                80.2095119,
+                12.9842768
+              ],
+              [
+                80.2095548,
+                12.9843121
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-221",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.676,
+          "area_sqm": 19.74,
+          "perimeter_m": 33.54,
+          "vertex_count": 6,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_23",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2096179,
+                12.9843265
+              ],
+              [
+                80.2095897,
+                12.9842925
+              ],
+              [
+                80.2096018,
+                12.9842572
+              ],
+              [
+                80.2096232,
+                12.9842664
+              ],
+              [
+                80.2096179,
+                12.9843265
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-222",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.69,
+          "area_sqm": 16.45,
+          "perimeter_m": 18.18,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_24",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091606,
+                12.9842716
+              ],
+              [
+                80.2091217,
+                12.984299
+              ],
+              [
+                80.2091311,
+                12.9843421
+              ],
+              [
+                80.2091499,
+                12.984299
+              ],
+              [
+                80.2091888,
+                12.9843356
+              ],
+              [
+                80.2091606,
+                12.9842716
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-223",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.685,
+          "area_sqm": 20.68,
+          "perimeter_m": 28.82,
+          "vertex_count": 5,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_25",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2093926,
+                12.9843709
+              ],
+              [
+                80.2093617,
+                12.9843265
+              ],
+              [
+                80.2093859,
+                12.9843225
+              ],
+              [
+                80.2093926,
+                12.9843709
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-224",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.713,
+          "area_sqm": 7.19,
+          "perimeter_m": 14.01,
+          "vertex_count": 3,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_26",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2092169,
+                12.9843748
+              ],
+              [
+                80.2091981,
+                12.9843539
+              ],
+              [
+                80.2092115,
+                12.9843356
+              ],
+              [
+                80.2092451,
+                12.9843552
+              ],
+              [
+                80.2092169,
+                12.9843748
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-225",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.668,
+          "area_sqm": 11.01,
+          "perimeter_m": 13.57,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_27",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2096098,
+                12.9843748
+              ],
+              [
+                80.2095468,
+                12.9843644
+              ],
+              [
+                80.2095991,
+                12.9843644
+              ],
+              [
+                80.2095884,
+                12.9843343
+              ],
+              [
+                80.2096165,
+                12.9843291
+              ],
+              [
+                80.2096098,
+                12.9843748
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-226",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.681,
+          "area_sqm": 12.03,
+          "perimeter_m": 24.34,
+          "vertex_count": 5,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_28",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2097828,
+                12.9843748
+              ],
+              [
+                80.2097305,
+                12.9843722
+              ],
+              [
+                80.209756,
+                12.9843696
+              ],
+              [
+                80.2097292,
+                12.9843526
+              ],
+              [
+                80.2097506,
+                12.984333
+              ],
+              [
+                80.2097828,
+                12.9843748
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-227",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.688,
+          "area_sqm": 12.27,
+          "perimeter_m": 20.9,
+          "vertex_count": 5,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_29",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2091619,
+                12.9844166
+              ],
+              [
+                80.2091297,
+                12.984384
+              ],
+              [
+                80.2091606,
+                12.9843696
+              ],
+              [
+                80.2091619,
+                12.9844166
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-228",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.691,
+          "area_sqm": 8.83,
+          "perimeter_m": 13.93,
+          "vertex_count": 3,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_30",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2097654,
+                12.9844179
+              ],
+              [
+                80.2097761,
+                12.984397
+              ],
+              [
+                80.2097131,
+                12.98438
+              ],
+              [
+                80.2097077,
+                12.9843944
+              ],
+              [
+                80.2097654,
+                12.9844179
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-229",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.683,
+          "area_sqm": 14.74,
+          "perimeter_m": 18.15,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_31",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2094033,
+                12.9844075
+              ],
+              [
+                80.2094422,
+                12.9844349
+              ],
+              [
+                80.2094355,
+                12.9843709
+              ],
+              [
+                80.2094127,
+                12.9843448
+              ],
+              [
+                80.2093993,
+                12.984384
+              ],
+              [
+                80.2094315,
+                12.9844075
+              ],
+              [
+                80.2094033,
+                12.9844075
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-230",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.674,
+          "area_sqm": 22.75,
+          "perimeter_m": 28.1,
+          "vertex_count": 6,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_32",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2092934,
+                12.9844375
+              ],
+              [
+                80.2093027,
+                12.984397
+              ],
+              [
+                80.2093336,
+                12.984401
+              ],
+              [
+                80.2093537,
+                12.9843252
+              ],
+              [
+                80.2092893,
+                12.9843931
+              ],
+              [
+                80.2092934,
+                12.9844375
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-231",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.681,
+          "area_sqm": 24.98,
+          "perimeter_m": 31.83,
+          "vertex_count": 5,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_33",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2096568,
+                12.9844415
+              ],
+              [
+                80.209646,
+                12.9843931
+              ],
+              [
+                80.2096219,
+                12.9844297
+              ],
+              [
+                80.2096246,
+                12.9843474
+              ],
+              [
+                80.2096487,
+                12.9843618
+              ],
+              [
+                80.209701,
+                12.9843173
+              ],
+              [
+                80.2096836,
+                12.9843657
+              ],
+              [
+                80.2097024,
+                12.9843709
+              ],
+              [
+                80.2097198,
+                12.9843552
+              ],
+              [
+                80.2097278,
+                12.9843604
+              ],
+              [
+                80.2096863,
+                12.9844049
+              ],
+              [
+                80.209693,
+                12.9843735
+              ],
+              [
+                80.2096568,
+                12.9843565
+              ],
+              [
+                80.2096796,
+                12.9843774
+              ],
+              [
+                80.2096568,
+                12.9844415
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-232",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.663,
+          "area_sqm": 52.34,
+          "perimeter_m": 66.86,
+          "vertex_count": 14,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_34",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2092571,
+                12.9844467
+              ],
+              [
+                80.2092357,
+                12.984401
+              ],
+              [
+                80.2092665,
+                12.9843526
+              ],
+              [
+                80.2093081,
+                12.9843382
+              ],
+              [
+                80.209296,
+                12.9843774
+              ],
+              [
+                80.2092692,
+                12.9843709
+              ],
+              [
+                80.2092571,
+                12.9844467
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-233",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.688,
+          "area_sqm": 28.8,
+          "perimeter_m": 32.68,
+          "vertex_count": 6,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_35",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2092223,
+                12.9844532
+              ],
+              [
+                80.209178,
+                12.9844179
+              ],
+              [
+                80.2091727,
+                12.9843983
+              ],
+              [
+                80.2092156,
+                12.9844023
+              ],
+              [
+                80.2092223,
+                12.9844532
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-234",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.653,
+          "area_sqm": 17.03,
+          "perimeter_m": 18.79,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_36",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2096822,
+                12.9844624
+              ],
+              [
+                80.2096836,
+                12.9844258
+              ],
+              [
+                80.209701,
+                12.984414
+              ],
+              [
+                80.2097171,
+                12.9844206
+              ],
+              [
+                80.2096822,
+                12.9844624
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-235",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.694,
+          "area_sqm": 9.14,
+          "perimeter_m": 14.22,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_37",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2094865,
+                12.9844611
+              ],
+              [
+                80.2094583,
+                12.9844754
+              ],
+              [
+                80.2094623,
+                12.9844362
+              ],
+              [
+                80.2094865,
+                12.9844611
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-236",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.692,
+          "area_sqm": 6.29,
+          "perimeter_m": 11.61,
+          "vertex_count": 3,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_38",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2095079,
+                12.9844088
+              ],
+              [
+                80.2095106,
+                12.9843814
+              ],
+              [
+                80.2095347,
+                12.984414
+              ],
+              [
+                80.2095656,
+                12.9844023
+              ],
+              [
+                80.2095441,
+                12.9844284
+              ],
+              [
+                80.2095709,
+                12.984448
+              ],
+              [
+                80.2095803,
+                12.984414
+              ],
+              [
+                80.2096018,
+                12.9844258
+              ],
+              [
+                80.2096045,
+                12.9843866
+              ],
+              [
+                80.2095776,
+                12.9844062
+              ],
+              [
+                80.2095052,
+                12.9843369
+              ],
+              [
+                80.2094851,
+                12.98435
+              ],
+              [
+                80.2094838,
+                12.9843173
+              ],
+              [
+                80.2094771,
+                12.9843421
+              ],
+              [
+                80.2094502,
+                12.9843265
+              ],
+              [
+                80.2094288,
+                12.9843578
+              ],
+              [
+                80.2094717,
+                12.9843814
+              ],
+              [
+                80.2094704,
+                12.98435
+              ],
+              [
+                80.2095066,
+                12.9843565
+              ],
+              [
+                80.209473,
+                12.984397
+              ],
+              [
+                80.2095079,
+                12.9844088
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-237",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.687,
+          "area_sqm": 76.81,
+          "perimeter_m": 83.19,
+          "vertex_count": 20,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_39",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2097748,
+                12.9844859
+              ],
+              [
+                80.2097091,
+                12.9844571
+              ],
+              [
+                80.2097185,
+                12.9844284
+              ],
+              [
+                80.2097815,
+                12.9844558
+              ],
+              [
+                80.2097748,
+                12.9844859
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-238",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.665,
+          "area_sqm": 25.42,
+          "perimeter_m": 22.03,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_40",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.2095723,
+                12.9844859
+              ],
+              [
+                80.2095897,
+                12.9844519
+              ],
+              [
+                80.2096286,
+                12.9844637
+              ],
+              [
+                80.2096206,
+                12.9844807
+              ],
+              [
+                80.2095723,
+                12.9844859
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-239",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.672,
+          "area_sqm": 13.85,
+          "perimeter_m": 15.97,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_41",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.209347,
+                12.9844859
+              ],
+              [
+                80.2093617,
+                12.9844689
+              ],
+              [
+                80.2093349,
+                12.9844545
+              ],
+              [
+                80.2093403,
+                12.9844101
+              ],
+              [
+                80.2093711,
+                12.9844807
+              ],
+              [
+                80.209347,
+                12.9844859
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-240",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.678,
+          "area_sqm": 11.41,
+          "perimeter_m": 21.9,
+          "vertex_count": 5,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "veg_42",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                80.209284,
+                12.9844859
+              ],
+              [
+                80.2092571,
+                12.9844715
+              ],
+              [
+                80.2092799,
+                12.9844428
+              ],
+              [
+                80.2092947,
+                12.9844493
+              ],
+              [
+                80.209284,
+                12.9844859
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "parcel_id": "VEG-241",
+          "survey_number": "VEGETATION",
+          "sub_division": "AUTO_UAV",
+          "confidence": 0.682,
+          "area_sqm": 10.27,
+          "perimeter_m": 13.32,
+          "vertex_count": 4,
+          "classification": "VEGETATION",
+          "topological_status": "VALID_CLOSED_PLANAR",
+          "extraction_method": "EfficientNet-B3_U-Net_DualHead",
+          "regularized_right_angles": false,
+          "uncertainty": {
+            "epistemic": 0.1,
+            "aleatoric": 0.05,
+            "overall": 0.11,
+            "confidence_level": "HIGH"
+          },
+          "source": "CV_DETECTED"
+        }
+      }
+    ]
+  },
+  "topological_health": {
+    "self_intersections": 0,
+    "overlap_detected": false,
+    "valid_count": 1,
+    "flagged_count": 0,
+    "status": "PASSED_CADASTRAL_QC"
+  },
+  "metrics": {
+    "avg_confidence": 0.57,
+    "total_area_sqm": 5070.83,
+    "avg_perimeter_m": 9.57,
+    "vertex_count_total": 50,
+    "avg_epistemic_uncertainty": 0.06,
+    "avg_aleatoric_uncertainty": 1,
+    "avg_overall_uncertainty": 0.481,
+    "high_confidence_count": 0,
+    "medium_confidence_count": 11,
+    "low_confidence_count": 0
+  }
+}

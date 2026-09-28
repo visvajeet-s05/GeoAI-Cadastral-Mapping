@@ -1,0 +1,91 @@
+{
+  "status": "PASS",
+  "variants": {
+    "svamitva_orig": {
+      "color_stats": {
+        "L_mean": 10.865705490112305,
+        "L_std": 29.214632034301758,
+        "A_mean": 127.00730895996094,
+        "B_mean": 129.46438598632812
+      },
+      "building": {
+        "pixels_gt_0.5": 225497,
+        "pixels_gt_0.7": 191359,
+        "mean_prob": 0.6832970380783081,
+        "max_prob": 0.8726158738136292,
+        "total_pixels": 262144
+      },
+      "vegetation": {
+        "pixels_gt_0.5": 258046,
+        "pixels_gt_0.7": 130708,
+        "mean_prob": 0.6912850141525269,
+        "max_prob": 0.9968892931938171
+      }
+    },
+    "svamitva_to_esri": {
+      "color_stats": {
+        "L_mean": 67.38509368896484,
+        "L_std": 40.83136749267578,
+        "A_mean": 119.13775634765625,
+        "B_mean": 137.36187744140625
+      },
+      "building": {
+        "pixels_gt_0.5": 197531,
+        "pixels_gt_0.7": 154,
+        "mean_prob": 0.5034422874450684,
+        "max_prob": 0.8796688318252563,
+        "total_pixels": 262144
+      },
+      "vegetation": {
+        "pixels_gt_0.5": 255639,
+        "pixels_gt_0.7": 202961,
+        "mean_prob": 0.7127127051353455,
+        "max_prob": 0.9997082352638245
+      }
+    },
+    "esri_orig": {
+      "color_stats": {
+        "L_mean": 80.91071319580078,
+        "L_std": 70.04975128173828,
+        "A_mean": 119.5765609741211,
+        "B_mean": 138.05714416503906
+      },
+      "building": {
+        "pixels_gt_0.5": 82443,
+        "pixels_gt_0.7": 5705,
+        "mean_prob": 0.41961079835891724,
+        "max_prob": 0.9320258498191833,
+        "total_pixels": 262144
+      },
+      "vegetation": {
+        "pixels_gt_0.5": 247410,
+        "pixels_gt_0.7": 138627,
+        "mean_prob": 0.6920160055160522,
+        "max_prob": 0.9710643291473389
+      }
+    },
+    "esri_to_svamitva": {
+      "color_stats": {
+        "L_mean": 137.97409057617188,
+        "L_std": 110.38270568847656,
+        "A_mean": 127.08704376220703,
+        "B_mean": 128.5179901123047
+      },
+      "building": {
+        "pixels_gt_0.5": 115745,
+        "pixels_gt_0.7": 33498,
+        "mean_prob": 0.4252253770828247,
+        "max_prob": 0.974830687046051,
+        "total_pixels": 262144
+      },
+      "vegetation": {
+        "pixels_gt_0.5": 149217,
+        "pixels_gt_0.7": 67340,
+        "mean_prob": 0.5170836448669434,
+        "max_prob": 0.9886816740036011
+      }
+    }
+  },
+  "provider": "CPUExecutionProvider",
+  "reduction_ratio": 0.0008047700918169514
+}

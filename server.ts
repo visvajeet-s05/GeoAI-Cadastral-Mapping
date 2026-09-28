@@ -4059,6 +4059,12 @@ Provide:
       `YOU ARE HEREBY DIRECTED within 15 days of receipt of this notice to realign the boundary and address the unauthorized ${encroachmentAreaSqM.toFixed(1)} sq.m protrusion, failing which action under Section 56(2) will be initiated by the Municipal Corporation.`;
   }
 
+  const complianceStatus = (encroachmentAreaSqM > 0.1 && confidenceLevel !== "LOW")
+      ? "VIOLATION_FLAGGED"
+      : (encroachmentAreaSqM > 0.1 && confidenceLevel === "LOW")
+        ? "NEEDS_HUMAN_REVIEW"
+        : "COMPLIANT_APPROVED";
+
   const discrepancy: EncroachmentDiscrepancy = {
     parcelId: targetParcel.id,
     uprn: targetParcel.uprn,
@@ -4073,14 +4079,14 @@ Provide:
     detectedPhysicalBoundary: closedDetected,
     encroachmentPolygon,
     vlmViolationNotice: violationNoticeText || "No significant encroachment detected (area < 0.1 sq.m or confidence below threshold).",
-    complianceStatus: encroachmentAreaSqM > 0.1 ? "VIOLATION_FLAGGED" : "COMPLIANT_APPROVED",
+    complianceStatus,
     timestamp: Date.now(),
     detectionConfidence,
     confidenceLevel,
     // Explicitly document data sources
     dataSources: {
       legalBoundary: "TN_LAYOUT_STORE (FMB/TSLR digitized records)",
-      detectedBoundary: "ML_BUILDING_HEAD (SegFormer_B3_DualHead_ONNX) — building footprint polygon",
+      detectedBoundary: "ML_BUILDING_HEAD (EfficientNet-B3_U-Net_DualHead_ONNX) — building footprint polygon",
       roadNetwork: "OpenStreetMap via Overpass API (highway=*)",
       landuse: "DERIVED_3CLASS (built-up from building head, vegetation from vegetation head, open = neither)",
     },
