@@ -3157,15 +3157,18 @@ interface EncroachmentDiscrepancy {
   legalReference: string;
   approvalPlanNo: string;
   tier: "FMB_TSLR" | "CMDA_LAYOUT" | "DTCP_LAYOUT";
-  encroachmentType: "ROAD_RESERVE_VIOLATION" | "SETBACK_VIOLATION" | "OSR_ENCROACHMENT" | "BOUNDARY_DRIFT";
+  encroachmentType: "ROAD_RESERVE_VIOLATION" | "SETBACK_VIOLATION" | "OSR_ENCROACHMENT" | "BOUNDARY_DRIFT" | "NEIGHBOR_BOUNDARY_DRIFT";
   encroachmentAreaSqM: number;
   maxDeviationMeters: number;
   legalBoundary: [number, number][];
   detectedPhysicalBoundary: [number, number][];
   encroachmentPolygon: [number, number][];
   vlmViolationNotice: string;
-  complianceStatus: "COMPLIANT" | "VIOLATION_FLAGGED" | "NOTICE_ISSUED" | "RESOLVED";
+  complianceStatus: "COMPLIANT" | "VIOLATION_FLAGGED" | "NOTICE_ISSUED" | "RESOLVED" | "NEEDS_HUMAN_REVIEW" | "COMPLIANT_APPROVED";
   timestamp: number;
+  detectionConfidence?: number;
+  confidenceLevel?: string;
+  dataSources?: any;
 }
 
 interface PlotCongruenceData {
@@ -3987,7 +3990,7 @@ app.post("/api/tn-land-records/discrepancy-analysis", async (req, res) => {
   );
   
   // Determine encroachment type based on layout
-  let encroachmentType = "ROAD_RESERVE_VIOLATION";
+  let encroachmentType: "ROAD_RESERVE_VIOLATION" | "SETBACK_VIOLATION" | "OSR_ENCROACHMENT" | "BOUNDARY_DRIFT" | "NEIGHBOR_BOUNDARY_DRIFT" = "ROAD_RESERVE_VIOLATION";
   if (legalBoundaryRecord?.intendedUse === "ROAD_RESERVE") {
     encroachmentType = "ROAD_RESERVE_VIOLATION";
   } else if (legalBoundaryRecord?.intendedUse === "PARK_OSR") {
@@ -4059,7 +4062,7 @@ Provide:
       `YOU ARE HEREBY DIRECTED within 15 days of receipt of this notice to realign the boundary and address the unauthorized ${encroachmentAreaSqM.toFixed(1)} sq.m protrusion, failing which action under Section 56(2) will be initiated by the Municipal Corporation.`;
   }
 
-  const complianceStatus = (encroachmentAreaSqM > 0.1 && confidenceLevel !== "LOW")
+  const complianceStatus: "COMPLIANT" | "VIOLATION_FLAGGED" | "NOTICE_ISSUED" | "RESOLVED" | "NEEDS_HUMAN_REVIEW" | "COMPLIANT_APPROVED" = (encroachmentAreaSqM > 0.1 && confidenceLevel !== "LOW")
       ? "VIOLATION_FLAGGED"
       : (encroachmentAreaSqM > 0.1 && confidenceLevel === "LOW")
         ? "NEEDS_HUMAN_REVIEW"
