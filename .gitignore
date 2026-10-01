@@ -11,3 +11,34 @@ __pycache__/
 *.pt
 .pytest_cache/
 
+# ML checkpoints and models (too large for git)
+ml/checkpoints/*.pth
+ml/checkpoints/*.onnx
+ml/checkpoints/*.pt
+!ml/checkpoints/*.json
+
+# Verification outputs (temporary artifacts)
+ml/verification/*/
+!ml/verification/.gitkeep
+
+# Python virtual environment
+.venv/
+venv/
+
+# ML artifacts
+*.pth
+*.onnx
+*.pt
+*.ckpt
+
+# Temporary test files
+ml/*.png
+ml/*.json
+!ml/checkpoints/*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+

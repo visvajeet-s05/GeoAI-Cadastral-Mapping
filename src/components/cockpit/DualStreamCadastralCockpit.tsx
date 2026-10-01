@@ -289,7 +289,7 @@ export const DualStreamCadastralCockpit: React.FC<DualStreamCadastralCockpitProp
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              Multi-Modal Alignment: Scanned FMB/TSLR Blueprint &times; Live UAV Video Stream &times; SegFormer-B3 ONNX Engine
+              Multi-Modal Alignment: Scanned FMB/TSLR Blueprint &times; Live UAV Video Stream &times; EfficientNet-B3 Dual-Head ONNX Engine
             </p>
           </div>
         </div>
@@ -376,7 +376,7 @@ export const DualStreamCadastralCockpit: React.FC<DualStreamCadastralCockpitProp
             onClick={handleAutoExtractBoundaries}
             disabled={isExtracting}
             className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/30 transition flex items-center gap-1.5 disabled:opacity-50"
-            title="Auto-Extract Boundaries using SegFormer-B3 ONNX Runtime"
+            title="Auto-Extract Boundaries using EfficientNet-B3 ONNX Runtime"
           >
             <Scan className={`w-3.5 h-3.5 ${isExtracting ? "animate-spin" : ""}`} />
             <span>{isExtracting ? "Extracting..." : "Auto-Extract Boundaries"}</span>
@@ -430,7 +430,7 @@ export const DualStreamCadastralCockpit: React.FC<DualStreamCadastralCockpitProp
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-sm text-white">
-                      SegFormer-B3 DualHead Live Cadastral Extraction (Day 2)
+                      EfficientNet-B3 Dual-Head Live Cadastral Extraction (Day 2)
                     </h3>
                     <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">
                       ONNX RUNTIME
@@ -585,7 +585,7 @@ export const DualStreamCadastralCockpit: React.FC<DualStreamCadastralCockpitProp
                   <div className="flex items-center gap-2">
                     <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
                     <span className="text-xs font-bold text-white uppercase tracking-wider">
-                      Stream B: High-Res UAV Feed &times; SAM 2 / SegFormer
+                      Stream B: High-Res UAV Feed &times; SAM 2 / EfficientNet-B3
                     </span>
                   </div>
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
@@ -653,7 +653,7 @@ export const DualStreamCadastralCockpit: React.FC<DualStreamCadastralCockpitProp
                   </div>
                   <div>
                     <h3 className="font-bold text-base text-white">
-                      SegFormer-B3 ONNX Cadastral Inference Microservice
+                      EfficientNet-B3 ONNX Cadastral Inference Microservice
                     </h3>
                     <p className="text-xs text-slate-400">
                       FastAPI + ONNX Runtime Engine: Evaluates 2-head tensors (building + vegetation), applies Douglas-Peucker simplification, and outputs GeoJSON polygons.
@@ -666,9 +666,9 @@ export const DualStreamCadastralCockpit: React.FC<DualStreamCadastralCockpitProp
                     <span className="w-2 h-2 rounded-full bg-emerald-400" />
                     <span>Microservice: {mlHealth?.fastapi_service || "ONLINE"}</span>
                   </div>
-                  <div className="px-3 py-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-purple-300">
-                    Model: SegFormer-B3-Cadastral
-                  </div>
+<div className="px-3 py-1 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-purple-300">
+                      Model: EfficientNet-B3-Cadastral
+                    </div>
                 </div>
               </div>
 
@@ -858,7 +858,7 @@ export const DualStreamCadastralCockpit: React.FC<DualStreamCadastralCockpitProp
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-slate-500 text-center py-8">
                     <Scan className="w-8 h-8 mb-2 text-slate-600" />
-                    <p>Click "Run Auto-Extraction" above to trigger SegFormer-B3 ONNX inference.</p>
+                    <p>Click "Run Auto-Extraction" above to trigger EfficientNet-B3 ONNX inference.</p>
                     <p className="text-xs text-slate-600 mt-1">
                       Extracts parcel polygons, simplifies with Shapely, and pushes to MapView.tsx.
                     </p>
@@ -982,7 +982,7 @@ export const DualStreamCadastralCockpit: React.FC<DualStreamCadastralCockpitProp
                 Cadastral ML Pipeline Specifications (Day 2)
               </h3>
               <p className="text-xs text-slate-400 mb-4">
-                Research architecture details: SegFormer-B3, HRNet-W48 OCR, dual-head losses, and vector contour regularization.
+                Research architecture details: EfficientNet-B3 (deployed dual-head), SegFormer-B3 (aspirational), HRNet-W48 OCR, dual-head losses, and vector contour regularization.
               </p>
               <div className="flex-1 bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-slate-300 overflow-y-auto space-y-3">
                 <div className="text-sky-300 font-bold">4-Channel Target Tensor Formulation:</div>

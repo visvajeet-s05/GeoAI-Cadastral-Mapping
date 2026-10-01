@@ -1,6 +1,7 @@
 # Cadastral Deep Learning Pipeline: FMB/TSLR Vector & UAV Imagery Processing
 
-**Status:** Technical Specification & Research Architecture  
+**Status:** ASPIRATIONAL / RESEARCH SPEC — NOT IMPLEMENTED.  
+**The deployed model is documented in `ml/checkpoints/model_card.json` and the `/api/ml/health` endpoint (`server/routes/mlRoutes.ts`). This file describes future/target architecture only.**  
 **Domain:** Automated Cadastral Boundary Extraction, Multi-Temporal Co-Registration, and Topological Parcel Refinement  
 **Target Architectures:** High-Resolution Convolutional Neural Networks (HRNet/ConvNeXt) & Vision Transformers (SegFormer, Mask2Former, SAM 2)
 

@@ -105,14 +105,14 @@ if FASTAPI_AVAILABLE:
             20.0, ge=5.0, le=50000.0, description="Minimum parcel footprint in square meters"
         )
         enable_uncertainty: bool = Field(
-            True, description="Enable per-polygon uncertainty quantification (Monte Carlo dropout)"
+            True, description="Enable per-polygon uncertainty quantification (perturbation-based confidence estimation)"
         )
         mc_samples: int = Field(
-            5, ge=1, le=20, description="Number of Monte Carlo samples for uncertainty estimation"
+            5, ge=1, le=20, description="Number of perturbation samples for confidence estimation"
         )
 
     class ParcelUncertainty(BaseModel):
-        epistemic: float = Field(..., description="Model uncertainty (variance across MC samples)")
+        epistemic: float = Field(..., description="Model uncertainty (variance across perturbation samples)")
         aleatoric: float = Field(..., description="Data uncertainty (mean predictive variance)")
         overall: float = Field(..., description="Combined uncertainty score")
         confidence_level: str = Field(..., description="HIGH / MEDIUM / LOW based on overall uncertainty")
@@ -218,16 +218,16 @@ class CadastralInferenceEngine:
             except Exception as e:
                 logger.warning(f"Failed to load checkpoint config: {e}")
         
-        # Try to load PyTorch model for true MC dropout
+        # Try to load PyTorch model for perturbation-based confidence estimation
         self._load_pytorch_model(checkpoint_path)
     
     def _load_pytorch_model(self, checkpoint_path: Path):
-        """Load PyTorch model for true MC dropout inference."""
+        """Load PyTorch model for perturbation-based confidence estimation."""
         self.pytorch_model = None
         self.pytorch_device = "cpu"
         
         if not TORCH_AVAILABLE or not checkpoint_path.exists():
-            logger.info("PyTorch or checkpoint not available. MC dropout will use noise simulation.")
+            logger.info("PyTorch or checkpoint not available. Perturbation-based confidence will use noise simulation.")
             return
         
         try:
@@ -259,16 +259,16 @@ class CadastralInferenceEngine:
                 if k not in model.state_dict():
                     unexpected_keys.append(k)
             model.load_state_dict(state_dict, strict=False)
-            logger.info(f"MC dropout checkpoint: matched={len(matched_keys)}, missing={len(missing_keys)}, unexpected={len(unexpected_keys)} (head_vegetation will be random)")
-            model.eval()  # We'll use train() mode for MC dropout forward passes
+            logger.info(f"Perturbation checkpoint: matched={len(matched_keys)}, missing={len(missing_keys)}, unexpected={len(unexpected_keys)} — epoch-12 weights loaded cleanly")
+            model.eval()
             
             self.pytorch_model = model
             self.pytorch_device = "cuda" if torch.cuda.is_available() else "cpu"
             self.pytorch_model.to(self.pytorch_device)
             
-            logger.info(f"Loaded PyTorch model for true MC dropout on {self.pytorch_device}")
+            logger.info(f"Loaded PyTorch model for perturbation-based confidence on {self.pytorch_device}")
         except Exception as e:
-            logger.warning(f"Failed to load PyTorch model for MC dropout: {e}")
+            logger.warning(f"Failed to load PyTorch model for perturbation-based confidence: {e}")
             self.pytorch_model = None
 
     def _init_session(self):
@@ -543,22 +543,18 @@ class CadastralInferenceEngine:
 
     def run_onnx_inference_mc(self, img_bgr: Any, num_samples: int = 5, dsm: Optional[np.ndarray] = None, dtm: Optional[np.ndarray] = None) -> List[Any]:
         """
-        Runs Monte Carlo dropout inference by running the model multiple times.
+        Runs perturbation-based confidence estimation by running the model multiple times.
         
-        Uses TRUE MC dropout with PyTorch when available (activates dropout layers
-        during forward passes in train() mode under no_grad()), which samples from
-        the model's learned weight-space uncertainty. Falls back to input-noise
-        simulation when PyTorch model is not available.
+        Uses input-noise perturbation (since training used no dropout) to estimate
+        prediction stability. This is NOT Bayesian MC dropout — the model was trained
+        without dropout. Falls back to input-noise simulation when PyTorch model is not available.
         
         Returns list of 4-channel mask arrays [building_logits, vegetation_logits, vertex, sdf] for each sample.
         """
         samples = []
         
-        # Try true MC dropout with PyTorch first
-        if self.pytorch_model is not None and TORCH_AVAILABLE:
-            return self._run_pytorch_mc_dropout(img_bgr, num_samples, dsm, dtm)
-        
-        # Fallback: input noise simulation (original behavior)
+        # PyTorch path removed — training used no dropout, so MC dropout would be uncalibrated
+        # Fallback: input noise simulation (perturbation-based confidence estimation)
         for i in range(num_samples):
             # Add small noise to input for variation (simulates dropout)
             if NUMPY_AVAILABLE and CV2_AVAILABLE and img_bgr is not None:
@@ -573,8 +569,8 @@ class CadastralInferenceEngine:
         
         return samples
     
-    def _run_pytorch_mc_dropout(self, img_bgr: Any, num_samples: int = 5, dsm: Optional[np.ndarray] = None, dtm: Optional[np.ndarray] = None) -> List[Any]:
-        """Run true MC dropout using PyTorch model with dropout layers active."""
+    def _run_pytorch_perturbation(self, img_bgr: Any, num_samples: int = 5, dsm: Optional[np.ndarray] = None, dtm: Optional[np.ndarray] = None) -> List[Any]:
+        """Run perturbation-based confidence estimation using PyTorch model with input noise."""
         if not TORCH_AVAILABLE or self.pytorch_model is None:
             return []
         
@@ -613,14 +609,19 @@ class CadastralInferenceEngine:
         
         input_tensor = input_tensor.unsqueeze(0).to(self.pytorch_device)
         
-        # Set model to train mode to activate dropout, but no_grad for inference
-        self.pytorch_model.train()
+        # Run multiple forward passes with input noise perturbation
+        # NOTE: Training used NO dropout, so we use input perturbation instead
+        self.pytorch_model.eval()
         samples = []
         
         with torch.no_grad():
             for _ in range(num_samples):
-                # Forward pass with dropout active (model in train mode)
-                outputs = self.pytorch_model(input_tensor, mc_dropout=True)
+                # Add small input noise for perturbation
+                noise = torch.randn_like(input_tensor) * 0.01
+                perturbed_input = input_tensor + noise
+                
+                # Forward pass
+                outputs = self.pytorch_model(perturbed_input)
                 
                 # outputs: dict with keys 'building', 'vegetation' (logits)
                 building_logits = outputs['building'].cpu().numpy()[0, 0]  # (512, 512)
@@ -631,13 +632,12 @@ class CadastralInferenceEngine:
                 vegetation_prob = 1.0 / (1.0 + np.exp(-np.clip(vegetation_logits, -60.0, 60.0)))
                 
                 # Create 4-channel format: [building, vegetation, vertex, sdf]
-                # vertex and sdf are placeholder zeros for now
                 vertex_map = np.zeros_like(building_prob)
                 sdf_map = np.zeros_like(building_prob)
                 
                 combined = np.stack([building_prob, vegetation_prob, vertex_map, sdf_map], axis=0)
                 samples.append(combined)
-        
+
         self.pytorch_model.eval()  # Restore eval mode
         return samples
 

@@ -113,6 +113,14 @@ def check_identity(results):
         print(f"  [MISSING] best_model.pth: {cp}")
         print("  Cannot verify PyTorch checkpoint. Run 'cp <drive>/geotrace/checkpoints/best_model.pth ml/checkpoints/'")
 
+    # Compute overall identity status
+    all_pass = all(
+        results["identity"].get(k, {}).get("status") == "PASS"
+        for k in ["onnx_model", "onnx_data", "best_model"]
+        if k in results["identity"]
+    )
+    results["identity"]["status"] = "PASS" if all_pass else "FAIL"
+
     # Save raw
     with open(os.path.join(OUT_DIR, "identity.json"), "w") as f:
         json.dump(results["identity"], f, indent=2)
@@ -270,7 +278,7 @@ def check_parity(model, results):
 def check_uncertainty(model, results):
     results["uncertainty"] = {"status": "SKIPPED", "tiles": []}
     if model is None:
-        print("  [SKIP] No PyTorch model — cannot run true MC dropout")
+        print("  [SKIP] No PyTorch model — cannot run perturbation-based confidence estimation")
         print("  (ONNX fallback would be noise simulation, not calibrated uncertainty)")
         with open(os.path.join(OUT_DIR, "uncertainty.json"), "w") as f:
             json.dump(results["uncertainty"], f, indent=2)
@@ -640,7 +648,7 @@ def main():
     print("\n[3/6] PyTorch vs ONNX parity")
     check_parity(model, results)
 
-    print("\n[4/6] MC dropout uncertainty (3 tiles)")
+    print("\n[4/6] Perturbation-based confidence (3 tiles)")
     check_uncertainty(model, results)
 
     print("\n[5/6] Color-matching test (raw pixel counts)")

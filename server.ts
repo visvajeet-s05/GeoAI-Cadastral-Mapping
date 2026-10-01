@@ -99,9 +99,7 @@ function startMLInferenceService(): Promise<void> {
       }
     }, 30000);
 
-    mlService.process.stdout?.on("data", (data: Buffer) => {
-      const output = data.toString().trim();
-      console.log(`[ML Inference] ${output}`);
+    const checkStartupOutput = (output: string) => {
       if (!started && (output.includes("ONLINE") || output.includes("Uvicorn running") || output.includes("Started server"))) {
         started = true;
         clearTimeout(startupTimeout);
@@ -110,11 +108,18 @@ function startMLInferenceService(): Promise<void> {
         console.log("[ML Supervisor] Service started successfully");
         resolve();
       }
+    };
+
+    mlService.process.stdout?.on("data", (data: Buffer) => {
+      const output = data.toString().trim();
+      console.log(`[ML Inference] ${output}`);
+      checkStartupOutput(output);
     });
 
     mlService.process.stderr?.on("data", (data: Buffer) => {
       const output = data.toString().trim();
       console.error(`[ML Inference ERR] ${output}`);
+      checkStartupOutput(output);
     });
 
     mlService.process.on("error", (err: Error) => {
@@ -146,7 +151,7 @@ async function stopMLInferenceService(): Promise<void> {
     console.log("[ML Supervisor] Stopping ML inference service...");
     mlService.process.kill("SIGTERM");
     await new Promise(resolve => setTimeout(resolve, 1000));
-    if (!mlService.process.killed) {
+    if (mlService.process && !mlService.process.killed) {
       mlService.process.kill("SIGKILL");
     }
     mlService.process = null;
@@ -3968,7 +3973,7 @@ app.post("/api/tn-land-records/discrepancy-analysis", async (req, res) => {
   
   // IMPORTANT: detectedPhysicalBoundary MUST come from the ML building-head output polygon,
   // NOT from a parcel/road/landuse head (those heads do not exist in the 2-head model).
-  // The 2-head model (SegFormer_B3_DualHead_ONNX) only produces:
+  // The 2-head model (EfficientNet-B3_DualHead_ONNX) only produces:
   //   - Building head: building footprint polygons (used as B_detected)
   //   - Vegetation head: vegetation segmentation
   // Parcel boundaries are LEGAL constructs from FMB/TSLR records (TN_LAYOUT_STORE),
@@ -4022,7 +4027,7 @@ Draft an official Statutory Violation Notice based on this comparative discrepan
 - Portal Source: ${layout.portalSource} (${layout.portalUrl})
 - Survey Number: ${layout.surveyNumber}/${layout.subDivision || "1"} in ${layout.village}, ${layout.taluk} Taluk, ${layout.district} District
 - Legal Boundary (L_legal): ${JSON.stringify(legalPolygon.slice(0, 5))}... (${legalPolygon.length} vertices) — from FMB/TSLR records (TN_LAYOUT_STORE)
-- Detected Physical Boundary (B_detected): ${JSON.stringify(detectedBoundary.slice(0, 5))}... (${detectedBoundary.length} vertices) — from ML BUILDING HEAD (SegFormer_B3_DualHead_ONNX)
+- Detected Physical Boundary (B_detected): ${JSON.stringify(detectedBoundary.slice(0, 5))}... (${detectedBoundary.length} vertices) — from ML BUILDING HEAD (EfficientNet-B3_DualHead_ONNX)
 - Encroachment Area: ${encroachmentAreaSqM.toFixed(1)} sq.m
 - Max Deviation: ${maxDeviationMeters.toFixed(2)} meters
 - Detection Confidence: ${detectionConfidence} (${confidenceLevel})

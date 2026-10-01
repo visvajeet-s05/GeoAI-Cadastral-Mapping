@@ -94,6 +94,9 @@ export const FloatingFlightController: React.FC<FloatingFlightControllerProps> =
                 <span className="font-bold text-white font-mono text-[11px]">
                   SIMULATED UAV SENSOR FEED
                 </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  Concept Preview
+                </span>
               </div>
               <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1.5">
                 <span className="text-emerald-400 font-bold">RTK {rtk}</span>

@@ -158,7 +158,7 @@ export const DroneIngestionModal: React.FC<DroneIngestionModalProps> = ({
           geoTraceCardNumber: pid1,
           svamitvaCardNumber: pid1,
           ownerName: "Subhashini Raghunathan",
-          ownerNationalId: "AADHAAR-XXXX-3829",
+          ownerNationalId: "LANDREC-ID-3829",
           landType: "RESIDENTIAL",
           status: "TOPOLOGY_VERIFIED",
           coordinates: [
@@ -188,7 +188,7 @@ export const DroneIngestionModal: React.FC<DroneIngestionModalProps> = ({
           geoTraceCardNumber: pid2,
           svamitvaCardNumber: pid2,
           ownerName: "Harishankar Trivedi",
-          ownerNationalId: "AADHAAR-XXXX-8114",
+          ownerNationalId: "LANDREC-ID-8114",
           landType: "COMMERCIAL",
           status: "TOPOLOGY_VERIFIED",
           coordinates: [
@@ -276,7 +276,7 @@ export const DroneIngestionModal: React.FC<DroneIngestionModalProps> = ({
         geoTraceCardNumber: pidA,
         svamitvaCardNumber: pidA,
         ownerName: "Devendra Swaroop Sharma",
-        ownerNationalId: "AADHAAR-XXXX-5542",
+        ownerNationalId: "LANDREC-ID-5542",
         landType: "RESIDENTIAL",
         status: "TOPOLOGY_VERIFIED",
         coordinates: [
@@ -309,7 +309,7 @@ export const DroneIngestionModal: React.FC<DroneIngestionModalProps> = ({
         geoTraceCardNumber: pidB,
         svamitvaCardNumber: pidB,
         ownerName: "Meenakshi Sundaram",
-        ownerNationalId: "AADHAAR-XXXX-9912",
+        ownerNationalId: "LANDREC-ID-9912",
         landType: "COMMERCIAL",
         status: "TOPOLOGY_VERIFIED",
         coordinates: [

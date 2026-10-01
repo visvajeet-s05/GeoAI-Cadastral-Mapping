@@ -334,14 +334,15 @@ class DualHeadCadastralModel(nn.Module):
             nn.Conv2d(32, 1, 1),
         )
         
-        # Dropout for MC uncertainty
+        # Dropout layer present in architecture but NOT used during training
+        # (training used model.eval() throughout; no MC dropout at train time)
         self.dropout = nn.Dropout2d(p=0.1)
-    
-    def forward(self, x: torch.Tensor, mc_dropout: bool = False) -> Dict[str, torch.Tensor]:
+        
+    def forward(self, x: torch.Tensor, apply_dropout: bool = False) -> Dict[str, torch.Tensor]:
         # Shared encoder-decoder
         decoder_out = self.base_unet(x)
         
-        if mc_dropout:
+        if apply_dropout:
             decoder_out = self.dropout(decoder_out)
         
         # Two supervised heads

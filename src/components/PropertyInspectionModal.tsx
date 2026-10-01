@@ -98,6 +98,9 @@ export const PropertyInspectionModal: React.FC<PropertyInspectionModalProps> = (
               <div className="flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-xl px-2.5 py-1 text-[11px] font-mono shadow-md">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-slate-300 font-semibold">SIMULATED UAV ORTHOPHOTO CROP</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  Concept Preview
+                </span>
                 <span className="text-slate-500">&bull;</span>
                 <span className="text-cyan-300">GSD: 1.8cm/px</span>
               </div>
@@ -312,8 +315,11 @@ export const PropertyInspectionModal: React.FC<PropertyInspectionModalProps> = (
                     <span className="font-bold text-xs uppercase tracking-wider font-mono">
                       {evidenceLevel} BOUNDARY EVIDENCE
                     </span>
-                    <span className="px-2 py-0.2 rounded-full text-[10px] font-mono font-bold bg-white/10">
+                    <span className="px-2 py-0.2 rounded-full text-[10px] font-mono font-bold bg-white/10 flex items-center gap-1">
                       {confidencePct}% Confidence
+                      <span className="px-1 py-0.5 rounded text-[8px] font-medium bg-slate-700 text-slate-300 border border-slate-600" title="Reference dataset value — not live model output">
+                        Ref
+                      </span>
                     </span>
                   </div>
                   <p className="text-[11px] mt-1 opacity-90 leading-relaxed font-sans">

@@ -108,7 +108,7 @@ export const TitleCertificateModal: React.FC<TitleCertificateModalProps> = ({
             </div>
 
             <div>
-              <div className="text-[11px] text-slate-500 font-medium">National Identity / Aadhaar</div>
+              <div className="text-[11px] text-slate-500 font-medium">Land Record ID</div>
               <div className="text-sm font-mono font-semibold text-slate-800 mt-0.5">
                 {parcel.ownerNationalId}
               </div>

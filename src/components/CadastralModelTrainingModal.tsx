@@ -281,7 +281,7 @@ export const CadastralModelTrainingModal: React.FC<CadastralModelTrainingModalPr
                   Cadastral AI Model Training & Benchmarking Studio
                 </h2>
                 <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  ResNet-50 + Swin-Transformer
+                  Deployed: EfficientNet-B3 Dual-Head (Building + Vegetation)
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -364,15 +364,20 @@ export const CadastralModelTrainingModal: React.FC<CadastralModelTrainingModalPr
                         : "bg-slate-950/40 border-slate-800 hover:border-slate-700"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-sm text-white flex items-center gap-1.5">
-                        <TrendingUp className="w-4 h-4 text-blue-400" />
-                        FMB-LadderNet v3.2
-                      </span>
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">
-                        G-Line Parser
-                      </span>
-                    </div>
+<div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-sm text-white flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-blue-400" />
+                  FMB-LadderNet v3.2
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">
+                    Concept / Not Trained
+                  </span>
+                  <span className="text-[11px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">
+                    G-Line Parser
+                  </span>
+                </div>
+              </div>
                     <p className="text-xs text-slate-400 leading-relaxed">
                       ResNet-50 Feature Pyramid Network with Bi-LSTM ladder sequence decoder for parsing historical Tamil Nadu Gunter chain offsets and G-lines.
                     </p>
@@ -390,15 +395,20 @@ export const CadastralModelTrainingModal: React.FC<CadastralModelTrainingModalPr
                         : "bg-slate-950/40 border-slate-800 hover:border-slate-700"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-sm text-white flex items-center gap-1.5">
-                        <Layers className="w-4 h-4 text-purple-400" />
-                        CMDA-ZoningNet v2.1
-                      </span>
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300">
-                        Swin-Transformer
-                      </span>
-                    </div>
+<div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-sm text-white flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-purple-400" />
+                  CMDA-ZoningNet v2.1
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">
+                    Concept / Not Trained
+                  </span>
+                  <span className="text-[11px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300">
+                    Swin-Transformer
+                  </span>
+                </div>
+              </div>
                     <p className="text-xs text-slate-400 leading-relaxed">
                       Hierarchical Vision Transformer with multi-scale feature aggregation for semantic segmentation of CMDA 2026 Master Plan zoning and statutory buffers.
                     </p>
@@ -416,15 +426,20 @@ export const CadastralModelTrainingModal: React.FC<CadastralModelTrainingModalPr
                         : "bg-slate-950/40 border-slate-800 hover:border-slate-700"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-sm text-white flex items-center gap-1.5">
-                        <Activity className="w-4 h-4 text-emerald-400" />
-                        Cadastral-DriftNet v4.0
-                      </span>
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
-                        Dual-Siamese
-                      </span>
-                    </div>
+<div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-sm text-white flex items-center gap-1.5">
+                  <Activity className="w-4 h-4 text-emerald-400" />
+                  Cadastral-DriftNet v4.0
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">
+                    Concept / Not Trained
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                    Dual-Siamese
+                  </span>
+                </div>
+              </div>
                     <p className="text-xs text-slate-400 leading-relaxed">
                       Siamese ResNet-101 with cross-attention and geodesic loss for comparing historical FMB sketch boundaries against modern satellite building footprints.
                     </p>
@@ -726,6 +741,9 @@ export const CadastralModelTrainingModal: React.FC<CadastralModelTrainingModalPr
                         <td className="p-3">
                           <span className="font-semibold text-white block">{bm.modelName}</span>
                           <span className="text-[11px] text-slate-400">{bm.trainingDataset}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium block mt-1">
+                            Concept / Not Trained
+                          </span>
                         </td>
                         <td className="p-3 text-slate-300 font-mono text-[11px]">
                           {bm.architecture}

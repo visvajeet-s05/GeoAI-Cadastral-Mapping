@@ -244,12 +244,22 @@ export const FloatingParcelInspector: React.FC<FloatingParcelInspectorProps> = (
           {/* Epistemic Score & Structures */}
           <div className="bg-slate-900/80 rounded-xl p-2 border border-slate-800 flex items-center justify-between text-[11px] font-mono">
             <div>
-              <div className="text-[9px] text-slate-500 font-bold uppercase">Compliance</div>
+              <div className="flex items-center gap-1">
+                <div className="text-[9px] text-slate-500 font-bold uppercase">Compliance</div>
+                <span className="px-1 py-0.5 rounded text-[8px] font-medium bg-slate-700 text-slate-300 border border-slate-600" title="Reference dataset value — not live model output">
+                  Ref
+                </span>
+              </div>
               <div className="text-xs font-bold text-white mt-0.5">{parcel.complianceScore}%</div>
             </div>
 
             <div>
-              <div className="text-[9px] text-slate-500 font-bold uppercase">Confidence</div>
+              <div className="flex items-center gap-1">
+                <div className="text-[9px] text-slate-500 font-bold uppercase">Confidence</div>
+                <span className="px-1 py-0.5 rounded text-[8px] font-medium bg-slate-700 text-slate-300 border border-slate-600" title="Reference dataset value — not live model output">
+                  Ref
+                </span>
+              </div>
               <div
                 className="text-xs font-bold mt-0.5"
                 style={{ color: getUncertaintyColor(parcel.overallUncertainty).hex }}

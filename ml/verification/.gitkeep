@@ -1,0 +1,3 @@
+# This directory stores verification outputs from the ML pipeline
+# Individual verification run directories are not tracked in git
+# Only this .gitkeep file ensures the directory structure is preserved

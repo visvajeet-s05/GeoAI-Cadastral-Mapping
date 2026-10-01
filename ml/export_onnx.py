@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
 GeoTrace-AI Cadastral Boundary Deep Learning Pipeline
-Day 2: PyTorch to ONNX Exporter & Model Graph Optimizer (SegFormer-B3 / HRNet-W48)
+Day 2: PyTorch to ONNX Exporter & Model Graph Optimizer
 
-Exports the dual-stream cadastral boundary segmentation model to ONNX runtime format
-with dynamic input axes for variable tile dimensions (batch_size, 3, height, width).
-Includes graph optimization and FP16 / INT8 quantization routines.
+ASPIRATIONAL / RESEARCH SCRIPT — NOT THE DEPLOYED MODEL.
+The deployed model is EfficientNet-B3 U-Net dual-head (building + vegetation),
+trained via ml/train_cadastral.py, exported to ml/checkpoints/cadastral_dualhead_best.onnx.
+
+This script defines a SegFormer-B3 + HRNet OCR architecture (4-channel output:
+parcel interior, boundary edge, vertex keypoint, SDF) for future research.
 """
 
 import os
@@ -36,12 +39,14 @@ except ImportError:
 
 
 # ==============================================================================
-# Model Architecture: Dual-Stream Cadastral Boundary Network (SegFormer-B3 + HRNet OCR)
-# Outputs 4 Channels:
+# Model Architecture (ASPIRATIONAL): Dual-Stream Cadastral Boundary Network (SegFormer-B3 + HRNet OCR)
+# Outputs 4 Channels (not deployed):
 #   Channel 0: Interior Parcel Mask (Omega_interior)
 #   Channel 1: Skeletonized 1-pixel Planar Boundary (dOmega)
 #   Channel 2: Vertex Keypoint Heatmap (V)
 #   Channel 3: Truncated Signed Distance Field (TDF)
+#
+# DEPLOYED MODEL (ml/train_cadastral.py): EfficientNet-B3 U-Net, 2-head (building, vegetation)
 # ==============================================================================
 
 if TORCH_AVAILABLE:
@@ -83,9 +88,12 @@ if TORCH_AVAILABLE:
 
     class CadastralSegFormerDualStream(nn.Module):
         """
-        Hierarchical Dual-Stream Cadastral Boundary Network.
+        Hierarchical Dual-Stream Cadastral Boundary Network (ASPIRATIONAL / RESEARCH).
         Emulates SegFormer-B3 multi-scale feature aggregation with High-Resolution (HRNet)
         detail retention heads to output sub-pixel cadastral features.
+        
+        NOTE: This is NOT the deployed model. The deployed model is EfficientNet-B3 U-Net
+        with 2 heads (building, vegetation) defined in ml/train_cadastral.py.
         """
         def __init__(self, in_channels: int = 3, num_classes: int = 4):
             super().__init__()
@@ -190,10 +198,11 @@ def export_cadastral_model_to_onnx(
     quantize_int8: bool = False,
 ) -> str:
     """
-    Exports the trained SegFormer Cadastral model to ONNX with dynamic input batch and spatial dimensions.
+    Exports the ASPIRATIONAL SegFormer Cadastral model to ONNX with dynamic input batch and spatial dimensions.
+    This is a RESEARCH MODEL — NOT the deployed EfficientNet-B3 dual-head model.
     """
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-    logger.info("Initializing CadastralSegFormerDualStream model...")
+    logger.info("Initializing CadastralSegFormerDualStream model (aspirational/research)...")
 
     if not TORCH_AVAILABLE:
         logger.warning("Generating placeholder ONNX metadata for system initialization.")

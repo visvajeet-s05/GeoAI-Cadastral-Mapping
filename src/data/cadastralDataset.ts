@@ -97,7 +97,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-101-A",
     svamitvaCardNumber: "GT-PID-2026-101-A",
     ownerName: "K. Ramanathan (Denzydive Optician & Residence)",
-    ownerNationalId: "AADHAAR-XXXX-7721",
+    ownerNationalId: "LANDREC-ID-7721",
     landType: "RESIDENTIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -147,7 +147,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-102-B",
     svamitvaCardNumber: "GT-PID-2026-102-B",
     ownerName: "S. Meenakshi Sundaram (Our Bharath)",
-    ownerNationalId: "AADHAAR-XXXX-9943",
+    ownerNationalId: "LANDREC-ID-9943",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -199,7 +199,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-103-C",
     svamitvaCardNumber: "GT-PID-2026-103-C",
     ownerName: "V. Mohan Gupta (West Solar Terrace)",
-    ownerNationalId: "AADHAAR-XXXX-3312",
+    ownerNationalId: "LANDREC-ID-3312",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -252,7 +252,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-104-D",
     svamitvaCardNumber: "GT-PID-2026-104-D",
     ownerName: "T. Annamalai (East Residential Villa)",
-    ownerNationalId: "AADHAAR-XXXX-5520",
+    ownerNationalId: "LANDREC-ID-5520",
     landType: "RESIDENTIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -302,7 +302,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-105-E",
     svamitvaCardNumber: "GT-PID-2026-105-E",
     ownerName: "R. Jayalakshmi (Far West Garden Residence)",
-    ownerNationalId: "AADHAAR-XXXX-1189",
+    ownerNationalId: "LANDREC-ID-1189",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -352,7 +352,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-106-F",
     svamitvaCardNumber: "GT-PID-2026-106-F",
     ownerName: "K. Balachandran (Corner East Property)",
-    ownerNationalId: "AADHAAR-XXXX-4432",
+    ownerNationalId: "LANDREC-ID-4432",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -403,7 +403,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-107-G",
     svamitvaCardNumber: "GT-PID-2026-107-G",
     ownerName: "N. Venkatesh (North White Parapet Villa)",
-    ownerNationalId: "AADHAAR-XXXX-6671",
+    ownerNationalId: "LANDREC-ID-6671",
     landType: "RESIDENTIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -452,7 +452,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-108-H",
     svamitvaCardNumber: "GT-PID-2026-108-H",
     ownerName: "P. Sundararajan (North Center Villa)",
-    ownerNationalId: "AADHAAR-XXXX-2290",
+    ownerNationalId: "LANDREC-ID-2290",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -500,7 +500,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-109-I",
     svamitvaCardNumber: "GT-PID-2026-109-I",
     ownerName: "G. Muthuraman (North East Residence)",
-    ownerNationalId: "AADHAAR-XXXX-8834",
+    ownerNationalId: "LANDREC-ID-8834",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -546,7 +546,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-110-J",
     svamitvaCardNumber: "GT-PID-2026-110-J",
     ownerName: "A. Subhashini (North West Duplex)",
-    ownerNationalId: "AADHAAR-XXXX-7145",
+    ownerNationalId: "LANDREC-ID-7145",
     landType: "RESIDENTIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -592,7 +592,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-111-K",
     svamitvaCardNumber: "GT-PID-2026-111-K",
     ownerName: "E. Karthikeyan (North Villa)",
-    ownerNationalId: "AADHAAR-XXXX-3891",
+    ownerNationalId: "LANDREC-ID-3891",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -638,7 +638,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-112-L",
     svamitvaCardNumber: "GT-PID-2026-112-L",
     ownerName: "L. Devarajan (North Corner Villa)",
-    ownerNationalId: "AADHAAR-XXXX-5519",
+    ownerNationalId: "LANDREC-ID-5519",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -687,7 +687,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-112B-W",
     svamitvaCardNumber: "GT-PID-2026-112B-W",
     ownerName: "T. Gopinathan (West Villa)",
-    ownerNationalId: "AADHAAR-XXXX-3829",
+    ownerNationalId: "LANDREC-ID-3829",
     landType: "RESIDENTIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -731,7 +731,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-113-M",
     svamitvaCardNumber: "GT-PID-2026-113-M",
     ownerName: "D. Senthil Nathan",
-    ownerNationalId: "AADHAAR-XXXX-9921",
+    ownerNationalId: "LANDREC-ID-9921",
     landType: "RESIDENTIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -777,7 +777,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-114-N",
     svamitvaCardNumber: "GT-PID-2026-114-N",
     ownerName: "M. Rajesh Kumar (RainDrops Academy)",
-    ownerNationalId: "AADHAAR-XXXX-4411",
+    ownerNationalId: "LANDREC-ID-4411",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -823,7 +823,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-115-O",
     svamitvaCardNumber: "GT-PID-2026-115-O",
     ownerName: "B. Hemalatha",
-    ownerNationalId: "AADHAAR-XXXX-7729",
+    ownerNationalId: "LANDREC-ID-7729",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -868,7 +868,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-116-P",
     svamitvaCardNumber: "GT-PID-2026-116-P",
     ownerName: "J. Soundararajan",
-    ownerNationalId: "AADHAAR-XXXX-1934",
+    ownerNationalId: "LANDREC-ID-1934",
     landType: "RESIDENTIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -916,7 +916,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-121-S",
     svamitvaCardNumber: "GT-PID-2026-121-S",
     ownerName: "P. R. Srinivasan (South Garden Villa)",
-    ownerNationalId: "AADHAAR-XXXX-5520",
+    ownerNationalId: "LANDREC-ID-5520",
     landType: "RESIDENTIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -959,7 +959,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-122-T",
     svamitvaCardNumber: "GT-PID-2026-122-T",
     ownerName: "Shanthi K. (Shanthi Shop & Residence)",
-    ownerNationalId: "AADHAAR-XXXX-8812",
+    ownerNationalId: "LANDREC-ID-8812",
     landType: "COMMERCIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -1005,7 +1005,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-117-Q",
     svamitvaCardNumber: "GT-PID-2026-117-Q",
     ownerName: "K. Vijayalakshmi",
-    ownerNationalId: "AADHAAR-XXXX-6122",
+    ownerNationalId: "LANDREC-ID-6122",
     landType: "RESIDENTIAL",
     status: "TITLE_ISSUED",
     coordinates: [
@@ -1053,7 +1053,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-118-R",
     svamitvaCardNumber: "GT-PID-2026-118-R",
     ownerName: "C. Thirunavukkarasu",
-    ownerNationalId: "AADHAAR-XXXX-8841",
+    ownerNationalId: "LANDREC-ID-8841",
     landType: "RESIDENTIAL",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [
@@ -1103,7 +1103,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-VAC-01",
     svamitvaCardNumber: "GT-PID-2026-VAC-01",
     ownerName: "Estate of S. Varadharajan (Vacant Open Plot)",
-    ownerNationalId: "AADHAAR-XXXX-1144",
+    ownerNationalId: "LANDREC-ID-1144",
     landType: "UNCLAIMED",
     status: "DRAFT_SEGMENTATION",
     coordinates: [
@@ -1129,7 +1129,7 @@ export const HIGH_PRECISION_PARCELS: HighPrecisionParcelDefinition[] = [
     geoTraceCardNumber: "GT-PID-2026-VAC-02",
     svamitvaCardNumber: "GT-PID-2026-VAC-02",
     ownerName: "P. Loganathan (Fenced Vacant Corner Plot)",
-    ownerNationalId: "AADHAAR-XXXX-9932",
+    ownerNationalId: "LANDREC-ID-9932",
     landType: "UNCLAIMED",
     status: "TOPOLOGY_VERIFIED",
     coordinates: [

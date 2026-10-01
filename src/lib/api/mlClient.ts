@@ -230,7 +230,7 @@ export function convertGeoJsonFeaturesToParcels(
       surveyNumber: props.survey_number || `142/${idx + 1}`,
       subDivision: props.sub_division || "AUTO_UAV",
       historicalYear: 2026,
-      historicalSource: "SegFormer-B3 ONNX Drone Cadastral Vectorization (DualHead)",
+      historicalSource: "EfficientNet-B3 ONNX Drone Cadastral Vectorization (DualHead)",
       historicalAreaSqM: props.area_sqm,
       // New fields for data source tracking
       dataSource: props.source || "CV_DETECTED",
